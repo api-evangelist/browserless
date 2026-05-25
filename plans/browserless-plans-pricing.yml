@@ -1,0 +1,329 @@
+specification: API Commons Plans
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/Plans
+provider: Browserless
+providerId: browserless
+created: '2026-05-25'
+modified: '2026-05-25'
+tags:
+  - Headless Browser
+  - Browser Infrastructure
+  - Web Automation
+  - AI Agents
+  - Web Scraping
+  - BrowserQL
+  - Puppeteer
+  - Playwright
+  - Selenium
+  - Residential Proxy
+  - CAPTCHA Solving
+  - MCP
+description: >-
+  Machine-readable plans for the Browserless cloud service. Captures the five
+  published tiers (Free, Prototyping, Starter, Scale, Enterprise) with their
+  concurrent-browser caps, monthly unit allowances, max session times, session
+  storage windows, overage rates, and ancillary unit costs (residential proxy
+  per MB, CAPTCHA solves per success). Pricing reflects annual billing on the
+  public pricing page. Replace with provider-confirmed values when published
+  numbers change.
+plans:
+  - id: browserless-free
+    name: Free
+    type: freemium
+    description: >-
+      Free tier intended for evaluation. Includes BrowserQL, CAPTCHA solving,
+      Chrome extensions, and access to all REST endpoints with limits on
+      concurrency, monthly units, and session length.
+    entries:
+      - label: Concurrent Browsers
+        description: Maximum browsers running in parallel on this plan.
+        name: concurrent_browsers
+        type: quota
+        metric: concurrent_sessions
+        limit: 2
+        timeFrame: instant
+        geo: global
+        domains:
+          - https://production-sfo.browserless.io
+          - https://production-lon.browserless.io
+          - https://production-ams.browserless.io
+        unit: 1
+        price: '0.00'
+        userMultiplied: false
+      - label: Monthly Units
+        description: Total billable units consumed per month before overage applies.
+        name: units_per_month
+        type: quota
+        metric: units
+        limit: 1000
+        timeFrame: month
+        geo: global
+        unit: 1
+        price: '0.00'
+      - label: Max Session Time
+        description: Hard cap on a single session's wall-clock duration.
+        name: max_session_time
+        type: limit
+        metric: minutes
+        limit: 1
+        timeFrame: session
+        geo: global
+        unit: 1
+        price: '0.00'
+      - label: Session Storage
+        description: How long recordings, profiles, and session artifacts are retained.
+        name: session_storage
+        type: limit
+        metric: days
+        limit: 1
+        timeFrame: session
+        geo: global
+        unit: 1
+        price: '0.00'
+
+  - id: browserless-prototyping
+    name: Prototyping
+    type: subscription
+    description: >-
+      Entry paid plan for small workloads. Adds hybrid automations, screen
+      recording, and email/chat support. Annual billing.
+    entries:
+      - label: Monthly Subscription
+        name: monthly_subscription
+        type: subscription
+        metric: usd_per_month
+        limit: 1
+        timeFrame: month
+        geo: global
+        unit: 1
+        price: '25.00'
+      - label: Concurrent Browsers
+        name: concurrent_browsers
+        type: quota
+        metric: concurrent_sessions
+        limit: 15
+        timeFrame: instant
+        geo: global
+        unit: 1
+        price: '0.00'
+      - label: Monthly Units
+        name: units_per_month
+        type: quota
+        metric: units
+        limit: 20000
+        timeFrame: month
+        geo: global
+        unit: 1
+        price: '0.00'
+      - label: Overage Rate
+        description: Per-unit cost for usage beyond the monthly allotment.
+        name: overage_unit
+        type: overage
+        metric: usd_per_unit
+        limit: 1
+        timeFrame: month
+        geo: global
+        unit: 1
+        price: '0.0020'
+      - label: Max Session Time
+        name: max_session_time
+        type: limit
+        metric: minutes
+        limit: 15
+        timeFrame: session
+        geo: global
+        unit: 1
+        price: '0.00'
+      - label: Session Storage
+        name: session_storage
+        type: limit
+        metric: days
+        limit: 7
+        timeFrame: session
+        geo: global
+        unit: 1
+        price: '0.00'
+
+  - id: browserless-starter
+    name: Starter
+    type: subscription
+    description: >-
+      Most popular tier. Higher concurrency, larger monthly unit envelope,
+      longer sessions, and screen-recording / video support. Annual billing.
+    entries:
+      - label: Monthly Subscription
+        name: monthly_subscription
+        type: subscription
+        metric: usd_per_month
+        limit: 1
+        timeFrame: month
+        geo: global
+        unit: 1
+        price: '140.00'
+      - label: Concurrent Browsers
+        name: concurrent_browsers
+        type: quota
+        metric: concurrent_sessions
+        limit: 40
+        timeFrame: instant
+        geo: global
+        unit: 1
+        price: '0.00'
+      - label: Monthly Units
+        name: units_per_month
+        type: quota
+        metric: units
+        limit: 180000
+        timeFrame: month
+        geo: global
+        unit: 1
+        price: '0.00'
+      - label: Overage Rate
+        name: overage_unit
+        type: overage
+        metric: usd_per_unit
+        limit: 1
+        timeFrame: month
+        geo: global
+        unit: 1
+        price: '0.0017'
+      - label: Max Session Time
+        name: max_session_time
+        type: limit
+        metric: minutes
+        limit: 30
+        timeFrame: session
+        geo: global
+        unit: 1
+        price: '0.00'
+      - label: Session Storage
+        name: session_storage
+        type: limit
+        metric: days
+        limit: 30
+        timeFrame: session
+        geo: global
+        unit: 1
+        price: '0.00'
+
+  - id: browserless-scale
+    name: Scale
+    type: subscription
+    description: >-
+      Production-scale plan with hundreds of concurrent browsers and long
+      retention. Annual billing.
+    entries:
+      - label: Monthly Subscription
+        name: monthly_subscription
+        type: subscription
+        metric: usd_per_month
+        limit: 1
+        timeFrame: month
+        geo: global
+        unit: 1
+        price: '350.00'
+      - label: Concurrent Browsers
+        name: concurrent_browsers
+        type: quota
+        metric: concurrent_sessions
+        limit: 100
+        timeFrame: instant
+        geo: global
+        unit: 1
+        price: '0.00'
+      - label: Monthly Units
+        name: units_per_month
+        type: quota
+        metric: units
+        limit: 500000
+        timeFrame: month
+        geo: global
+        unit: 1
+        price: '0.00'
+      - label: Overage Rate
+        name: overage_unit
+        type: overage
+        metric: usd_per_unit
+        limit: 1
+        timeFrame: month
+        geo: global
+        unit: 1
+        price: '0.0015'
+      - label: Max Session Time
+        name: max_session_time
+        type: limit
+        metric: minutes
+        limit: 60
+        timeFrame: session
+        geo: global
+        unit: 1
+        price: '0.00'
+      - label: Session Storage
+        name: session_storage
+        type: limit
+        metric: days
+        limit: 90
+        timeFrame: session
+        geo: global
+        unit: 1
+        price: '0.00'
+
+  - id: browserless-enterprise
+    name: Enterprise
+    type: custom
+    description: >-
+      Custom enterprise pricing. Supports private cloud deployments, licensed
+      self-hosting, GPU infrastructure, dedicated account management, SSO,
+      and millions of monthly units with hundreds to thousands of concurrent
+      browsers.
+    entries:
+      - label: Monthly Subscription
+        name: monthly_subscription
+        type: subscription
+        metric: usd_per_month
+        timeFrame: month
+        geo: global
+        unit: 1
+        price: 'custom'
+      - label: Concurrent Browsers
+        name: concurrent_browsers
+        type: quota
+        metric: concurrent_sessions
+        timeFrame: instant
+        geo: global
+        unit: 1
+        price: 'custom'
+      - label: Monthly Units
+        name: units_per_month
+        type: quota
+        metric: units
+        timeFrame: month
+        geo: global
+        unit: 1
+        price: 'custom'
+
+ancillary:
+  - label: Residential Proxy
+    description: Surcharge for traffic routed through Browserless residential proxies.
+    name: residential_proxy
+    metric: units_per_mb
+    limit: 6
+    timeFrame: usage
+    geo: global
+    unit: 1
+    price: '6 units per MB'
+  - label: CAPTCHA Solving
+    description: Per-successful-solve charge for built-in CAPTCHA resolution.
+    name: captcha_solve
+    metric: units_per_solve
+    limit: 10
+    timeFrame: usage
+    geo: global
+    unit: 1
+    price: '10 units per successful solve'
+
+references:
+  - name: Browserless Pricing
+    url: https://www.browserless.io/pricing
+  - name: Browserless apis.yml
+    url: https://raw.githubusercontent.com/api-evangelist/browserless/refs/heads/main/apis.yml

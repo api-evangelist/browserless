@@ -1,0 +1,55 @@
+{
+  "name": "Profile",
+  "description": "A reusable Browserless profile capturing a browser's encrypted authenticated state (cookies, localStorage, indexedDB) for reattachment to later sessions.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique profile identifier.",
+      "example": "prf_4f9a2c"
+    },
+    "name": {
+      "type": "string",
+      "example": "linkedin-research-bot"
+    },
+    "description": {
+      "type": "string",
+      "example": "Authenticated session reusable across LinkedIn research agents."
+    },
+    "sourceSessionId": {
+      "type": "string",
+      "example": "98e83bbfd396241a6963425b1feeba2f"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "example": "2026-05-25T11:00:00Z"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "example": "2026-05-25T11:30:00Z"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "example": "2026-08-23T11:30:00Z"
+    },
+    "size": {
+      "type": "integer",
+      "example": 12482
+    }
+  },
+  "examples": [
+    {
+      "id": "prf_4f9a2c",
+      "name": "linkedin-research-bot",
+      "description": "Authenticated session reusable across LinkedIn research agents.",
+      "sourceSessionId": "98e83bbfd396241a6963425b1feeba2f",
+      "createdAt": "2026-05-25T11:00:00Z",
+      "updatedAt": "2026-05-25T11:30:00Z",
+      "expiresAt": "2026-08-23T11:30:00Z",
+      "size": 12482
+    }
+  ]
+}

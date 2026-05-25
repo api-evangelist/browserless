@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://production-sfo.browserless.io/chromium/bql?token=YOUR_API_TOKEN",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "query": "mutation Scrape { goto(url: \"https://news.ycombinator.com\", waitUntil: networkIdle) { status } stories: mapSelector(selector: \"tr.athing\") { title: text(selector: \"td.title a.titleline\") } }"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "data": {
+        "goto": { "status": 200 },
+        "stories": [
+          { "title": "Show HN: Browserless 2.49 ships smart-scrape and crawl" },
+          { "title": "Anti-bot fingerprinting at the WebGL layer" }
+        ]
+      }
+    }
+  }
+}

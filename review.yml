@@ -1,0 +1,107 @@
+executed: '2026-05-25T00:00:00.000Z'
+provider: Browserless
+providerId: browserless
+profile: company
+tier: 1
+notes:
+  - apis.yml present with one consolidated cloud API surface combining BaaS,
+    BrowserQL, and the REST family.
+  - OpenAPI 3.0.0 spec sourced directly from docs.browserless.io covers 69
+    documented paths across /chrome, /chromium, /edge, /stealth, /firefox,
+    /webkit, /session, /sessions, /profile, /profiles, /search, /smart-scrape,
+    /map, /crawl, /unblock, /active, /kill, /meta, /json, and /proxy.
+  - Anthropic referenced as an integration via Claude Desktop + the official
+    MCP server at mcp.browserless.io/mcp.
+  - Open-source Docker image (browserless/browserless) noted as the freely-
+    self-hostable core; Apache-2.0, 13k+ GitHub stars.
+  - Plans, rate limits, and FinOps scaffolds present and aligned with API
+    Commons / FOCUS.
+  - Capabilities split across rest-apis, browserql, sessions, and profiles
+    so each business surface is independently consumable.
+  - JSON Schema, JSON Structure, JSON-LD, vocabulary, examples, and Spectral
+    rules generated 2026-05-25.
+results:
+  - code: apis-json-aid-info
+    message: There is an aid.
+    severity: 2
+  - code: apis-json-url-info
+    message: There is a URL.
+    severity: 2
+  - code: apis-json-apis-info
+    message: Has APIs
+    severity: 2
+  - code: apis-json-apis-baseURL-info
+    message: APIs Have a Base URL
+    severity: 2
+  - code: apis-json-apis-aid-info
+    message: API has an aid property.
+    severity: 2
+  - code: apis-json-apis-name-info
+    message: Has a Name
+    severity: 2
+  - code: apis-json-apis-description-info
+    message: Has a Description
+    severity: 2
+  - code: apis-json-apis-tags-info
+    message: API Has a Tags Object
+    severity: 2
+  - code: apis-json-apis-properties-documentation-info
+    message: Has Documentation
+    severity: 2
+  - code: apis-json-apis-properties-openapi-info
+    message: Has an OpenAPI
+    severity: 2
+  - code: apis-json-apis-properties-sdk-info
+    message: Has SDK(s)
+    severity: 2
+  - code: apis-json-apis-properties-mcp-info
+    message: Has an MCP Server
+    severity: 2
+  - code: apis-json-apis-properties-plans-info
+    message: Has Plans
+    severity: 2
+  - code: apis-json-apis-properties-rate-limits-info
+    message: Has Rate Limits
+    severity: 2
+  - code: apis-json-apis-properties-finops-info
+    message: Has FinOps
+    severity: 2
+  - code: apis-json-apis-properties-capabilities-info
+    message: Has Naftiko Capabilities
+    severity: 2
+  - code: apis-json-apis-properties-vocabulary-info
+    message: Has Vocabulary
+    severity: 2
+  - code: apis-json-apis-properties-rules-info
+    message: Has Spectral Rules
+    severity: 2
+  - code: apis-json-apis-properties-examples-info
+    message: Has Examples
+    severity: 2
+  - code: apis-json-apis-properties-jsonschema-info
+    message: Has JSON Schema
+    severity: 2
+  - code: apis-json-apis-properties-jsonld-info
+    message: Has JSON-LD
+    severity: 2
+  - code: apis-json-common-website-info
+    message: Has a Website
+    severity: 2
+  - code: apis-json-common-github-info
+    message: Has a GitHub Organization
+    severity: 2
+  - code: apis-json-common-pricing-info
+    message: Has Pricing
+    severity: 2
+  - code: apis-json-common-status-info
+    message: Has a Status Page
+    severity: 2
+  - code: apis-json-common-changelog-info
+    message: Has a Change Log
+    severity: 2
+  - code: apis-json-common-llms-txt-info
+    message: Has llms.txt
+    severity: 2
+  - code: apis-json-maintainers-info
+    message: Has Maintainers
+    severity: 2

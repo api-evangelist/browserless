@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api-evangelist.com/schemas/browserless/browserless-screenshot-schema.json",
+  "title": "Browserless Screenshot Request",
+  "description": "Schema for the POST /chrome/screenshot, /chromium/screenshot, and /edge/screenshot REST endpoints. Captures a screenshot of a URL or HTML payload after navigation/JavaScript settles, with viewport, full-page, clipping, header, and cookie options.",
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to navigate to before capture. Either `url` or `html` must be set."
+    },
+    "html": {
+      "type": "string",
+      "description": "Inline HTML payload to render. Either `url` or `html` must be set."
+    },
+    "options": {
+      "type": "object",
+      "description": "Screenshot capture options passed to Puppeteer's `page.screenshot`.",
+      "properties": {
+        "fullPage": {
+          "type": "boolean",
+          "description": "When true, capture the full scrollable page height."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["png", "jpeg", "webp"],
+          "description": "Image format."
+        },
+        "quality": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "JPEG/WebP quality, ignored for PNG."
+        },
+        "omitBackground": {
+          "type": "boolean",
+          "description": "When true, render with a transparent background (PNG/WebP only)."
+        },
+        "clip": {
+          "type": "object",
+          "description": "Region of the page to capture.",
+          "required": ["x", "y", "width", "height"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "width": { "type": "number" },
+            "height": { "type": "number" }
+          }
+        }
+      }
+    },
+    "viewport": {
+      "type": "object",
+      "description": "Browser viewport for the capture.",
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "deviceScaleFactor": { "type": "number", "minimum": 0.1 },
+        "isMobile": { "type": "boolean" }
+      }
+    },
+    "gotoOptions": {
+      "type": "object",
+      "description": "Navigation options for the initial page.goto call.",
+      "properties": {
+        "waitUntil": {
+          "type": "string",
+          "enum": ["load", "domcontentloaded", "networkidle0", "networkidle2"]
+        },
+        "timeout": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "waitForSelector": {
+      "type": "object",
+      "description": "Wait for a selector to appear before capture.",
+      "properties": {
+        "selector": { "type": "string" },
+        "timeout": { "type": "integer", "minimum": 0 },
+        "visible": { "type": "boolean" }
+      }
+    },
+    "cookies": {
+      "type": "array",
+      "description": "Cookies to inject into the page before navigation.",
+      "items": {
+        "type": "object",
+        "required": ["name", "value"],
+        "properties": {
+          "name": { "type": "string" },
+          "value": { "type": "string" },
+          "domain": { "type": "string" },
+          "path": { "type": "string" },
+          "secure": { "type": "boolean" },
+          "httpOnly": { "type": "boolean" },
+          "sameSite": { "type": "string", "enum": ["Strict", "Lax", "None"] }
+        }
+      }
+    },
+    "setExtraHTTPHeaders": {
+      "type": "object",
+      "description": "Extra HTTP headers to send with the initial navigation.",
+      "additionalProperties": { "type": "string" }
+    },
+    "blockAds": {
+      "type": "boolean",
+      "description": "When true, load uBlock-Lite to suppress ads and trackers."
+    },
+    "rejectResourceTypes": {
+      "type": "array",
+      "description": "Resource types to block during the capture (e.g. image, font, media).",
+      "items": { "type": "string" }
+    }
+  },
+  "oneOf": [
+    { "required": ["url"] },
+    { "required": ["html"] }
+  ]
+}

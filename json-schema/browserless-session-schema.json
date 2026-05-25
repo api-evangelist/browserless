@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api-evangelist.com/schemas/browserless/browserless-session-schema.json",
+  "title": "Browserless Session",
+  "description": "Schema for the Browserless Session object. Sessions are long-lived browser instances created via the /session REST endpoint that can be reused across BrowserQL queries and reconnected to via Puppeteer or Playwright using the returned browserWSEndpoint / reconnect URL.",
+  "type": "object",
+  "definitions": {
+    "SessionCreate": {
+      "type": "object",
+      "description": "Request body / launch parameters for creating a Browserless session.",
+      "properties": {
+        "ttl": {
+          "type": "integer",
+          "description": "Session time-to-live in milliseconds before automatic teardown.",
+          "minimum": 1000
+        },
+        "stealth": {
+          "type": "boolean",
+          "description": "When true, route the session through the stealth profile (hardened fingerprint, WebGL randomization, entropy injection)."
+        },
+        "blockAds": {
+          "type": "boolean",
+          "description": "When true, load uBlock-Lite to block ads and trackers."
+        },
+        "headless": {
+          "type": "boolean",
+          "description": "When false, run the browser with a visible window (only meaningful in self-hosted deployments)."
+        },
+        "humanlike": {
+          "type": "boolean",
+          "description": "When true, add human-like timing jitter to clicks, scrolls, and typing."
+        },
+        "record": {
+          "type": "boolean",
+          "description": "When true, capture a WebM screen recording of the session."
+        },
+        "trackingId": {
+          "type": "string",
+          "description": "Free-form identifier used to tag the session for billing / reporting allocation."
+        },
+        "proxy": {
+          "type": "object",
+          "description": "Residential proxy routing configuration.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["residential", "external"],
+              "description": "Use a built-in residential proxy or a customer-supplied external proxy."
+            },
+            "country": {
+              "type": "string",
+              "description": "Two-letter ISO country code for proxy egress geography."
+            },
+            "city": {
+              "type": "string",
+              "description": "Optional city name for finer-grained proxy egress."
+            },
+            "sticky": {
+              "type": "boolean",
+              "description": "When true, keep the same residential IP for the duration of the session."
+            }
+          }
+        },
+        "viewport": {
+          "type": "object",
+          "description": "Initial browser viewport dimensions.",
+          "properties": {
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "userAgent": {
+          "type": "string",
+          "description": "Override the browser User-Agent string."
+        },
+        "profile": {
+          "type": "string",
+          "description": "ID of a previously created profile to attach (cookies, localStorage, authenticated state)."
+        }
+      }
+    },
+    "Session": {
+      "type": "object",
+      "description": "A live Browserless session.",
+      "required": ["id", "browserWSEndpoint"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the session."
+        },
+        "browserWSEndpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "WebSocket endpoint used by Puppeteer (puppeteer.connect) or Playwright (chromium.connectOverCDP) to attach to the running browser."
+        },
+        "reconnectUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Short-lived reconnect URL returned from BQL `reconnect` mutations, of the form /reconnect/{trackingId}."
+        },
+        "liveURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional live-URL for hybrid automation; participants can view or drive the browser through this URL."
+        },
+        "region": {
+          "type": "string",
+          "description": "Regional host running the session.",
+          "enum": ["production-sfo", "production-lon", "production-ams"]
+        },
+        "browser": {
+          "type": "string",
+          "description": "Underlying browser engine.",
+          "enum": ["chromium", "chrome", "edge", "firefox", "webkit", "stealth"]
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp the session began running."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp the session will be auto-released."
+        },
+        "trackingId": {
+          "type": "string",
+          "description": "Customer-supplied identifier used for billing / reporting allocation."
+        },
+        "stealth": {
+          "type": "boolean",
+          "description": "Whether the session was launched in the stealth profile."
+        },
+        "recordingUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "When record=true was requested, the URL of the captured WebM (available after teardown)."
+        }
+      }
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/definitions/SessionCreate" },
+    { "$ref": "#/definitions/Session" }
+  ]
+}

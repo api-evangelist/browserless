@@ -1,0 +1,177 @@
+specification: API Commons Rate Limits
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/RateLimits
+provider: Browserless
+providerId: browserless
+created: '2026-05-25'
+modified: '2026-05-25'
+tags:
+  - Headless Browser
+  - Browser Infrastructure
+  - Web Automation
+  - BrowserQL
+  - Puppeteer
+  - Playwright
+  - Selenium
+  - Rate Limiting
+  - Quotas
+  - Throttling
+  - Concurrency
+description: >-
+  Rate-limit policy for the Browserless cloud service. Browserless enforces
+  three primary control surfaces: (1) maximum concurrent browser sessions per
+  token, (2) monthly unit allotments per plan, and (3) max-session-time per
+  individual browser. Excess sessions are queued or rejected with HTTP 429.
+  Unit overages apply per-tier overage pricing rather than throttling.
+headers:
+  limit: X-RateLimit-Limit
+  remaining: X-RateLimit-Remaining
+  reset: X-RateLimit-Reset
+  retryAfter: Retry-After
+responseCodes:
+  throttled: 429
+  quotaExceeded: 429
+  serviceUnavailable: 503
+limits:
+  - tier: free
+    name: Free Tier Concurrency
+    scope: api-token
+    metric: concurrent_sessions
+    limit: 2
+    burst: 2
+    timeFrame: instant
+    applies:
+      - https://production-sfo.browserless.io
+      - https://production-lon.browserless.io
+      - https://production-ams.browserless.io
+    description: >-
+      Free plan caps concurrent browsers at 2 with no burst. Additional
+      session attempts are rejected with HTTP 429 until a slot is released.
+  - tier: free
+    name: Free Tier Monthly Units
+    scope: api-token
+    metric: units
+    limit: 1000
+    timeFrame: month
+    applies:
+      - https://*.browserless.io
+    description: >-
+      Free plan caps monthly billable units at 1,000. Exceeding the cap
+      blocks new sessions until the next billing cycle.
+  - tier: free
+    name: Free Tier Max Session Time
+    scope: session
+    metric: minutes
+    limit: 1
+    timeFrame: session
+    applies:
+      - wss://*.browserless.io
+      - https://*.browserless.io
+    description: >-
+      Free plan sessions are force-terminated after 1 minute of wall-clock
+      time.
+  - tier: prototyping
+    name: Prototyping Tier Concurrency
+    scope: api-token
+    metric: concurrent_sessions
+    limit: 15
+    burst: 15
+    timeFrame: instant
+    applies:
+      - https://*.browserless.io
+    description: >-
+      Prototyping plan caps concurrent browsers at 15.
+  - tier: prototyping
+    name: Prototyping Tier Monthly Units
+    scope: api-token
+    metric: units
+    limit: 20000
+    timeFrame: month
+    applies:
+      - https://*.browserless.io
+    description: >-
+      Prototyping plan includes 20,000 units per month. Overage billed at
+      USD 0.0020 per unit.
+  - tier: starter
+    name: Starter Tier Concurrency
+    scope: api-token
+    metric: concurrent_sessions
+    limit: 40
+    burst: 40
+    timeFrame: instant
+    applies:
+      - https://*.browserless.io
+    description: >-
+      Starter plan caps concurrent browsers at 40.
+  - tier: starter
+    name: Starter Tier Monthly Units
+    scope: api-token
+    metric: units
+    limit: 180000
+    timeFrame: month
+    applies:
+      - https://*.browserless.io
+    description: >-
+      Starter plan includes 180,000 units per month. Overage billed at
+      USD 0.0017 per unit.
+  - tier: scale
+    name: Scale Tier Concurrency
+    scope: api-token
+    metric: concurrent_sessions
+    limit: 100
+    burst: 100
+    timeFrame: instant
+    applies:
+      - https://*.browserless.io
+    description: >-
+      Scale plan caps concurrent browsers at 100.
+  - tier: scale
+    name: Scale Tier Monthly Units
+    scope: api-token
+    metric: units
+    limit: 500000
+    timeFrame: month
+    applies:
+      - https://*.browserless.io
+    description: >-
+      Scale plan includes 500,000 units per month. Overage billed at
+      USD 0.0015 per unit.
+  - tier: enterprise
+    name: Enterprise Concurrency
+    scope: contract
+    metric: concurrent_sessions
+    limit: custom
+    timeFrame: instant
+    applies:
+      - https://*.browserless.io
+    description: >-
+      Enterprise plans negotiate concurrency in the hundreds to thousands
+      of browsers, including GPU-backed pools and private deployments.
+
+recoveryStrategies:
+  - name: Exponential Backoff
+    description: >-
+      On HTTP 429, wait Retry-After seconds (or back off exponentially up to
+      60 seconds) before retrying the session creation request.
+  - name: Reduce Concurrency
+    description: >-
+      Reduce the worker-pool size below the tier's concurrency cap, or
+      upgrade plans before continuing.
+  - name: Reuse Sessions
+    description: >-
+      Use the /session and reconnect endpoints to reuse a single browser
+      across multiple BQL queries instead of opening a fresh session for
+      each request.
+
+notes:
+  - >-
+    Browserless meters in opaque "units"; one unit roughly corresponds to
+    one minute of browser time, with separate unit surcharges for
+    residential-proxy bandwidth (6 units per MB) and CAPTCHA solves
+    (10 units per success).
+  - >-
+    Overages do not throttle traffic on paid tiers — they are billed at the
+    per-tier overage rate. Free tier traffic is throttled when units are
+    exhausted.
+  - >-
+    Reconcile periodically with https://www.browserless.io/pricing.

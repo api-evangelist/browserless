@@ -1,0 +1,64 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@vocab": "https://schema.org/",
+    "browserless": "https://production-sfo.browserless.io/",
+    "schema": "https://schema.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "dcterms": "http://purl.org/dc/terms/",
+    "hydra": "http://www.w3.org/ns/hydra/core#",
+
+    "Session": {
+      "@id": "browserless:Session",
+      "@context": {
+        "id": { "@id": "browserless:Session/id", "@type": "xsd:string" },
+        "browserWSEndpoint": { "@id": "browserless:Session/browserWSEndpoint", "@type": "xsd:anyURI" },
+        "reconnectUrl": { "@id": "browserless:Session/reconnectUrl", "@type": "xsd:anyURI" },
+        "liveURL": { "@id": "browserless:Session/liveURL", "@type": "xsd:anyURI" },
+        "region": { "@id": "browserless:Session/region", "@type": "xsd:string" },
+        "browser": { "@id": "browserless:Session/browser", "@type": "xsd:string" },
+        "stealth": { "@id": "browserless:Session/stealth", "@type": "xsd:boolean" },
+        "startedAt": { "@id": "browserless:Session/startedAt", "@type": "xsd:dateTime" },
+        "expiresAt": { "@id": "browserless:Session/expiresAt", "@type": "xsd:dateTime" },
+        "trackingId": { "@id": "browserless:Session/trackingId", "@type": "xsd:string" },
+        "recordingUrl": { "@id": "browserless:Session/recordingUrl", "@type": "xsd:anyURI" }
+      }
+    },
+
+    "Profile": {
+      "@id": "browserless:Profile",
+      "@context": {
+        "id": { "@id": "browserless:Profile/id", "@type": "xsd:string" },
+        "name": { "@id": "browserless:Profile/name", "@type": "xsd:string" },
+        "description": { "@id": "browserless:Profile/description", "@type": "xsd:string" },
+        "sourceSessionId": { "@id": "browserless:Profile/sourceSessionId", "@type": "xsd:string" },
+        "createdAt": { "@id": "browserless:Profile/createdAt", "@type": "xsd:dateTime" },
+        "updatedAt": { "@id": "browserless:Profile/updatedAt", "@type": "xsd:dateTime" },
+        "expiresAt": { "@id": "browserless:Profile/expiresAt", "@type": "xsd:dateTime" },
+        "size": { "@id": "browserless:Profile/size", "@type": "xsd:integer" }
+      }
+    },
+
+    "ScreenshotRequest": {
+      "@id": "browserless:ScreenshotRequest",
+      "@context": {
+        "url": { "@id": "browserless:ScreenshotRequest/url", "@type": "xsd:anyURI" },
+        "html": { "@id": "browserless:ScreenshotRequest/html", "@type": "xsd:string" },
+        "options": { "@id": "browserless:ScreenshotRequest/options", "@type": "@json" },
+        "viewport": { "@id": "browserless:ScreenshotRequest/viewport", "@type": "@json" },
+        "gotoOptions": { "@id": "browserless:ScreenshotRequest/gotoOptions", "@type": "@json" },
+        "cookies": { "@id": "browserless:ScreenshotRequest/cookies", "@container": "@list" }
+      }
+    },
+
+    "BrowserQLEndpoint": {
+      "@id": "browserless:BrowserQLEndpoint",
+      "@context": {
+        "route": { "@id": "browserless:BrowserQLEndpoint/route", "@type": "xsd:string" },
+        "browser": { "@id": "browserless:BrowserQLEndpoint/browser", "@type": "xsd:string" },
+        "stealth": { "@id": "browserless:BrowserQLEndpoint/stealth", "@type": "xsd:boolean" },
+        "graphqlUrl": { "@id": "browserless:BrowserQLEndpoint/graphqlUrl", "@type": "xsd:anyURI" }
+      }
+    }
+  }
+}

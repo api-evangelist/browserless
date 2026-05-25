@@ -1,0 +1,110 @@
+extends: spectral:oas
+rules:
+  browserless-path-prefix:
+    description: >-
+      Browserless paths are mounted under browser-family prefixes (/chrome,
+      /chromium, /edge, /firefox, /webkit, /stealth) or under cross-cutting
+      tops (/session, /sessions, /profile, /profiles, /search, /smart-scrape,
+      /map, /crawl, /unblock, /active, /kill, /meta, /json, /proxy).
+    message: "Path '{{property}}' should match a Browserless top-level prefix"
+    given: "$.paths[*]~"
+    severity: warn
+    then:
+      function: pattern
+      functionOptions:
+        match: "^/(chrome|chromium|edge|firefox|webkit|stealth|session|sessions|profile|profiles|search|smart-scrape|map|crawl|unblock|active|kill|meta|json|proxy)(/.*)?$"
+
+  browserless-operation-id-camel-case:
+    description: Browserless operationIds use camelCase.
+    message: "operationId '{{value}}' should use camelCase"
+    given: "$.paths[*][get,post,put,patch,delete].operationId"
+    severity: warn
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-zA-Z0-9]+$"
+
+  browserless-tags-required:
+    description: All Browserless operations must declare at least one tag.
+    message: "Operation '{{path}}' must include at least one tag"
+    given: "$.paths[*][get,post,put,patch,delete]"
+    severity: warn
+    then:
+      field: tags
+      function: truthy
+
+  browserless-token-auth:
+    description: >-
+      Browserless authenticates via a `token` query parameter that all
+      endpoints accept. Spec must declare an apiKey security scheme in
+      query named "token" (or document it in operation parameters).
+    message: "API should declare an apiKey query security scheme named 'token'"
+    given: "$.components.securitySchemes"
+    severity: warn
+    then:
+      function: truthy
+
+  browserless-success-response-defined:
+    description: Browserless operations must define a 2xx success response.
+    message: "Operation '{{path}}' must define a 200/201/204 success response"
+    given: "$.paths[*][get,post,put,patch,delete].responses"
+    severity: warn
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          anyOf:
+            - required: ["200"]
+            - required: ["201"]
+            - required: ["204"]
+
+  browserless-summary-title-case:
+    description: Browserless operation summaries should use Title Case.
+    message: "Summary '{{value}}' should use Title Case"
+    given: "$.paths[*][get,post,put,patch,delete].summary"
+    severity: info
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[A-Z]"
+
+  browserless-info-description:
+    description: API info must include a description.
+    message: "info.description must be set"
+    given: "$.info"
+    severity: warn
+    then:
+      field: description
+      function: truthy
+
+  browserless-tag-title-case:
+    description: OpenAPI tags should use Title Case across Browserless surfaces.
+    message: "Tag '{{value}}' should use Title Case"
+    given: "$.tags[*].name"
+    severity: info
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[A-Z]"
+
+  browserless-launch-param-documented:
+    description: >-
+      Browserless endpoints share a `launch` query parameter that accepts a
+      JSON-encoded browser launch config. Operations that take it should
+      document its shape.
+    message: "Operation references a 'launch' parameter without a description"
+    given: "$.paths[*][get,post,put,patch,delete].parameters[?(@.name == 'launch')]"
+    severity: info
+    then:
+      field: description
+      function: truthy
+
+  browserless-stealth-route-warning:
+    description: >-
+      Stealth routes (/stealth, /stealth/bql) consume additional units and
+      should be tagged as such in the operation description.
+    message: "Stealth-route operation '{{path}}' should mention stealth/anti-bot semantics in description"
+    given: "$.paths[?(@property.match(/^\\/stealth/))].*.description"
+    severity: info
+    then:
+      function: truthy

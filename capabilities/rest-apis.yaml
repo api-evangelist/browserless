@@ -1,0 +1,504 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: Browserless — REST APIs
+  description: >-
+    Browserless REST API family covering screenshots, PDFs, content, scrape,
+    function execution, performance/Lighthouse audits, smart-scrape, search,
+    map, crawl, and unblock. Self-contained Naftiko capability exposing the
+    one-shot HTTP automation surface as REST + MCP tools.
+  tags:
+    - Browserless
+    - REST
+    - Screenshots
+    - PDF
+    - Scrape
+    - Smart Scrape
+    - Search
+    - Crawl
+  created: '2026-05-25'
+  modified: '2026-05-25'
+binds:
+  - namespace: env
+    keys:
+      BROWSERLESS_API_TOKEN: BROWSERLESS_API_TOKEN
+capability:
+  consumes:
+    - type: http
+      namespace: rest
+      baseUri: https://production-sfo.browserless.io
+      description: Browserless REST consumes block. Token passed via query parameter.
+      resources:
+        - name: screenshot
+          path: /chromium/screenshot
+          operations:
+            - name: screenshot
+              method: POST
+              description: Capture a screenshot of a URL or HTML.
+              outputRawFormat: binary
+              outputParameters:
+                - name: result
+                  type: string
+                  value: $.
+              inputParameters:
+                - name: body
+                  in: body
+                  type: object
+                  description: Screenshot request body (url, html, options, viewport).
+                  required: true
+                - name: token
+                  in: query
+                  type: string
+                  description: API token.
+                  required: true
+        - name: pdf
+          path: /chromium/pdf
+          operations:
+            - name: pdf
+              method: POST
+              description: Render a URL or HTML to PDF.
+              outputRawFormat: binary
+              outputParameters:
+                - name: result
+                  type: string
+                  value: $.
+              inputParameters:
+                - name: body
+                  in: body
+                  type: object
+                  required: true
+                - name: token
+                  in: query
+                  type: string
+                  required: true
+        - name: content
+          path: /chromium/content
+          operations:
+            - name: content
+              method: POST
+              description: Return fully-rendered HTML for a URL.
+              outputRawFormat: text
+              outputParameters:
+                - name: result
+                  type: string
+                  value: $.
+              inputParameters:
+                - name: body
+                  in: body
+                  type: object
+                  required: true
+                - name: token
+                  in: query
+                  type: string
+                  required: true
+        - name: scrape
+          path: /chromium/scrape
+          operations:
+            - name: scrape
+              method: POST
+              description: Extract selected elements with text and attributes.
+              outputRawFormat: json
+              outputParameters:
+                - name: result
+                  type: object
+                  value: $.
+              inputParameters:
+                - name: body
+                  in: body
+                  type: object
+                  required: true
+                - name: token
+                  in: query
+                  type: string
+                  required: true
+        - name: function
+          path: /chromium/function
+          operations:
+            - name: function
+              method: POST
+              description: Execute user-supplied JavaScript inside a managed browser.
+              outputRawFormat: json
+              outputParameters:
+                - name: result
+                  type: object
+                  value: $.
+              inputParameters:
+                - name: body
+                  in: body
+                  type: object
+                  required: true
+                - name: token
+                  in: query
+                  type: string
+                  required: true
+        - name: performance
+          path: /chromium/performance
+          operations:
+            - name: performance
+              method: POST
+              description: Run a Lighthouse audit and return scores and metrics.
+              outputRawFormat: json
+              outputParameters:
+                - name: result
+                  type: object
+                  value: $.
+              inputParameters:
+                - name: body
+                  in: body
+                  type: object
+                  required: true
+                - name: token
+                  in: query
+                  type: string
+                  required: true
+        - name: smart-scrape
+          path: /smart-scrape
+          operations:
+            - name: smartScrape
+              method: POST
+              description: AI-selected strategy data extraction.
+              outputRawFormat: json
+              outputParameters:
+                - name: result
+                  type: object
+                  value: $.
+              inputParameters:
+                - name: body
+                  in: body
+                  type: object
+                  required: true
+                - name: token
+                  in: query
+                  type: string
+                  required: true
+        - name: search
+          path: /search
+          operations:
+            - name: search
+              method: POST
+              description: Token-efficient web search.
+              outputRawFormat: json
+              outputParameters:
+                - name: result
+                  type: object
+                  value: $.
+              inputParameters:
+                - name: body
+                  in: body
+                  type: object
+                  required: true
+                - name: token
+                  in: query
+                  type: string
+                  required: true
+        - name: map
+          path: /map
+          operations:
+            - name: map
+              method: POST
+              description: Generate a site map for a domain.
+              outputRawFormat: json
+              outputParameters:
+                - name: result
+                  type: object
+                  value: $.
+              inputParameters:
+                - name: body
+                  in: body
+                  type: object
+                  required: true
+                - name: token
+                  in: query
+                  type: string
+                  required: true
+        - name: crawl
+          path: /crawl
+          operations:
+            - name: startCrawl
+              method: POST
+              description: Start a depth-bounded crawl.
+              outputRawFormat: json
+              outputParameters:
+                - name: result
+                  type: object
+                  value: $.
+              inputParameters:
+                - name: body
+                  in: body
+                  type: object
+                  required: true
+                - name: token
+                  in: query
+                  type: string
+                  required: true
+            - name: getCrawl
+              method: GET
+              description: Retrieve crawl progress / results.
+              outputRawFormat: json
+              outputParameters:
+                - name: result
+                  type: object
+                  value: $.
+              inputParameters:
+                - name: token
+                  in: query
+                  type: string
+                  required: true
+            - name: stopCrawl
+              method: DELETE
+              description: Stop an in-progress crawl.
+              outputRawFormat: json
+              outputParameters:
+                - name: result
+                  type: object
+                  value: $.
+              inputParameters:
+                - name: token
+                  in: query
+                  type: string
+                  required: true
+        - name: unblock
+          path: /unblock
+          operations:
+            - name: unblock
+              method: POST
+              description: Bot-detection-bypassing navigation that returns the unblocked page.
+              outputRawFormat: json
+              outputParameters:
+                - name: result
+                  type: object
+                  value: $.
+              inputParameters:
+                - name: body
+                  in: body
+                  type: object
+                  required: true
+                - name: token
+                  in: query
+                  type: string
+                  required: true
+      authentication:
+        type: apikey
+        key: token
+        value: '{{env.BROWSERLESS_API_TOKEN}}'
+        placement: query
+  exposes:
+    - type: rest
+      namespace: rest-adapter
+      port: 8080
+      description: REST adapter exposing the Browserless REST family.
+      resources:
+        - path: /screenshot
+          name: screenshot
+          operations:
+            - method: POST
+              name: screenshot
+              call: rest.screenshot
+              with:
+                body: rest.body
+              outputParameters:
+                - type: string
+                  mapping: $.
+        - path: /pdf
+          name: pdf
+          operations:
+            - method: POST
+              name: pdf
+              call: rest.pdf
+              with:
+                body: rest.body
+              outputParameters:
+                - type: string
+                  mapping: $.
+        - path: /content
+          name: content
+          operations:
+            - method: POST
+              name: content
+              call: rest.content
+              with:
+                body: rest.body
+              outputParameters:
+                - type: string
+                  mapping: $.
+        - path: /scrape
+          name: scrape
+          operations:
+            - method: POST
+              name: scrape
+              call: rest.scrape
+              with:
+                body: rest.body
+              outputParameters:
+                - type: object
+                  mapping: $.
+        - path: /function
+          name: function
+          operations:
+            - method: POST
+              name: function
+              call: rest.function
+              with:
+                body: rest.body
+              outputParameters:
+                - type: object
+                  mapping: $.
+        - path: /performance
+          name: performance
+          operations:
+            - method: POST
+              name: performance
+              call: rest.performance
+              with:
+                body: rest.body
+              outputParameters:
+                - type: object
+                  mapping: $.
+        - path: /smart-scrape
+          name: smart-scrape
+          operations:
+            - method: POST
+              name: smartScrape
+              call: rest.smartScrape
+              with:
+                body: rest.body
+              outputParameters:
+                - type: object
+                  mapping: $.
+        - path: /search
+          name: search
+          operations:
+            - method: POST
+              name: search
+              call: rest.search
+              with:
+                body: rest.body
+              outputParameters:
+                - type: object
+                  mapping: $.
+        - path: /map
+          name: map
+          operations:
+            - method: POST
+              name: map
+              call: rest.map
+              with:
+                body: rest.body
+              outputParameters:
+                - type: object
+                  mapping: $.
+        - path: /crawl
+          name: crawl
+          operations:
+            - method: POST
+              name: startCrawl
+              call: rest.startCrawl
+              with:
+                body: rest.body
+              outputParameters:
+                - type: object
+                  mapping: $.
+            - method: GET
+              name: getCrawl
+              call: rest.getCrawl
+              outputParameters:
+                - type: object
+                  mapping: $.
+            - method: DELETE
+              name: stopCrawl
+              call: rest.stopCrawl
+              outputParameters:
+                - type: object
+                  mapping: $.
+        - path: /unblock
+          name: unblock
+          operations:
+            - method: POST
+              name: unblock
+              call: rest.unblock
+              with:
+                body: rest.body
+              outputParameters:
+                - type: object
+                  mapping: $.
+    - type: mcp
+      namespace: rest-mcp
+      port: 9090
+      transport: http
+      description: MCP adapter for Browserless REST APIs.
+      tools:
+        - name: browserless-screenshot
+          description: Capture a screenshot of a URL or HTML.
+          hints: { readOnly: true, destructive: false, idempotent: true }
+          call: rest.screenshot
+          with: { body: tools.body }
+          outputParameters: [{ type: string, mapping: $. }]
+        - name: browserless-pdf
+          description: Render a URL to PDF.
+          hints: { readOnly: true, destructive: false, idempotent: true }
+          call: rest.pdf
+          with: { body: tools.body }
+          outputParameters: [{ type: string, mapping: $. }]
+        - name: browserless-content
+          description: Fetch rendered HTML for a URL.
+          hints: { readOnly: true, destructive: false, idempotent: true }
+          call: rest.content
+          with: { body: tools.body }
+          outputParameters: [{ type: string, mapping: $. }]
+        - name: browserless-scrape
+          description: Extract selected elements.
+          hints: { readOnly: true, destructive: false, idempotent: true }
+          call: rest.scrape
+          with: { body: tools.body }
+          outputParameters: [{ type: object, mapping: $. }]
+        - name: browserless-function
+          description: Run user-supplied JavaScript in a managed browser.
+          hints: { readOnly: false, destructive: false, idempotent: false }
+          call: rest.function
+          with: { body: tools.body }
+          outputParameters: [{ type: object, mapping: $. }]
+        - name: browserless-performance
+          description: Lighthouse audit of a URL.
+          hints: { readOnly: true, destructive: false, idempotent: true }
+          call: rest.performance
+          with: { body: tools.body }
+          outputParameters: [{ type: object, mapping: $. }]
+        - name: browserless-smart-scrape
+          description: AI-strategy data extraction.
+          hints: { readOnly: true, destructive: false, idempotent: false }
+          call: rest.smartScrape
+          with: { body: tools.body }
+          outputParameters: [{ type: object, mapping: $. }]
+        - name: browserless-search
+          description: Token-efficient web search.
+          hints: { readOnly: true, destructive: false, idempotent: false }
+          call: rest.search
+          with: { body: tools.body }
+          outputParameters: [{ type: object, mapping: $. }]
+        - name: browserless-map
+          description: Build a site map.
+          hints: { readOnly: true, destructive: false, idempotent: true }
+          call: rest.map
+          with: { body: tools.body }
+          outputParameters: [{ type: object, mapping: $. }]
+        - name: browserless-crawl-start
+          description: Start a crawl.
+          hints: { readOnly: false, destructive: false, idempotent: false }
+          call: rest.startCrawl
+          with: { body: tools.body }
+          outputParameters: [{ type: object, mapping: $. }]
+        - name: browserless-crawl-get
+          description: Get crawl progress.
+          hints: { readOnly: true, destructive: false, idempotent: true }
+          call: rest.getCrawl
+          outputParameters: [{ type: object, mapping: $. }]
+        - name: browserless-crawl-stop
+          description: Stop a crawl.
+          hints: { readOnly: false, destructive: true, idempotent: true }
+          call: rest.stopCrawl
+          outputParameters: [{ type: object, mapping: $. }]
+        - name: browserless-unblock
+          description: Bot-detection-bypass navigation.
+          hints: { readOnly: false, destructive: false, idempotent: false }
+          call: rest.unblock
+          with: { body: tools.body }
+          outputParameters: [{ type: object, mapping: $. }]

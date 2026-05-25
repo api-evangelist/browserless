@@ -1,0 +1,37 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://production-sfo.browserless.io/session?token=YOUR_API_TOKEN",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "ttl": 1800000,
+      "stealth": true,
+      "blockAds": true,
+      "humanlike": true,
+      "trackingId": "agent-run-42",
+      "proxy": {
+        "type": "residential",
+        "country": "us",
+        "sticky": true
+      },
+      "viewport": { "width": 1280, "height": 800 }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "id": "98e83bbfd396241a6963425b1feeba2f",
+      "browserWSEndpoint": "wss://production-sfo.browserless.io?token=YOUR_API_TOKEN&trackingId=agent-run-42",
+      "reconnectUrl": "https://production-sfo.browserless.io/reconnect/98e83bbfd396241a6963425b1feeba2f",
+      "liveURL": "https://production-sfo.browserless.io/live/?i=98e83bbfd396241a6963425b1feeba2f",
+      "region": "production-sfo",
+      "browser": "chromium",
+      "stealth": true,
+      "startedAt": "2026-05-25T12:00:00Z",
+      "expiresAt": "2026-05-25T12:30:00Z",
+      "trackingId": "agent-run-42"
+    }
+  }
+}

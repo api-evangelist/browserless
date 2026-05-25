@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://production-sfo.browserless.io/chromium/pdf?token=YOUR_API_TOKEN",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "url": "https://apievangelist.com/blog",
+      "options": {
+        "format": "Letter",
+        "printBackground": true,
+        "margin": {
+          "top": "0.5in",
+          "right": "0.5in",
+          "bottom": "0.5in",
+          "left": "0.5in"
+        }
+      },
+      "gotoOptions": {
+        "waitUntil": "networkidle0"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/pdf"
+    },
+    "body": "<binary PDF bytes>"
+  }
+}

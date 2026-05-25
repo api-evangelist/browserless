@@ -1,0 +1,33 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://production-sfo.browserless.io/chromium/scrape?token=YOUR_API_TOKEN",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "url": "https://news.ycombinator.com",
+      "elements": [
+        { "selector": "tr.athing td.title a.titleline" },
+        { "selector": "tr.athing + tr td.subtext span.score" }
+      ],
+      "gotoOptions": {
+        "waitUntil": "domcontentloaded"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "selector": "tr.athing td.title a.titleline",
+          "results": [
+            { "text": "Show HN: Browserless 2.49 ships smart-scrape and crawl", "attributes": [{ "name": "href", "value": "https://www.browserless.io/blog/..." }] },
+            { "text": "Browserless adds CAPTCHA support for DataDome and slider challenges" }
+          ]
+        }
+      ]
+    }
+  }
+}

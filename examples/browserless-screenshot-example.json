@@ -1,0 +1,35 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://production-sfo.browserless.io/chromium/screenshot?token=YOUR_API_TOKEN",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "url": "https://apievangelist.com",
+      "options": {
+        "fullPage": true,
+        "type": "png",
+        "omitBackground": false
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800,
+        "deviceScaleFactor": 2
+      },
+      "gotoOptions": {
+        "waitUntil": "networkidle2",
+        "timeout": 30000
+      },
+      "blockAds": true
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "image/png",
+      "X-Response-Code": "200"
+    },
+    "body": "<binary PNG bytes>"
+  }
+}

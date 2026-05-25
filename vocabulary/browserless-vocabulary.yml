@@ -1,0 +1,246 @@
+name: Browserless
+description: >-
+  Vocabulary of key terms, concepts, objects, endpoints, and operations used
+  across the Browserless cloud and open-source headless-browser platform.
+  Covers BrowserQL (BQL), Browsers-as-a-Service (BaaS), the REST API family,
+  session management, stealth, residential proxies, CAPTCHA solving, hybrid
+  LiveURL automation, and the official Model Context Protocol server.
+version: '1.0'
+created: '2026-05-25'
+modified: '2026-05-25'
+tags:
+  - Headless Browser
+  - Browser Infrastructure
+  - Web Automation
+  - AI Agents
+  - BrowserQL
+  - MCP
+
+terms:
+  - term: Browserless
+    definition: >-
+      The cloud service and the namesake open-source Docker image
+      (browserless/browserless) that runs managed Chromium, Chrome, Edge,
+      Firefox, and WebKit browsers as a service.
+    category: Platform
+    tags:
+      - Platform
+      - Core
+
+  - term: BrowserQL (BQL)
+    definition: >-
+      A GraphQL automation language for driving browsers via mutations such
+      as goto, click, type, evaluate, html, mapSelector, screenshot, pdf,
+      and reconnect. Designed for stealth scraping of heavily-defended
+      sites where Puppeteer or Playwright scripts get blocked.
+    category: API Surface
+    tags:
+      - BrowserQL
+      - GraphQL
+      - Stealth
+
+  - term: BaaS (Browsers-as-a-Service)
+    definition: >-
+      The WebSocket connection surface that lets existing Puppeteer
+      (connect), Playwright (connectOverCDP / connect), and Selenium
+      clients drive remote browsers running in Browserless infrastructure.
+    category: API Surface
+    tags:
+      - BaaS
+      - CDP
+      - WebSocket
+
+  - term: REST API
+    definition: >-
+      The HTTP/JSON endpoint family hung off /chrome, /chromium, and /edge
+      prefixes — including /screenshot, /pdf, /content, /scrape, /function,
+      /performance, /download, /export, /search, /smart-scrape, /map,
+      /crawl, and /unblock — for one-shot browser operations without a
+      browser library.
+    category: API Surface
+    tags:
+      - REST
+      - Endpoints
+
+  - term: Regional Endpoint
+    definition: >-
+      A geographic host of the form production-{sfo,lon,ams}.browserless.io
+      that selects which data center runs the browser. Affects latency,
+      egress IP geography, and data residency.
+    category: Endpoint
+    tags:
+      - Regions
+      - Infrastructure
+
+  - term: Token
+    definition: >-
+      The API token, passed as ?token=... on the connection URL (and
+      accepted in headers for some surfaces), that authenticates all
+      Browserless API calls and tracks billing.
+    category: Concept
+    tags:
+      - Auth
+      - Billing
+
+  - term: Session
+    definition: >-
+      A live browser instance backed by a Chromium / Chrome / Edge /
+      Firefox / WebKit process. Identified by an ID, managed via the
+      /session and /sessions endpoints, and reusable across BQL queries
+      and reconnects.
+    category: Core Object
+    tags:
+      - Sessions
+      - Core
+
+  - term: Profile
+    definition: >-
+      A reusable, encrypted browser-profile object (cookies, localStorage,
+      authenticated state) created and refreshed via /profile and
+      /profile/refresh and attached at session creation time.
+    category: Core Object
+    tags:
+      - Profiles
+      - Persistence
+
+  - term: Stealth Route
+    definition: >-
+      The /stealth/bql (BQL) and /stealth/* (BaaS) paths that apply
+      hardened fingerprint mitigations, entropy injection, and WebGL
+      randomization to reduce bot detection.
+    category: Concept
+    tags:
+      - Stealth
+      - Anti-Bot
+
+  - term: Residential Proxy
+    definition: >-
+      A pool of residential IP addresses available to sessions via launch
+      parameters or BQL, with country/city/sticky session selectors. Billed
+      at 6 units per MB.
+    category: Concept
+    tags:
+      - Proxy
+      - Anti-Bot
+
+  - term: CAPTCHA Solving
+    definition: >-
+      The built-in pipeline that detects and resolves reCAPTCHA, hCaptcha,
+      DataDome, Lemin, MTCaptcha, and slider challenges. Billed at 10 units
+      per successful solve.
+    category: Concept
+    tags:
+      - CAPTCHA
+      - Anti-Bot
+
+  - term: Smart Scrape
+    definition: >-
+      The /smart-scrape REST endpoint that automatically chooses the
+      cheapest strategy (HTTP fetch, proxy, headless browser, CAPTCHA
+      solving) to retrieve and structure page content.
+    category: Endpoint
+    tags:
+      - REST
+      - AI
+
+  - term: Crawl
+    definition: >-
+      The /crawl REST endpoint that performs depth-bounded, filterable
+      site crawls and returns structured per-page results. Supports GET,
+      POST, and DELETE.
+    category: Endpoint
+    tags:
+      - REST
+      - AI
+
+  - term: Search
+    definition: >-
+      The /search REST endpoint that performs token-efficient web search
+      from inside Browserless, aimed at AI/agent workloads.
+    category: Endpoint
+    tags:
+      - REST
+      - AI
+
+  - term: LiveURL
+    definition: >-
+      The Browserless.liveURL CDP commands and embedded UI that hand
+      control of a running session to a human (or watching agent) over a
+      shareable browser URL, then return control to the script. Used in
+      hybrid automation flows.
+    category: Concept
+    tags:
+      - Hybrid
+      - LiveURL
+
+  - term: Reconnect
+    definition: >-
+      A BQL mutation (and REST /session pattern) that hands an existing
+      browser session to Puppeteer or Playwright via a returned
+      browserWSEndpoint, keeping cookies and state intact across tools.
+    category: Operation
+    tags:
+      - Sessions
+      - Interop
+
+  - term: Unblock
+    definition: >-
+      The /unblock REST endpoint that performs a single bot-detection-
+      bypass navigation, returning the page after challenges have been
+      cleared.
+    category: Endpoint
+    tags:
+      - REST
+      - Anti-Bot
+
+  - term: Function
+    definition: >-
+      The /chrome/function and /chromium/function REST endpoints that
+      execute arbitrary user-supplied JavaScript inside a managed browser
+      and return the result.
+    category: Endpoint
+    tags:
+      - REST
+      - Custom Code
+
+  - term: MCP Server
+    definition: >-
+      The official Browserless Model Context Protocol server at
+      mcp.browserless.io/mcp that exposes browser-agent, smart-scraper,
+      custom-code, downloads, page-export, Lighthouse, and crawl tools to
+      Claude Desktop, Cursor, VS Code, Windsurf, and other MCP clients.
+    category: Integration
+    tags:
+      - MCP
+      - Agents
+
+  - term: Unit
+    definition: >-
+      The opaque billing unit used by Browserless. Roughly one unit per
+      minute of browser time, plus 6 units per MB of residential proxy
+      bandwidth and 10 units per successful CAPTCHA solve.
+    category: Billing
+    tags:
+      - Billing
+      - Metering
+
+  - term: Hybrid Automation
+    definition: >-
+      Workflows that combine programmatic browser control with embedded
+      human (or agent) interaction via LiveURL, supporting use cases like
+      manual KYC handoff, two-factor authentication, and bespoke onboarding
+      flows.
+    category: Concept
+    tags:
+      - Hybrid
+      - LiveURL
+
+  - term: Open Source Image
+    definition: >-
+      The Apache-2.0 licensed browserless/browserless Docker image that
+      underpins the cloud service, free for non-commercial use and
+      self-hostable on the customer's own infrastructure.
+    category: Distribution
+    tags:
+      - OpenSource
+      - Self-Host

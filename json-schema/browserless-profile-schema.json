@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api-evangelist.com/schemas/browserless/browserless-profile-schema.json",
+  "title": "Browserless Profile",
+  "description": "Schema for Browserless reusable browser profiles. Profiles are encrypted snapshots of a browser's authenticated state (cookies, localStorage, indexedDB, service-worker registrations) that can be reattached to later sessions to skip re-login flows. Managed via /profile and /profile/refresh endpoints.",
+  "type": "object",
+  "definitions": {
+    "ProfileCreate": {
+      "type": "object",
+      "description": "Body for creating a profile from a captured session.",
+      "required": ["sessionId"],
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "ID of the source session whose state should be snapshotted into a profile."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-friendly profile name."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional description for the profile (audience, target site, owning team)."
+        }
+      }
+    },
+    "Profile": {
+      "type": "object",
+      "description": "A persisted Browserless profile.",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the profile."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-friendly name."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description for the profile."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp the profile was captured."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp the profile was last refreshed."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp the profile will be deleted (controlled by plan retention)."
+        },
+        "sourceSessionId": {
+          "type": "string",
+          "description": "ID of the original session the profile was captured from."
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Approximate size of the encrypted profile blob, in bytes."
+        }
+      }
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/definitions/ProfileCreate" },
+    { "$ref": "#/definitions/Profile" }
+  ]
+}

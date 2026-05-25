@@ -1,0 +1,145 @@
+specification: FinOps Framework
+specificationVersion: '1.0'
+alignedWith:
+  framework: FinOps Foundation Framework
+  frameworkUrl: https://www.finops.org/framework/
+  dataSpec: FOCUS
+  dataSpecVersion: '1.3'
+  dataSpecUrl: https://focus.finops.org/focus-specification/v1-3/
+provider: Browserless
+providerId: browserless
+publisherName: Browserless
+serviceCategory: API
+created: '2026-05-25'
+modified: '2026-05-25'
+tags:
+  - Headless Browser
+  - Browser Infrastructure
+  - Web Automation
+  - BrowserQL
+  - Residential Proxy
+  - CAPTCHA Solving
+  - FinOps
+  - Cost Management
+  - FOCUS
+description: >-
+  FinOps framework alignment for the Browserless cloud platform. Browserless
+  charges in monthly subscription tiers with included units, per-unit overage,
+  and ancillary unit surcharges for residential-proxy bandwidth and CAPTCHA
+  solves. This FOCUS-shaped mapping enables cost allocation, per-team
+  showback, and per-workflow unit economics for browser-automation, AI-agent,
+  and scraping workloads.
+principles:
+  - name: Visibility
+    description: >-
+      Surface unit-consumption per token, per workflow, and per session so
+      engineering, product, AI/agent, and finance teams can see browser
+      automation cost in near real-time.
+  - name: Allocation
+    description: >-
+      Tag every session and BQL query with the consuming team, environment,
+      feature, agent run, and customer-account to allocate cost back to the
+      workload that drove it.
+  - name: Optimization
+    description: >-
+      Continuously evaluate session reuse, concurrency tuning, residential-
+      proxy usage, CAPTCHA strategy, and tier selection (Prototyping vs.
+      Starter vs. Scale vs. self-host) to lower cost per useful task.
+  - name: Accountability
+    description: >-
+      Assign budget owners per token; route overage billing through
+      chargeback/showback flows for each consuming team.
+
+domains:
+  - name: Session Consumption
+    description: >-
+      Wall-clock minutes (units) consumed by BaaS WebSocket sessions,
+      BrowserQL queries, and REST endpoint invocations.
+    costDrivers:
+      - session_minutes
+      - tier_selection
+      - concurrent_browsers
+      - region
+    focusMapping:
+      ChargeCategory: Usage
+      ChargeClass: Consumption
+      ServiceCategory: API
+      ServiceSubcategory: Browser Automation
+  - name: Residential Proxy Bandwidth
+    description: >-
+      Bandwidth consumed when sessions route through Browserless
+      residential proxies, billed at 6 units per MB.
+    costDrivers:
+      - megabytes_transferred
+      - country_routing
+      - sticky_sessions
+    focusMapping:
+      ChargeCategory: Usage
+      ChargeClass: Consumption
+      ServiceCategory: API
+      ServiceSubcategory: Proxy
+  - name: CAPTCHA Solving
+    description: >-
+      Per-successful-solve surcharge for built-in CAPTCHA resolution
+      (reCAPTCHA, hCaptcha, DataDome, Lemin, MTCaptcha, slider).
+    costDrivers:
+      - successful_solves
+      - captcha_type
+    focusMapping:
+      ChargeCategory: Usage
+      ChargeClass: Consumption
+      ServiceCategory: API
+      ServiceSubcategory: Anti-Bot
+  - name: Subscription
+    description: >-
+      Recurring monthly subscription fee for the chosen tier (Free,
+      Prototyping, Starter, Scale, Enterprise).
+    costDrivers:
+      - tier
+      - annual_vs_monthly_billing
+    focusMapping:
+      ChargeCategory: Purchase
+      ChargeClass: Committed
+      ServiceCategory: API
+      ServiceSubcategory: Subscription
+
+focusFields:
+  required:
+    - BillingPeriodStart
+    - BillingPeriodEnd
+    - ChargeCategory
+    - ChargePeriodStart
+    - ChargePeriodEnd
+    - ProviderName
+    - PublisherName
+    - InvoiceIssuerName
+    - ServiceName
+    - ServiceCategory
+    - BilledCost
+    - EffectiveCost
+    - ListCost
+    - ContractedCost
+    - PricingCategory
+    - PricingUnit
+    - PricingQuantity
+  recommended:
+    - SubAccountId
+    - SubAccountName
+    - ResourceId
+    - ResourceName
+    - ResourceType
+    - Region
+    - Tags
+
+notes:
+  - >-
+    Browserless invoices in opaque "units"; map units to the FOCUS
+    PricingUnit field and capture per-unit list / contracted / effective
+    prices per tier.
+  - >-
+    Self-hosting the open-source browserless/browserless image trades
+    cloud unit charges for self-managed infrastructure cost; that cost
+    belongs in the customer's own FOCUS feed, not this file.
+  - >-
+    Reconcile against actual Browserless invoices and the published
+    pricing page.

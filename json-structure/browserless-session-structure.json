@@ -1,0 +1,78 @@
+{
+  "name": "Session",
+  "description": "The Browserless Session object — a managed remote browser (Chromium / Chrome / Edge / Firefox / WebKit / Stealth) created via /session and driven via WebSocket (Puppeteer, Playwright), BrowserQL, or REST.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique session identifier.",
+      "example": "98e83bbfd396241a6963425b1feeba2f"
+    },
+    "browserWSEndpoint": {
+      "type": "string",
+      "description": "WebSocket endpoint used by puppeteer.connect / playwright.connectOverCDP.",
+      "example": "wss://production-sfo.browserless.io?token=YOUR_API_TOKEN&trackingId=demo-1"
+    },
+    "reconnectUrl": {
+      "type": "string",
+      "description": "Reconnect URL returned by the BQL reconnect mutation.",
+      "example": "https://production-sfo.browserless.io/reconnect/98e83bbfd396241a6963425b1feeba2f"
+    },
+    "liveURL": {
+      "type": "string",
+      "description": "Embedded live URL for hybrid automation handoff.",
+      "example": "https://production-sfo.browserless.io/live/?i=98e83bbfd396241a6963425b1feeba2f"
+    },
+    "region": {
+      "type": "string",
+      "description": "Regional production host.",
+      "enum": ["production-sfo", "production-lon", "production-ams"],
+      "example": "production-sfo"
+    },
+    "browser": {
+      "type": "string",
+      "description": "Browser engine backing the session.",
+      "enum": ["chromium", "chrome", "edge", "firefox", "webkit", "stealth"],
+      "example": "chromium"
+    },
+    "stealth": {
+      "type": "boolean",
+      "description": "Whether the stealth profile was applied.",
+      "example": false
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time",
+      "example": "2026-05-25T12:00:00Z"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "example": "2026-05-25T12:30:00Z"
+    },
+    "trackingId": {
+      "type": "string",
+      "description": "Customer-supplied identifier for billing / reporting allocation.",
+      "example": "agent-run-42"
+    },
+    "recordingUrl": {
+      "type": "string",
+      "description": "WebM screen recording URL, present when record=true was requested.",
+      "example": "https://production-sfo.browserless.io/recording/98e83bbfd396241a6963425b1feeba2f.webm"
+    }
+  },
+  "examples": [
+    {
+      "id": "98e83bbfd396241a6963425b1feeba2f",
+      "browserWSEndpoint": "wss://production-sfo.browserless.io?token=YOUR_API_TOKEN&trackingId=demo-1",
+      "reconnectUrl": "https://production-sfo.browserless.io/reconnect/98e83bbfd396241a6963425b1feeba2f",
+      "liveURL": "https://production-sfo.browserless.io/live/?i=98e83bbfd396241a6963425b1feeba2f",
+      "region": "production-sfo",
+      "browser": "chromium",
+      "stealth": false,
+      "startedAt": "2026-05-25T12:00:00Z",
+      "expiresAt": "2026-05-25T12:30:00Z",
+      "trackingId": "agent-run-42"
+    }
+  ]
+}
