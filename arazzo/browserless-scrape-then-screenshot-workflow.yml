@@ -1,0 +1,95 @@
+arazzo: 1.0.1
+info:
+  title: Browserless Scrape Then Screenshot
+  summary: Extract structured elements from a page, then capture a screenshot of the same page as visual evidence.
+  description: >-
+    A data-plus-evidence pipeline. The workflow first runs /chrome/scrape to
+    pull structured element data (text, HTML, attributes, and geometry) for a
+    set of CSS selectors from the target URL, then captures a full-page
+    screenshot of the same URL via /chrome/screenshot so the scraped data is
+    paired with a visual snapshot of the page it came from. Every step spells
+    out its token query parameter and JSON request body inline so the flow can
+    be read and executed without opening the underlying OpenAPI description.
+  version: 1.0.0
+sourceDescriptions:
+- name: browserlessApi
+  url: ../openapi/browserless-openapi.yml
+  type: openapi
+workflows:
+- workflowId: scrape-then-screenshot
+  summary: Scrape structured elements from a URL and capture a matching screenshot.
+  description: >-
+    Runs a selector-based scrape against the URL to extract element data, then
+    captures a full-page screenshot of the same URL to provide visual context
+    for the extracted data.
+  inputs:
+    type: object
+    required:
+    - token
+    - url
+    - selectors
+    properties:
+      token:
+        type: string
+        description: The Browserless authorization token passed as a query parameter.
+      url:
+        type: string
+        description: The URL of the page to scrape and screenshot.
+      selectors:
+        type: array
+        description: An array of element selector objects to extract from the page.
+        items:
+          type: object
+          required:
+          - selector
+          properties:
+            selector:
+              type: string
+              description: A CSS selector identifying the elements to extract.
+            timeout:
+              type: number
+              description: Maximum time in milliseconds to wait for the selector.
+  steps:
+  - stepId: scrapeElements
+    description: >-
+      Extract structured data for the supplied selectors from the URL, returning
+      element text, HTML, attributes, and geometry under the data array.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1scrape/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        url: $inputs.url
+        elements: $inputs.selectors
+        bestAttempt: true
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      data: $response.body#/data
+  - stepId: captureScreenshot
+    description: >-
+      Capture a full-page PNG screenshot of the same URL to accompany the
+      scraped element data.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1screenshot/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        url: $inputs.url
+        bestAttempt: true
+        options:
+          fullPage: true
+          type: png
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      screenshot: $response.body
+  outputs:
+    data: $steps.scrapeElements.outputs.data
+    screenshot: $steps.captureScreenshot.outputs.screenshot

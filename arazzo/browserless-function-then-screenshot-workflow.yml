@@ -1,0 +1,88 @@
+arazzo: 1.0.1
+info:
+  title: Browserless Function Then Screenshot
+  summary: Run custom JavaScript against a page via the function API, then capture a screenshot to confirm the resulting state.
+  description: >-
+    A custom-automation-with-evidence pipeline. The workflow first executes
+    arbitrary user JavaScript against a Browserless Chrome session via
+    /chrome/function (the code receives a Puppeteer page and can navigate,
+    click, and mutate the DOM), then captures a full-page screenshot of the
+    resulting page state via /chrome/screenshot so the effect of the custom
+    code is visually confirmed. Because the function API drives the page
+    independently, both steps target the same URL. Every step spells out its
+    token query parameter and request body inline so the flow can be read and
+    executed without opening the underlying OpenAPI description.
+  version: 1.0.0
+sourceDescriptions:
+- name: browserlessApi
+  url: ../openapi/browserless-openapi.yml
+  type: openapi
+workflows:
+- workflowId: function-then-screenshot
+  summary: Execute custom JavaScript on a page, then screenshot the resulting state.
+  description: >-
+    Runs a custom function against a Browserless session via /chrome/function,
+    then captures a screenshot of the target URL via /chrome/screenshot to
+    confirm the post-execution page state.
+  inputs:
+    type: object
+    required:
+    - token
+    - code
+    - url
+    properties:
+      token:
+        type: string
+        description: The Browserless authorization token passed as a query parameter.
+      code:
+        type: string
+        description: The JavaScript function body to execute against the Browserless session.
+      url:
+        type: string
+        description: The URL to screenshot after the function runs.
+      context:
+        type: object
+        description: Optional context values passed into the executed function.
+  steps:
+  - stepId: runFunction
+    description: >-
+      Execute the supplied JavaScript against a Browserless session. The
+      response shape is determined by the function's returned value.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1function/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        code: $inputs.code
+        context: $inputs.context
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      result: $response.body
+  - stepId: captureScreenshot
+    description: >-
+      Capture a full-page PNG screenshot of the URL to confirm the page state
+      after the function executed.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1screenshot/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        url: $inputs.url
+        bestAttempt: true
+        options:
+          fullPage: true
+          type: png
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      screenshot: $response.body
+  outputs:
+    result: $steps.runFunction.outputs.result
+    screenshot: $steps.captureScreenshot.outputs.screenshot

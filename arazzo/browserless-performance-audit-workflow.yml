@@ -1,0 +1,85 @@
+arazzo: 1.0.1
+info:
+  title: Browserless Performance Audit
+  summary: Run a Lighthouse-style performance audit on a URL, then capture a screenshot of the audited page.
+  description: >-
+    A performance-with-evidence pipeline. The workflow first runs
+    /chrome/performance to produce a Lighthouse-style audit (performance, best
+    practices, and related budgets) for the target URL, then captures a
+    full-page screenshot of the same URL via /chrome/screenshot so the numeric
+    audit is paired with a visual snapshot of what was measured. Every step
+    spells out its token query parameter and JSON request body inline so the
+    flow can be read and executed without opening the underlying OpenAPI
+    description.
+  version: 1.0.0
+sourceDescriptions:
+- name: browserlessApi
+  url: ../openapi/browserless-openapi.yml
+  type: openapi
+workflows:
+- workflowId: performance-audit
+  summary: Audit a URL's performance and capture a matching screenshot.
+  description: >-
+    Runs a Lighthouse-style performance audit against the URL via
+    /chrome/performance, then captures a full-page screenshot of the same URL so
+    the audit results are accompanied by a visual snapshot.
+  inputs:
+    type: object
+    required:
+    - token
+    - url
+    properties:
+      token:
+        type: string
+        description: The Browserless authorization token passed as a query parameter.
+      url:
+        type: string
+        description: The URL of the page to audit and screenshot.
+      budgets:
+        type: array
+        description: Optional Lighthouse budgets to evaluate the audit against.
+        items:
+          type: object
+  steps:
+  - stepId: runPerformance
+    description: >-
+      Run a Lighthouse-style performance audit on the URL, returning the audit
+      report as a JSON object.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1performance/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        url: $inputs.url
+        budgets: $inputs.budgets
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      report: $response.body
+  - stepId: captureScreenshot
+    description: >-
+      Capture a full-page PNG screenshot of the audited URL to accompany the
+      performance report.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1screenshot/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        url: $inputs.url
+        bestAttempt: true
+        options:
+          fullPage: true
+          type: png
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      screenshot: $response.body
+  outputs:
+    report: $steps.runPerformance.outputs.report
+    screenshot: $steps.captureScreenshot.outputs.screenshot

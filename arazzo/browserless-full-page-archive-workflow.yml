@@ -1,0 +1,140 @@
+arazzo: 1.0.1
+info:
+  title: Browserless Full Page Archive
+  summary: Unblock a protected URL, then branch into structured scraping or a content+PDF archive depending on whether unblocked HTML was returned.
+  description: >-
+    A branching archival pipeline. The workflow first calls /chrome/unblock to
+    clear bot detection on the target URL, returning cookies, HTML content, and
+    a base64 screenshot. It then branches on whether the unblock step returned
+    usable HTML content: when content is present it runs /chrome/scrape with the
+    recovered cookies to extract structured element data, and when content is
+    absent it falls back to a /chrome/content render so the archive always
+    captures the page HTML. Both branches reuse the cleared cookies. Every step
+    spells out its token query parameter and JSON request body inline so the
+    flow can be read and executed without opening the underlying OpenAPI
+    description.
+  version: 1.0.0
+sourceDescriptions:
+- name: browserlessApi
+  url: ../openapi/browserless-openapi.yml
+  type: openapi
+workflows:
+- workflowId: full-page-archive
+  summary: Unblock a URL, then scrape structured data or fall back to a content render.
+  description: >-
+    Clears bot detection via /chrome/unblock, then branches: when unblocked HTML
+    content is present it scrapes structured elements via /chrome/scrape using
+    the recovered cookies, otherwise it falls back to a /chrome/content render
+    using the same cookies. Both branches reuse the cleared session.
+  inputs:
+    type: object
+    required:
+    - token
+    - url
+    - selectors
+    properties:
+      token:
+        type: string
+        description: The Browserless authorization token passed as a query parameter.
+      url:
+        type: string
+        description: The URL to unblock and archive.
+      selectors:
+        type: array
+        description: An array of element selector objects to extract when content is available.
+        items:
+          type: object
+          required:
+          - selector
+          properties:
+            selector:
+              type: string
+              description: A CSS selector identifying the elements to extract.
+            timeout:
+              type: number
+              description: Maximum time in milliseconds to wait for the selector.
+  steps:
+  - stepId: unblockSite
+    description: >-
+      Clear bot detection on the URL, returning cookies, HTML content, and a
+      base64 full-page screenshot.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1unblock/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        url: $inputs.url
+        cookies: true
+        content: true
+        screenshot: true
+        bestAttempt: true
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      cookies: $response.body#/cookies
+      content: $response.body#/content
+      screenshot: $response.body#/screenshot
+    onSuccess:
+    - name: hasContent
+      type: goto
+      stepId: scrapeElements
+      criteria:
+      - context: $response.body
+        condition: $.content != null
+        type: jsonpath
+    - name: noContent
+      type: goto
+      stepId: fallbackContent
+      criteria:
+      - context: $response.body
+        condition: $.content == null
+        type: jsonpath
+  - stepId: scrapeElements
+    description: >-
+      Extract structured element data for the supplied selectors from the
+      unblocked URL, reusing the cookies recovered from the unblock step.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1scrape/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        url: $inputs.url
+        elements: $inputs.selectors
+        cookies: $steps.unblockSite.outputs.cookies
+        bestAttempt: true
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      data: $response.body#/data
+    onSuccess:
+    - name: done
+      type: end
+  - stepId: fallbackContent
+    description: >-
+      Fall back to rendering the page HTML via /chrome/content when the unblock
+      step returned no content, reusing the recovered cookies.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1content/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        url: $inputs.url
+        cookies: $steps.unblockSite.outputs.cookies
+        bestAttempt: true
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      html: $response.body
+  outputs:
+    unblockScreenshot: $steps.unblockSite.outputs.screenshot
+    scrapedData: $steps.scrapeElements.outputs.data
+    fallbackHtml: $steps.fallbackContent.outputs.html

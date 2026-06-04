@@ -1,0 +1,80 @@
+arazzo: 1.0.1
+info:
+  title: Browserless Content To PDF
+  summary: Render a URL's HTML, then feed that exact HTML into the PDF engine to produce a self-contained PDF.
+  description: >-
+    A content-to-document pipeline. The workflow first renders the live page
+    HTML via /chrome/content, then feeds that captured HTML string directly into
+    /chrome/pdf as the html payload, so the resulting PDF is generated from the
+    exact post-JavaScript HTML rather than re-fetching the live URL. This
+    produces a deterministic, self-contained PDF that matches the captured
+    content even if the source page later changes. Every step spells out its
+    token query parameter and JSON request body inline so the flow can be read
+    and executed without opening the underlying OpenAPI description.
+  version: 1.0.0
+sourceDescriptions:
+- name: browserlessApi
+  url: ../openapi/browserless-openapi.yml
+  type: openapi
+workflows:
+- workflowId: content-to-pdf
+  summary: Capture a page's rendered HTML and convert that exact HTML into a PDF.
+  description: >-
+    Renders the URL to HTML via /chrome/content, then passes the captured HTML
+    string as the html payload to /chrome/pdf so the PDF is built from the
+    snapshot rather than a fresh fetch.
+  inputs:
+    type: object
+    required:
+    - token
+    - url
+    properties:
+      token:
+        type: string
+        description: The Browserless authorization token passed as a query parameter.
+      url:
+        type: string
+        description: The URL of the page to render and convert to PDF.
+  steps:
+  - stepId: renderContent
+    description: >-
+      Render the URL to fully parsed HTML and return it as the html output for
+      reuse in the PDF step.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1content/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        url: $inputs.url
+        bestAttempt: true
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      html: $response.body
+  - stepId: htmlToPdf
+    description: >-
+      Generate a PDF from the captured HTML string by supplying it as the html
+      payload instead of a URL, producing a self-contained document.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1pdf/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        html: $steps.renderContent.outputs.html
+        bestAttempt: true
+        options:
+          printBackground: true
+          format: A4
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      pdf: $response.body
+  outputs:
+    html: $steps.renderContent.outputs.html
+    pdf: $steps.htmlToPdf.outputs.pdf

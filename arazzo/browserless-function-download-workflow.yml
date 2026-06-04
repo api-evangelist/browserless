@@ -1,0 +1,84 @@
+arazzo: 1.0.1
+info:
+  title: Browserless Function Then Download
+  summary: Use the function API to drive a page that triggers a file download, then retrieve the downloaded artifacts via the download API.
+  description: >-
+    A driven-download pipeline. The workflow first runs custom JavaScript via
+    /chrome/function to prepare and navigate a page (for example, logging in or
+    locating a downloadable resource), then runs /chrome/download with code that
+    triggers the actual download and returns the downloaded file artifacts. The
+    download API is purpose-built to capture files that a page emits to disk
+    during automation. Every step spells out its token query parameter and
+    request body inline so the flow can be read and executed without opening the
+    underlying OpenAPI description.
+  version: 1.0.0
+sourceDescriptions:
+- name: browserlessApi
+  url: ../openapi/browserless-openapi.yml
+  type: openapi
+workflows:
+- workflowId: function-download
+  summary: Prepare a page with a custom function, then trigger and retrieve a download.
+  description: >-
+    Runs a setup function via /chrome/function to ready the page, then runs
+    /chrome/download with code that triggers the file download and returns the
+    captured artifacts.
+  inputs:
+    type: object
+    required:
+    - token
+    - setupCode
+    - downloadCode
+    properties:
+      token:
+        type: string
+        description: The Browserless authorization token passed as a query parameter.
+      setupCode:
+        type: string
+        description: JavaScript to prepare or navigate the page before downloading.
+      downloadCode:
+        type: string
+        description: JavaScript that triggers the file download to be captured.
+      context:
+        type: object
+        description: Optional context values passed into the executed functions.
+  steps:
+  - stepId: prepareFunction
+    description: >-
+      Run the setup JavaScript against a Browserless session to navigate to and
+      prepare the page that will emit the download.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1function/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        code: $inputs.setupCode
+        context: $inputs.context
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      result: $response.body
+  - stepId: triggerDownload
+    description: >-
+      Run the download JavaScript, which triggers the file download. The
+      response carries the captured downloaded artifacts.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1download/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        code: $inputs.downloadCode
+        context: $inputs.context
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      download: $response.body
+  outputs:
+    setupResult: $steps.prepareFunction.outputs.result
+    download: $steps.triggerDownload.outputs.download

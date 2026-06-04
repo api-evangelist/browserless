@@ -279,6 +279,33 @@ apis:
           it as a `?token=YOUR_API_TOKEN` query parameter on the connection
           URL; BrowserQL accepts the same token in the URL or via header.
 common:
+  - type: ArazzoWorkflows
+    url: arazzo/
+    workflows:
+    - url: arazzo/browserless-content-to-pdf-workflow.yml
+      name: Browserless Content To PDF
+      summary: Render a URL's HTML, then feed that exact HTML into the PDF engine to produce a self-contained PDF.
+    - url: arazzo/browserless-full-page-archive-workflow.yml
+      name: Browserless Full Page Archive
+      summary: Unblock a protected URL, then branch into structured scraping or a content+PDF archive depending on whether unblocked HTML was returned.
+    - url: arazzo/browserless-function-download-workflow.yml
+      name: Browserless Function Then Download
+      summary: Use the function API to drive a page that triggers a file download, then retrieve the downloaded artifacts via the download API.
+    - url: arazzo/browserless-function-then-screenshot-workflow.yml
+      name: Browserless Function Then Screenshot
+      summary: Run custom JavaScript against a page via the function API, then capture a screenshot to confirm the resulting state.
+    - url: arazzo/browserless-performance-audit-workflow.yml
+      name: Browserless Performance Audit
+      summary: Run a Lighthouse-style performance audit on a URL, then capture a screenshot of the audited page.
+    - url: arazzo/browserless-scrape-then-screenshot-workflow.yml
+      name: Browserless Scrape Then Screenshot
+      summary: Extract structured elements from a page, then capture a screenshot of the same page as visual evidence.
+    - url: arazzo/browserless-site-capture-bundle-workflow.yml
+      name: Browserless Site Capture Bundle
+      summary: "Render a single URL three ways \u2014 HTML content, PNG screenshot, and PDF \u2014 in one pass."
+    - url: arazzo/browserless-unblock-then-render-workflow.yml
+      name: Browserless Unblock Then Render
+      summary: Bypass bot detection on a protected URL, then re-render its HTML content and a PDF using the unblocked content.
   - type: Website
     url: https://www.browserless.io
   - type: Documentation

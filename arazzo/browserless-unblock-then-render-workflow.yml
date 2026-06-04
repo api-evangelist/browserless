@@ -1,0 +1,107 @@
+arazzo: 1.0.1
+info:
+  title: Browserless Unblock Then Render
+  summary: Bypass bot detection on a protected URL, then re-render its HTML content and a PDF using the unblocked content.
+  description: >-
+    A bot-detection-bypass pipeline. The workflow first calls /chrome/unblock to
+    get past bot protection on the target URL, returning the unblocked HTML
+    content, cookies, and a base64 screenshot. It then chains the recovered
+    cookies into a /chrome/content render and a /chrome/pdf render of the same
+    URL so subsequent renders reuse the session that already cleared detection.
+    Every step spells out its token query parameter and JSON request body inline
+    so the flow can be read and executed without opening the underlying OpenAPI
+    description.
+  version: 1.0.0
+sourceDescriptions:
+- name: browserlessApi
+  url: ../openapi/browserless-openapi.yml
+  type: openapi
+workflows:
+- workflowId: unblock-then-render
+  summary: Unblock a protected URL, then render its content and PDF reusing the cleared cookies.
+  description: >-
+    Calls /chrome/unblock to clear bot detection and obtain cookies and HTML,
+    then re-renders the page HTML via /chrome/content and a PDF via /chrome/pdf,
+    passing the recovered cookies so the renders reuse the cleared session.
+  inputs:
+    type: object
+    required:
+    - token
+    - url
+    properties:
+      token:
+        type: string
+        description: The Browserless authorization token passed as a query parameter.
+      url:
+        type: string
+        description: The URL of the protected site to unblock and render.
+  steps:
+  - stepId: unblockSite
+    description: >-
+      Clear bot detection on the URL, returning the page cookies, HTML content,
+      and a base64 full-page screenshot.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1unblock/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        url: $inputs.url
+        cookies: true
+        content: true
+        screenshot: true
+        bestAttempt: true
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      cookies: $response.body#/cookies
+      content: $response.body#/content
+      screenshot: $response.body#/screenshot
+  - stepId: renderContent
+    description: >-
+      Re-render the page HTML via /chrome/content, injecting the cookies
+      recovered from the unblock step so the render reuses the cleared session.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1content/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        url: $inputs.url
+        cookies: $steps.unblockSite.outputs.cookies
+        bestAttempt: true
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      html: $response.body
+  - stepId: generatePdf
+    description: >-
+      Generate a PDF of the same URL, reusing the recovered cookies so the PDF
+      reflects the unblocked page.
+    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1pdf/post'
+    parameters:
+    - name: token
+      in: query
+      value: $inputs.token
+    requestBody:
+      contentType: application/json
+      payload:
+        url: $inputs.url
+        cookies: $steps.unblockSite.outputs.cookies
+        bestAttempt: true
+        options:
+          printBackground: true
+          format: A4
+    successCriteria:
+    - condition: $statusCode == 200
+    outputs:
+      pdf: $response.body
+  outputs:
+    unblockedContent: $steps.unblockSite.outputs.content
+    unblockedScreenshot: $steps.unblockSite.outputs.screenshot
+    renderedHtml: $steps.renderContent.outputs.html
+    pdf: $steps.generatePdf.outputs.pdf
