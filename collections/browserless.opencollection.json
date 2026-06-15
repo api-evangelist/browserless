@@ -1,0 +1,3864 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Browserless",
+    "version": "2.49.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Browser REST APIs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "/chrome/content",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chrome/content",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON-based API. Given a \"url\" or \"html\" field, runs and returns HTML content after the page has loaded and JavaScript has parsed."
+        },
+        {
+          "info": {
+            "name": "/chrome/download",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chrome/download",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON or JavaScript content-type API for returning files Chrome has downloaded during\nthe execution of puppeteer code, which is ran inside context of the browser.\nBrowserless sets up a blank page, a fresh download directory, injects your puppeteer code, and then executes it.\nYou can load external libraries via the \"import\" syntax, and import ESM-style modules\nthat are written for execution inside of the browser. Once your script is finished, any\ndownloaded files from Chromium are returned back "
+        },
+        {
+          "info": {
+            "name": "/chrome/function",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chrome/function",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON or JavaScript content-type API for running puppeteer code in the browser's context.\nBrowserless sets up a blank page, injects your puppeteer code, and runs it.\nYou can optionally load external libraries via the \"import\" module that are meant for browser usage.\nValues returned from the function are checked and an appropriate content-type and response is sent back\nto your HTTP call."
+        },
+        {
+          "info": {
+            "name": "/json/new",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/json/new"
+          },
+          "docs": "Returns a JSON payload that acts as a pass-through to the DevTools /json/new HTTP API in Chromium.\nBrowserless mocks this payload so that remote clients can connect to the underlying \"webSocketDebuggerUrl\"\nwhich will cause Browserless to start the browser and proxy that request into a blank page."
+        },
+        {
+          "info": {
+            "name": "/json/protocol",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/json/protocol"
+          },
+          "docs": "Returns Protocol JSON meta-data that Chrome and Chromium come with."
+        },
+        {
+          "info": {
+            "name": "/json/version",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/json/version"
+          },
+          "docs": "Returns a JSON payload that acts as a pass-through to the DevTools /json/version protocol in Chrome and Chromium."
+        },
+        {
+          "info": {
+            "name": "/chrome/pdf",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chrome/pdf",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON-based API for getting a PDF binary from either a supplied\n\"url\" or \"html\" payload in your request. Many options exist for\ninjecting cookies, request interceptors, user-agents and waiting for\nselectors, timers and more."
+        },
+        {
+          "info": {
+            "name": "/chrome/performance",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chrome/performance",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Run lighthouse performance audits with a supplied \"url\" in your JSON payload."
+        },
+        {
+          "info": {
+            "name": "/chrome/scrape",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chrome/scrape",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON-based API that returns text, html, and meta-data from a given list of selectors.\nDebugging information is available by sending in the appropriate flags in the \"debugOpts\"\nproperty. Responds with an array of JSON objects."
+        },
+        {
+          "info": {
+            "name": "/chrome/screenshot",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chrome/screenshot",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON-based API for getting a screenshot binary from either a supplied\n\"url\" or \"html\" payload in your request. Many options exist including\ncookies, user-agents, setting timers and network mocks."
+        },
+        {
+          "info": {
+            "name": "/chromium/content",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chromium/content",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON-based API. Given a \"url\" or \"html\" field, runs and returns HTML content after the page has loaded and JavaScript has parsed.\n\n**Note:** This endpoint is also available at: `/content` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/chromium/download",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chromium/download",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON or JavaScript content-type API for returning files Chrome has downloaded during\nthe execution of puppeteer code, which is ran inside context of the browser.\nBrowserless sets up a blank page, a fresh download directory, injects your puppeteer code, and then executes it.\nYou can load external libraries via the \"import\" syntax, and import ESM-style modules\nthat are written for execution inside of the browser. Once your script is finished, any\ndownloaded files from Chromium are returned back "
+        },
+        {
+          "info": {
+            "name": "/chromium/function",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chromium/function",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON or JavaScript content-type API for running puppeteer code in the browser's context.\nBrowserless sets up a blank page, injects your puppeteer code, and runs it.\nYou can optionally load external libraries via the \"import\" module that are meant for browser usage.\nValues returned from the function are checked and an appropriate content-type and response is sent back\nto your HTTP call.\n\n**Note:** This endpoint is also available at: `/function` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/chromium/performance",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chromium/performance",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Run lighthouse performance audits with a supplied \"url\" in your JSON payload.\n\n**Note:** This endpoint is also available at: `/performance` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/chromium/scrape",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chromium/scrape",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON-based API that returns text, html, and meta-data from a given list of selectors.\nDebugging information is available by sending in the appropriate flags in the \"debugOpts\"\nproperty. Responds with an array of JSON objects.\n\n**Note:** This endpoint is also available at: `/scrape` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/edge/content",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/edge/content",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON-based API. Given a \"url\" or \"html\" field, runs and returns HTML content after the page has loaded and JavaScript has parsed."
+        },
+        {
+          "info": {
+            "name": "/edge/download",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/edge/download",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON or JavaScript content-type API for returning files Chrome has downloaded during\nthe execution of puppeteer code, which is ran inside context of the browser.\nBrowserless sets up a blank page, a fresh download directory, injects your puppeteer code, and then executes it.\nYou can load external libraries via the \"import\" syntax, and import ESM-style modules\nthat are written for execution inside of the browser. Once your script is finished, any\ndownloaded files from Chromium are returned back "
+        },
+        {
+          "info": {
+            "name": "/edge/function",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/edge/function",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON or JavaScript content-type API for running puppeteer code in the browser's context.\nBrowserless sets up a blank page, injects your puppeteer code, and runs it.\nYou can optionally load external libraries via the \"import\" module that are meant for browser usage.\nValues returned from the function are checked and an appropriate content-type and response is sent back\nto your HTTP call."
+        },
+        {
+          "info": {
+            "name": "/edge/pdf",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/edge/pdf",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON-based API for getting a PDF binary from either a supplied\n\"url\" or \"html\" payload in your request. Many options exist for\ninjecting cookies, request interceptors, user-agents and waiting for\nselectors, timers and more."
+        },
+        {
+          "info": {
+            "name": "/edge/performance",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/edge/performance",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Run lighthouse performance audits with a supplied \"url\" in your JSON payload."
+        },
+        {
+          "info": {
+            "name": "/edge/scrape",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/edge/scrape",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON-based API that returns text, html, and meta-data from a given list of selectors.\nDebugging information is available by sending in the appropriate flags in the \"debugOpts\"\nproperty. Responds with an array of JSON objects."
+        },
+        {
+          "info": {
+            "name": "/edge/screenshot",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/edge/screenshot",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON-based API for getting a screenshot binary from either a supplied\n\"url\" or \"html\" payload in your request. Many options exist including\ncookies, user-agents, setting timers and network mocks."
+        },
+        {
+          "info": {
+            "name": "/chrome/export",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chrome/export",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Exports a webpage to a PDF or image format. This API is useful for generating reports, screenshots, or PDFs of web pages."
+        },
+        {
+          "info": {
+            "name": "/chrome/unblock",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chrome/unblock",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Unblocks the provided URL from being blocked due to bot detection.\nReturns a payload of Cookies, HTML, a base64 encoded screenshot,\nand a \"browserWSEndpoint\" to allow connecting to the browser when\nspecified in the JSON Payload. Only supports CDP or Puppeteer\nlike libraries when connecting to the \"browserWSEndpoint\"."
+        },
+        {
+          "info": {
+            "name": "/chromium/export",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chromium/export",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Exports a webpage to a PDF or image format. This API is useful for generating reports, screenshots, or PDFs of web pages.\n\n**Note:** This endpoint is also available at: `/export` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/unblock",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/unblock",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Unblocks the provided URL from being blocked due to bot detection.\nReturns a payload of Cookies, HTML, a base64 encoded screenshot,\nand a \"browserWSEndpoint\" to allow connecting to the browser when\nspecified in the JSON Payload. Only supports CDP or Puppeteer\nlike libraries when connecting to the \"browserWSEndpoint\".\n\n**Note:** This endpoint is also available at: `/chromium/unblock` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/map",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/map",
+            "params": [
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Primarily discovers URLs from the site's sitemap, supplemented\nwith link extraction from the page via the smart-scrape strategy\npipeline (HTTP-first, browser fallback for JS-rendered pages).\nUse the search parameter to order results by relevance."
+        },
+        {
+          "info": {
+            "name": "/pdf",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/pdf",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON-based API for getting a PDF binary from either a supplied\n\"url\" or \"html\" payload in your request. Many options exist for\ninjecting cookies, request interceptors, user-agents and waiting for\nselectors, timers and more.\n\n**Note:** This endpoint is also available at: `/chromium/pdf` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/screenshot",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/screenshot",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "A JSON-based API for getting a screenshot binary from either a supplied\n\"url\" or \"html\" payload in your request. Many options exist including\ncookies, user-agents, setting timers and network mocks.\n\n**Note:** This endpoint is also available at: `/chromium/screenshot` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/search",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/search",
+            "params": [
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Search the web and optionally scrape result pages. Accepts a query, performs a web search via SearXNG, and optionally scrapes each result URL — returning structured, LLM-ready data (markdown, HTML, links, or screenshots)."
+        },
+        {
+          "info": {
+            "name": "/smart-scrape",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/smart-scrape",
+            "params": [
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Intelligently scrapes a URL using cascading strategies (HTTP fetch, proxy, headless browser, etc)."
+        },
+        {
+          "info": {
+            "name": "/stealth/bql?(/*)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/stealth/bql?(/*)",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "blockConsentModals",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "humanlike",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Parses and executes BrowserQL requests, powered by the BrowserQL Editor or by other API integrations. See the BrowserQL Editor for more documentation on this API."
+        },
+        {
+          "info": {
+            "name": "/chrome/bql?(/*)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chrome/bql?(/*)",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "blockConsentModals",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "humanlike",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Parses and executes BrowserQL requests, powered by the BrowserQL Editor or by other API integrations. See the BrowserQL Editor for more documentation on this API."
+        },
+        {
+          "info": {
+            "name": "/chromium/bql?(/*)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/chromium/bql?(/*)",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "blockConsentModals",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "humanlike",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Parses and executes BrowserQL requests, powered by the BrowserQL Editor or by other API integrations. See the BrowserQL Editor for more documentation on this API."
+        },
+        {
+          "info": {
+            "name": "/crawl/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/crawl/*",
+            "params": [
+              {
+                "name": "skip",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Get the status of a crawl job and its paginated page results. Returns progress counters, per-page metadata with content URLs, and a `next` URL for offset-based pagination via the `skip` parameter."
+        },
+        {
+          "info": {
+            "name": "/crawl/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/crawl/*",
+            "params": [
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Cancel a running crawl job by its ID. Any pages already completed remain available for retrieval. Returns a 409 if the crawl is already in a terminal state."
+        },
+        {
+          "info": {
+            "name": "/crawl",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/crawl",
+            "params": [
+              {
+                "name": "cursor",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "List all crawl jobs for the authenticated token. Returns an array of crawl summaries with status, progress counters, and timestamps. Supports cursor-based pagination via the `nextCursor` field."
+        },
+        {
+          "info": {
+            "name": "/crawl",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/crawl",
+            "params": [
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Start an asynchronous crawl job that spiders a website and scrapes every discovered page. Returns a crawl ID and status URL for polling results via GET /crawl/{id}. Supports depth control, path filtering, sitemap strategies, and webhook notifications."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Management REST APIs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "/active",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/active"
+          },
+          "docs": "Returns a simple \"204\" HTTP code, with no response, indicating that the service itself is up and running.\nUseful for liveliness probes or other external checks."
+        },
+        {
+          "info": {
+            "name": "/kill/+([0-9a-zA-Z-_])",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/kill/+([0-9a-zA-Z-_])",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "browserId",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Kill running sessions based on BrowserId or TrackingId."
+        },
+        {
+          "info": {
+            "name": "/meta",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/meta"
+          },
+          "docs": "Returns a JSON payload of the current system versions, including the core API version."
+        },
+        {
+          "info": {
+            "name": "/browser/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/browser/*"
+          },
+          "docs": "Terminates a browser instance by browserId. The browser must belong to the authenticated user."
+        },
+        {
+          "info": {
+            "name": "/proxy/cities",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/proxy/cities",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "country",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Returns a list of available cities for proxy connections.\n\nThis endpoint requires city proxying to be enabled on your plan.\n\nQuery Parameters:\n- country (optional): Filter cities by two-letter country code (e.g., 'US', 'GB', 'DE')\n\nThe response includes a list of available cities grouped by country code."
+        },
+        {
+          "info": {
+            "name": "/session",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/session",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a new browser session with the specified parameters. The session can be used for persistent browser connections\nwith well-defined lifetimes and reconnection semantics. BrowserQL support is only available for stealth sessions."
+        },
+        {
+          "info": {
+            "name": "/session/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/session/*",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "force",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Deletes a session and its associated data. This will immediately terminate any active connections to the session if \"force\" is applied.\n\nQuery Parameters:\n- force (optional): If true, forces deletion even if the session has active connections"
+        },
+        {
+          "info": {
+            "name": "/session/bql/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/session/bql/*",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "> Executes BrowserQL queries against an existing session. The session must be a stealth session to support BrowserQL.\n\nBrowserQL is a GraphQL-based query language for browser automation that allows you to interact with web pages using a declarative syntax.\nQueries execute within the context of your existing session, maintaining browser state and session data across multiple operations."
+        },
+        {
+          "info": {
+            "name": "/profile",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/profile",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Launches a temporary browser session for creating an authenticated profile.\nConnect via the returned WebSocket URL, authenticate in the browser,\nthen call Browserless.saveProfile via CDP to capture and persist the auth state.\nThe profile is NOT saved automatically — you must explicitly call\nBrowserless.saveProfile before disconnecting. The session expires after 10 minutes."
+        },
+        {
+          "info": {
+            "name": "/profile/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/profile/*"
+          },
+          "docs": "Returns metadata for a specific authentication profile.\nThe profile name is the URL-encoded path segment after \"/profile/\".\nReturns 404 if no profile with that name exists for this token."
+        },
+        {
+          "info": {
+            "name": "/profile/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/profile/*",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Renames an authentication profile. The new name must be unique per token.\nThe current name is the URL-encoded path segment after \"/profile/\".\nReturns 400 if the new name is already taken, 404 if the source profile is not found."
+        },
+        {
+          "info": {
+            "name": "/profile/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/profile/*"
+          },
+          "docs": "Deletes an authentication profile and its captured state.\nThe profile name is the URL-encoded path segment after \"/profile/\".\nReturns 404 if no profile with that name exists for this token."
+        },
+        {
+          "info": {
+            "name": "/profiles",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/profiles",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Lists authentication profiles owned by the requesting token.\nPaginated via \"limit\" (default 100, capped at 1000) and \"offset\" (default 0).\nReturns an empty array if the token has no profiles."
+        },
+        {
+          "info": {
+            "name": "/profile/refresh",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/profile/refresh",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Replaces the state of an existing authentication profile in place.\nThe \"name\" must already exist for the requesting token. Counts of any\ndropped or truncated entries are surfaced under \"diagnostics\"."
+        },
+        {
+          "info": {
+            "name": "/profile/upload",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/profile/upload",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a new authentication profile from a pre-captured \"state\" payload\n(cookies plus per-origin localStorage and IndexedDB). The \"name\" must be\nunique per token. Counts of any dropped or truncated entries are\nsurfaced under \"diagnostics\"."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Browser WebSocket APIs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "/",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "integrations",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "record",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "solveCaptchas",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Launch and connect to Chromium with a library like puppeteer or others that work over chrome-devtools-protocol.\n\n**Note:** This endpoint is also available at: `/chromium` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/devtools/browser/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/devtools/browser/*",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Connect to an already-running Chromium process with a library like\npuppeteer, or others, that work over chrome-devtools-protocol. Chromium\nmust already be launched in order to not return a 404."
+        },
+        {
+          "info": {
+            "name": "/chrome",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/chrome",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "integrations",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "record",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "solveCaptchas",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Launch and connect to Chromium with a library like puppeteer or others that work over chrome-devtools-protocol."
+        },
+        {
+          "info": {
+            "name": "/function/connect/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/function/connect/*",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Internally used by the POST /function API to connect the underlying client-side code to. Not intended for direct use but documented for completeness and to distinguish between other reconnect style calls."
+        },
+        {
+          "info": {
+            "name": "/devtools/page/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/devtools/page/*",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Connect to an existing page in Chromium with a library like\nchrome-remote-interface or others that work the page websocketDebugger\nURL. You can get this unique URL by calling the /json/list API\nor by finding the page's unique ID from your library of choice."
+        },
+        {
+          "info": {
+            "name": "/chrome/playwright",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/chrome/playwright",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Connect to Chromium with any playwright style library."
+        },
+        {
+          "info": {
+            "name": "/chromium",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/chromium",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Launch and connect to Chromium with a library like puppeteer or others that work over chrome-devtools-protocol.\n\n**Note:** This endpoint is also available at: `/` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/chromium/playwright",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/chromium/playwright",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Connect to Chromium with any playwright style library.\n\n**Note:** This endpoint is also available at: `/playwright/chromium` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/edge",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/edge",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "integrations",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "record",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "solveCaptchas",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Launch and connect to Chromium with a library like puppeteer or others that work over chrome-devtools-protocol."
+        },
+        {
+          "info": {
+            "name": "/edge/playwright",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/edge/playwright",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Connect to Chromium with any playwright style library."
+        },
+        {
+          "info": {
+            "name": "/firefox/playwright",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/firefox/playwright",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Connect to Firefox with any playwright-compliant library.\n\n**Note:** This endpoint is also available at: `/playwright/firefox` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/webkit/playwright",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/webkit/playwright",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Connect to Webkit with any playwright-compliant library.\n\n**Note:** This endpoint is also available at: `/playwright/webkit` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/stealth/bql?(/*)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/stealth/bql?(/*)",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "blockConsentModals",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "humanlike",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "WebSocket endpoint for BrowserQL. Connect to establish a persistent browser\nsession, then send multiple GraphQL operations as JSON messages. The browser\nand page state persist across all messages for the connection duration.\n\nMessages use the same JSON format as the HTTP POST endpoint:\nSend: { \"query\": \"mutation { goto(url: \\\"..\\\") { status } }\", \"variables\": {} }\nReceive: { \"data\": { \"goto\": { \"status\": 200 } } }"
+        },
+        {
+          "info": {
+            "name": "/chrome/bql?(/*)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/chrome/bql?(/*)",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "blockConsentModals",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "humanlike",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "WebSocket endpoint for BrowserQL. Connect to establish a persistent browser\nsession, then send multiple GraphQL operations as JSON messages. The browser\nand page state persist across all messages for the connection duration.\n\nMessages use the same JSON format as the HTTP POST endpoint:\nSend: { \"query\": \"mutation { goto(url: \\\"..\\\") { status } }\", \"variables\": {} }\nReceive: { \"data\": { \"goto\": { \"status\": 200 } } }"
+        },
+        {
+          "info": {
+            "name": "/chromium/bql?(/*)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/chromium/bql?(/*)",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "blockConsentModals",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "humanlike",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "WebSocket endpoint for BrowserQL. Connect to establish a persistent browser\nsession, then send multiple GraphQL operations as JSON messages. The browser\nand page state persist across all messages for the connection duration.\n\nMessages use the same JSON format as the HTTP POST endpoint:\nSend: { \"query\": \"mutation { goto(url: \\\"..\\\") { status } }\", \"variables\": {} }\nReceive: { \"data\": { \"goto\": { \"status\": 200 } } }"
+        },
+        {
+          "info": {
+            "name": "/stealth",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/stealth",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "integrations",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "record",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "solveCaptchas",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Launch and connect to Stealthy Chromium with a library like puppeteer or others that work over chrome-devtools-protocol for scraping in a more stealth-like fashion."
+        },
+        {
+          "info": {
+            "name": "/chrome/live/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/chrome/live/*"
+          },
+          "docs": "> This API is only available on paid plans. [Sign-up here](https://www.browserless.io/pricing/).\n\nWebsocket back-end that powers the live session experience."
+        },
+        {
+          "info": {
+            "name": "/chrome/stealth",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/chrome/stealth",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "integrations",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "record",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "solveCaptchas",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Launch and connect to Stealthy Chrome with a library like puppeteer or others that work over chrome-devtools-protocol for scraping in a more stealth-like fashion."
+        },
+        {
+          "info": {
+            "name": "/live/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/live/*"
+          },
+          "docs": "> This API is only available on paid plans. [Sign-up here](https://www.browserless.io/pricing/).\n\nWebsocket back-end that powers the live session experience.\n\n**Note:** This endpoint is also available at: `/chromium/live/*` for backwards compatibility."
+        },
+        {
+          "info": {
+            "name": "/chromium/stealth",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/chromium/stealth",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "integrations",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "record",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "solveCaptchas",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Launch and connect to Stealthy Chromium with a library like puppeteer or others that work over chrome-devtools-protocol for scraping in a more stealth-like fashion."
+        },
+        {
+          "info": {
+            "name": "/reconnect/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reconnect/*",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "integrations",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "solveCaptchas",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Reconnect to an existing Chromium or Chrome session with a library like puppeteer or others that work over chrome-devtools-protocol."
+        },
+        {
+          "info": {
+            "name": "/session/connect/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/session/connect/*",
+            "params": [
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Connect to an existing session with a library like puppeteer or playwright that work over chrome-devtools-protocol. See documentation for more details on how to start the session.\n\nThe browser type (Chrome/Chromium, stealth/regular) is determined from the session metadata when it was created initially."
+        },
+        {
+          "info": {
+            "name": "/chromium/agent",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/chromium/agent",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "blockConsentModals",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "externalProxyServer",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "humanlike",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxy",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCity",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyCountry",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyLocaleMatch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyPreset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxyState",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "proxySticky",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "WebSocket endpoint for agentic browser interaction. Connect to establish a\npersistent browser session, then send JSON-RPC messages to control the browser.\n\nUses a simple JSON protocol instead of GraphQL:\nSend: { \"id\": 1, \"method\": \"goto\", \"params\": { \"url\": \"https://example.com\" } }\nReceive: { \"id\": 1, \"result\": { \"status\": 200, \"url\": \"https://example.com\" } }\n\nAll BQL mutations are available as methods (goto, click, type, screenshot, etc.).\nAdditionally supports a \"snapshot\" method that return"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
