@@ -87,13 +87,13 @@ apis:
     url: https://docs.browserless.io/open-api
   - type: GettingStarted
     url: https://docs.browserless.io/overview/quick-start
-  - type: SignUp
+  - type: Signup
     url: https://account.browserless.io/signup
-  - type: SDK
+  - type: SDKs
     url: https://github.com/puppeteer/puppeteer
-  - type: SDK
+  - type: SDKs
     url: https://github.com/microsoft/playwright
-  - type: SDK
+  - type: SDKs
     url: https://github.com/SeleniumHQ/selenium
   - type: GitHubRepository
     url: https://github.com/browserless/browserless
@@ -283,33 +283,30 @@ apis:
 common:
 - type: PostmanWorkspace
   url: https://www.postman.com/kinlaneapi/browserless/overview
-- type: ArazzoWorkflows
-  url: arazzo/
-  workflows:
-  - url: arazzo/browserless-content-to-pdf-workflow.yml
-    name: Browserless Content To PDF
-    summary: Render a URL's HTML, then feed that exact HTML into the PDF engine to produce a self-contained PDF.
-  - url: arazzo/browserless-full-page-archive-workflow.yml
-    name: Browserless Full Page Archive
-    summary: Unblock a protected URL, then branch into structured scraping or a content+PDF archive depending on whether unblocked HTML was returned.
-  - url: arazzo/browserless-function-download-workflow.yml
-    name: Browserless Function Then Download
-    summary: Use the function API to drive a page that triggers a file download, then retrieve the downloaded artifacts via the download API.
-  - url: arazzo/browserless-function-then-screenshot-workflow.yml
-    name: Browserless Function Then Screenshot
-    summary: Run custom JavaScript against a page via the function API, then capture a screenshot to confirm the resulting state.
-  - url: arazzo/browserless-performance-audit-workflow.yml
-    name: Browserless Performance Audit
-    summary: Run a Lighthouse-style performance audit on a URL, then capture a screenshot of the audited page.
-  - url: arazzo/browserless-scrape-then-screenshot-workflow.yml
-    name: Browserless Scrape Then Screenshot
-    summary: Extract structured elements from a page, then capture a screenshot of the same page as visual evidence.
-  - url: arazzo/browserless-site-capture-bundle-workflow.yml
-    name: Browserless Site Capture Bundle
-    summary: "Render a single URL three ways — HTML content, PNG screenshot, and PDF — in one pass."
-  - url: arazzo/browserless-unblock-then-render-workflow.yml
-    name: Browserless Unblock Then Render
-    summary: Bypass bot detection on a protected URL, then re-render its HTML content and a PDF using the unblocked content.
+- type: Arazzo
+  url: arazzo/browserless-content-to-pdf-workflow.yml
+  name: Browserless Content To PDF
+- type: Arazzo
+  url: arazzo/browserless-full-page-archive-workflow.yml
+  name: Browserless Full Page Archive
+- type: Arazzo
+  url: arazzo/browserless-function-download-workflow.yml
+  name: Browserless Function Then Download
+- type: Arazzo
+  url: arazzo/browserless-function-then-screenshot-workflow.yml
+  name: Browserless Function Then Screenshot
+- type: Arazzo
+  url: arazzo/browserless-performance-audit-workflow.yml
+  name: Browserless Performance Audit
+- type: Arazzo
+  url: arazzo/browserless-scrape-then-screenshot-workflow.yml
+  name: Browserless Scrape Then Screenshot
+- type: Arazzo
+  url: arazzo/browserless-site-capture-bundle-workflow.yml
+  name: Browserless Site Capture Bundle
+- type: Arazzo
+  url: arazzo/browserless-unblock-then-render-workflow.yml
+  name: Browserless Unblock Then Render
 - type: Website
   url: https://www.browserless.io
 - type: Documentation
@@ -328,15 +325,15 @@ common:
   url: https://www.browserless.io/changelog
 - type: StatusPage
   url: https://status.browserless.io
-- type: SignUp
+- type: Signup
   url: https://account.browserless.io/signup
-- type: SignIn
+- type: Login
   url: https://account.browserless.io
 - type: TermsOfService
   url: https://www.browserless.io/terms
 - type: PrivacyPolicy
   url: https://www.browserless.io/privacy
-- type: LLMsTxt
+- type: LlmsText
   url: https://docs.browserless.io/llms.txt
 maintainers:
 - FN: Kin Lane
