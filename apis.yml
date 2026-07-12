@@ -281,6 +281,10 @@ apis:
       it as a `?token=YOUR_API_TOKEN` query parameter on the connection
       URL; BrowserQL accepts the same token in the URL or via header.
 common:
+- type: TrustCenter
+  url: security/browserless-trust-center.yml
+- type: DomainSecurity
+  url: security/browserless-domain-security.yml
 - type: PostmanWorkspace
   url: https://www.postman.com/kinlaneapi/browserless/overview
 - type: Arazzo

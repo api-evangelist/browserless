@@ -1,0 +1,16 @@
+generated: '2026-07-11'
+method: searched
+probe: true
+source: https://www.browserless.io/trust
+url: https://www.browserless.io/trust
+certifications:
+- SOC 2
+- HIPAA
+- GDPR
+evidence:
+- source: https://www.browserless.io/trust
+  keywords:
+  - soc 2
+  - hipaa
+  - trust center
+  - gdpr
