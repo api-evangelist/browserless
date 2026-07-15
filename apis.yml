@@ -281,6 +281,8 @@ apis:
       it as a `?token=YOUR_API_TOKEN` query parameter on the connection
       URL; BrowserQL accepts the same token in the URL or via header.
 common:
+- type: AgenticAccess
+  url: agentic-access/browserless-agentic-access.yml
 - type: TrustCenter
   url: security/browserless-trust-center.yml
 - type: DomainSecurity
