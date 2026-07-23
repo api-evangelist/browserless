@@ -1,0 +1,3047 @@
+openapi: 3.0.0
+info:
+  title: Browserless Browser REST APIs Browser WebSocket APIs API
+  version: 2.49.0
+  x-logo:
+    altText: browserless logo
+    url: ./docs/browserless-logo-inline.svg
+  description: "# Browserless.io\n\nThis service extends the Browserless open-source image with many features and enhancements for teams automating at scale. Notable features include:\n\n- A Chrome-devtools-protocol based API for extending and enhancing libraries in a cross-language way.\n- A new hybrid-automation toolkit with live session interactivity.\n- Robust session management: connect, reconnect, kill and limit what a browser can do.\n- Bleeding features like multiplexing numerous clients into a single Chrome process in an isolated way.\n- The ability to upload and run custom extensions.\n- Run multiple tokens, with access controls on each.\n- Multi-browser with all the robust capabilities already in the open-source images.\n\nThere's a lot to cover here so let's get started!\n\n# Software Keys\n\nThe Enterprise image supports time-limited software keys that allow usage for a specific period without requiring any external connections or callbacks. These keys are cryptographically secure and cannot be reverse engineered. When a key expires, the container will exit with a semantic error code.\n\n## Using a Software Key\n\nTo use a software key, set the `KEY` environment variable when running the container:\n\n```bash\ndocker run -e KEY=your-generated-key browserless/enterprise\n```\n\n# Using the Browserless Proxy\n\n> The Residential proxy is only available for Enterprise and Cloud plans.\n\nBrowserless comes with a built-in mechanism to proxy to what's called \"residential\" IPs. These are IP addresses are sourced from real-users running a proxy server on their home networking machines. Residential proxying is especially useful for things like bypassing certain bot blockages and more.\n\nUsing a residential proxy is as straightforward as adding a few parameters to your library or API calls. Here's the required parameters and the values they support:\n\n- `?proxy=residential`: Specifies that you want to use the residential proxy for this request. Data-center coming soon.\n- `?proxyCountry=us`: Specifies a country you wish to use for the request. A two-digit ISO code.\n- `?proxySticky=true`: If you want to use the same IP address for the entirety of the session. Generally recommended for most cases.\n- `?proxyPreset=px_gov01`: Website-specific proxy configuration. Use `px_gov01` for government websites to ensure optimal proxy vendor selection.\n\nSimply append these to your connection call, REST API calls, or any library call:\n\n`wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN&proxy=residential&proxyCountry=us&proxySticky`\n\n`https://production-sfo.browserless.io/chromium/unblock?token=YOUR-API-TOKEN&proxy=residential&proxyCountry=us&proxySticky`\n\nPlease do note that using a proxy will increase the amount of units consumed. Every megabyte of data transferred consumes 6 units.\n\n# The Browserless CDP API\n\nIn order to enhance the experience with open source libraries like Puppeteer, we decided to take a new approach to extending these libraries in a language-agnostic way. We call it the Browserless CDP API. Here's a quick list of what it can do:\n\n- Generate and give back live URLs for hybrid automation.\n- Solve Captchas.\n- Return your page's unique identifier created by Chrome.\n- Way more coming!\n\nSince most libraries come with a way to issue \"raw\" CDP commands, it's an easy way to drop-in custom behaviors without having to write and maintain a library. Plus you can continue to enjoy using the same packages you've already come to know.\n\nGetting started with this API is pretty simple. For instance, if you want to use the live viewer for a particular page, simply do the following:\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n(async () => {\n  const browserWSEndpoint = 'wss://production-sfo.browserless.io/chromium';\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const page = await browser.newPage();\n  const cdp = await page.createCDPSession();\n  await page.goto('https://example.com');\n  const { liveURL } = await cdp.send('Browserless.liveURL');\n\n  // liveURL = 'http://localhost:5555/live/?i=98e83bbfd396241a6963425b1feeba2f';\n})();\n```\n\nYou can then visit this URL in any browser to interact with the headless Chrome running someplace else.\n\nSee more below for a full list of the available APIs and features.\n\n## Browserless.liveURL\n\n> This API is available on all plans except the Free plan. [Contact us for more information here.](https://www.browserless.io/contact/)\n\nReturns a fully-qualified URL to load into a web-browser. This URL allows for clicking, typing and other interactions with the underlying page. This URL doesn't require an authorization token, so you're free to share it externally with your own users or employees. If security is a concern, you can set a `timeout` parameter to limit the amount of time this URL is valid for. By default no `timeout` is set and the URL is good as long as the underlying browser is open.\n\nProgrammatic control of the session is also available, so you can close the live session once your code has detected a selector, network call, or whatever else. See the below example for programmatic control.\n\n**Basic example**\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n(async () => {\n  const browserWSEndpoint =\n    'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN';\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const page = await browser.newPage();\n  const cdp = await page.createCDPSession();\n  await page.goto('https://example.com');\n  const { liveURL } = await cdp.send('Browserless.liveURL');\n\n  // liveURL = 'https://production-sfo.browserless.io/live/?i=98e83bbfd396241a6963425b1feeba2f';\n})();\n```\n\n**Timeout example**\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n(async () => {\n  const browserWSEndpoint =\n    'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN';\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const page = await browser.newPage();\n  const cdp = await page.createCDPSession();\n  await page.goto('https://example.com');\n  const { liveURL } = await cdp.send('Browserless.liveURL', {\n    timeout: 10000, // 10 seconds to connect!\n  });\n\n  // liveURL = 'https://production-sfo.browserless.io/live/?i=98e83bbfd396241a6963425b1feeba2f';\n})();\n```\n\n**Maintaining the width and height**\n\nBy default, Browserless will dynamically change the width and height of the browser to match an end-users screen. This isn't always ideal and can be disabled by setting a `resizable` value to `false`. When this is done, only your script can alter the width and height of the browser:\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n(async () => {\n  const browserWSEndpoint =\n    'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN';\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const page = await browser.newPage();\n\n  // Width and height will always be 1920x1080\n  // and the Live URL will maintain this aspect ratio\n  await page.setViewport({ width: 1920, height: 1080 });\n  const cdp = await page.createCDPSession();\n  await page.goto('https://example.com');\n  const { liveURL } = await cdp.send('Browserless.liveURL', {\n    resizable: false,\n  });\n\n  // liveURL = 'https://production-sfo.browserless.io/live/?i=98e83bbfd396241a6963425b1feeba2f';\n})();\n```\n\n**Setting a Quality and Type**\n\nSetting a \"quality\" and \"type\" effects the streamed quality of the live URL's client-side resolution. By default, Browserless sets these to quality: 70 and type of \"jpeg\". You can experiment different settings to get an ideal resolutions while keep latency slow. The closer to 100 quality is, the potential for higher perceived latency.\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n(async () => {\n  const browserWSEndpoint =\n    'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN';\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const page = await browser.newPage();\n  const cdp = await page.createCDPSession();\n  await page.goto('https://example.com');\n  const { liveURL } = await cdp.send('Browserless.liveURL', {\n    quality: 70, // Can be 1 - 100. Default is 70\n    type: 'jpeg', // Can be 'jpeg' or 'png'. Default is 'jpeg'\n    compressed: true, // Whether to compress each frame of the streamed image data\n  });\n\n  // liveURL = 'https://production-sfo.browserless.io/live/?i=98e83bbfd396241a6963425b1feeba2f';\n})();\n```\n\nIt's also helpful to \"wait\" until the user is done doing what's needed. For that reason, Browserless will fire a custom event when the page is closed as well:\n\n**Wait for close**\n\n> Custom CDP Events are not supported in all libraries, including .NET Playwright.\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n(async () => {\n  const browserWSEndpoint =\n    'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN';\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const page = await browser.newPage();\n  const cdp = await page.createCDPSession();\n  await page.goto('https://example.com');\n\n  const { liveURL } = await cdp.send('Browserless.liveURL');\n\n  console.log(liveURL);\n\n  // Wait for the Browserless.liveComplete event when the live page is closed.\n  // Please not that not all libraries support custom CDP events.\n  await new Promise((r) => cdp.on('Browserless.liveComplete', r));\n\n  console.log('Done!');\n\n  await browser.close();\n})();\n```\n\n**Programmatic Control**\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n(async () => {\n  const browserWSEndpoint =\n    'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN';\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const page = await browser.newPage();\n  const cdp = await page.createCDPSession();\n  await page.goto('https://example.com');\n\n  // Having the liveURLId is required in order to close it later\n  const { liveURL, liveURLId } = await cdp.send('Browserless.liveURL');\n\n  await page.waitForSelector('.my-selector');\n\n  // Calling this CDP API with the \"liveURLId\" will close the session, and terminate the client\n  // further usage of the liveURL will fail and no more human-control is possible\n  await cdp.send('Browserless.closeLiveURL', { liveURLId });\n\n  // Continue to process or interact with the browser, then:\n  await browser.close();\n})();\n```\n\nIt's recommended that you double check the page prior to executing further code to make sure the page is where it should be, elements are present, and so forth. This approach makes it easy to solve hard things like second-factor authentication and more in a trivial fashion.\n\n**Read-only LiveURL Sessions**\n\nThe `interactive: false` option allows you to create read-only LiveURL sessions where users can view the browser but cannot interact with it. This is useful for monitoring or demonstration purposes without allowing user input.\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n(async () => {\n  const browserWSEndpoint =\n    'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN';\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const page = await browser.newPage();\n  const cdp = await page.createCDPSession();\n  await page.goto('https://example.com');\n\n  // Create a read-only LiveURL session that users can view but not interact with\n  const { liveURL } = await cdp.send('Browserless.liveURL', {\n    interactive: false,\n  });\n\n  console.log('Read-only LiveURL:', liveURL);\n\n  await browser.close();\n})();\n```\n\n## Browserless.reconnect\n\n> This API is only available for Enterprise plans. [Contact us for more information here.](https://www.browserless.io/contact/)\n\nReconnecting allows for the underlying Chrome or Chromium process to continue to run for a specified amount of time, and subsequent reconnecting back to it. With this approach you can also \"share\" this connection URL to other clients to connect to the same browser process, allowing you to parallelize via a single Browser process.\n\nOnce a reconnection URL is retrieved, Browserless will intercept close-based commands and stop them from terminating the browser process itself. This prevents clients from accidentally closing the process via `browser.close` or similar.\n\nIn order to use this API, simply call `Browserless.reconnect` as a CDP command. You can, optionally, set a `timeout` or an `auth` property. See the below examples for details\n\n**Basic example with timeout**\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n(async () => {\n  const browserWSEndpoint =\n    'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN';\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const page = await browser.newPage();\n  const cdp = await page.createCDPSession();\n  await page.goto('https://example.com');\n\n  // Allow this browser to run for 10 seconds, then shut down if nothing connects to it.\n  // Defaults to the overall timeout set on the instance, which is 5 minutes if not specified.\n  const { error, browserWSEndpoint } = await cdp.send('Browserless.reconnect', {\n    timeout: 10000,\n  });\n\n  if (error) throw error;\n\n  await browser.close();\n\n  // browserWSEndpoint = 'https://production-sfo.browserless.io/reconnect/98e83bbfd396241a6963425b1feeba2f';\n})();\n```\n\nIf you want to enforce authentication, you can pass in an optional `auth` property that clients will need to use in order to connect with. Similar to how authentication works in general, a `token` query-string parameter will need to be applied.\n\n**Authentication example**\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n(async () => {\n  const browserWSEndpoint =\n    'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN';\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const page = await browser.newPage();\n  const cdp = await page.createCDPSession();\n  await page.goto('https://example.com');\n\n  // Set a custom authentication token that clients have to use in order to connect, or otherwise\n  // receive a 401 Response.\n  const { error, browserWSEndpoint } = await cdp.send('Browserless.reconnect', {\n    auth: 'secret-auth-token',\n  });\n\n  if (error) throw error;\n\n  await browser.close();\n\n  // NOTE the URL here doesn't include the auth token!\n  // browserWSEndpoint = 'https://production-sfo.browserless.io/reconnect/98e83bbfd396241a6963425b1feeba2f';\n})();\n```\n\n**Recursive Example**\n\n```js\nimport puppeteer from 'puppeteer-core';\n\nconst job = async (reconnectURL) => {\n  const browserWSEndpoint =\n    reconnectURL ??\n    'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN';\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const [page] = await browser.page();\n  const cdp = await page.createCDPSession();\n  await page.goto('https://example.com');\n\n  // Anytime Browserless.reconnect is called, this restarts the timer back to the provided value,\n  // effectively \"bumping\" the timer forward.\n  const res = await cdp.send('Browserless.reconnect', {\n    timeout: 30000,\n  });\n\n  if (res.error) throw error;\n\n  await browser.close();\n\n  // Continuously reconnect back...\n  return job(res.browserWSEndpoint);\n};\n\njob().catch((e) => console.error(e));\n```\n\n## Browserless.solveCaptcha\n\n> This API is only available for Enterprise and Scale and above plans on Cloud. [Contact us for more information here.](https://www.browserless.io/contact/). Only the `/chrome` and `/chromium` routes support Captcha solving.\n\nBrowserless comes with built-in captcha solving capabilities. We use a variety of techniques to try and mitigate the chances of captchas coming up, but if you happen to run into one you can simply call on our API to solve it.\n\nGiven the amount of possibilities during a captcha solve, the API returns many properties and information in order to help your script be more informed as to what happened. See the below code example for all details and fields returned by the API.\n\nPlease be aware that solving a captcha can take a few seconds up to several minutes, so you'll want to increase your timeouts accordingly for your scripts. Captcha's solved, or attempted to solve, cost 10 units.\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n(async () => {\n  const browser = await puppeteer.connect({\n    browserWSEndpoint:\n      'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN&timeout=300000',\n  });\n\n  const page = await browser.newPage();\n  const cdp = await page.createCDPSession();\n  await page.goto('https://www.google.com/recaptcha/api2/demo', {\n    waitUntil: 'networkidle0',\n  });\n\n  const {\n    // A simple boolean indicating whether the script can proceed\n    ok,\n    // Whether or not a captcha was found\n    captchaFound,\n    // A human-readable description of what occurred.\n    message,\n    // Whether a solve was attempted or not\n    solveAttempted,\n    // If the Captcha was solved, only true if found AND solved\n    solved,\n  } = await cdp.send('Browserless.solveCaptcha', {\n    // How long to wait for a Captcha to appear to solve.\n    // Defaults to 10,000ms, or 10 seconds.\n    appearTimeout: 30000,\n  });\n\n  console.log(message);\n\n  if (ok) {\n    await page.click('#recaptcha-demo-submit');\n  } else {\n    console.error(`Error solving captcha!`);\n  }\n\n  await browser.close();\n})().catch((e) => {\n  console.error(e);\n  process.exit(1);\n});\n```\n\nIn general, if an `ok` response is sent back from this API, then your script is good to proceed with further actions. If a captcha is to suddenly appears after an action then you might want to listen for the `Browserless.foundCaptcha` event (see below) and retry solving.\n\n## Browserless.foundCaptcha\n\n> This API is only available for Enterprise and Scale and above plans on Cloud. [Contact us for more information here.](https://www.browserless.io/contact/). Only the `/chrome` and `/chromium` routes support Captcha solving.\n\n> Custom CDP Events are not supported in all libraries, including .NET Playwright.\n\nEmitted whenever a captcha widget is found on the page. Useful for checking if there's a captcha and deciding whether or not to proceed with solving.\n\nThe example below stops until a captcha is found, which may or may not be the case with every website out there.\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n// Recaptcha\n(async () => {\n  const browser = await puppeteer.connect({\n    browserWSEndpoint:\n      'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN&timeout=300000',\n  });\n\n  const page = await browser.newPage();\n  const cdp = await page.createCDPSession();\n\n  await page.goto('https://www.google.com/recaptcha/api2/demo', {\n    waitUntil: 'networkidle0',\n  });\n\n  // Please note that not all libraries support custom CDP events.\n  await new Promise((resolve) =>\n    cdp.on('Browserless.captchaFound', (params) => {\n      console.log('Found a captcha!');\n      return resolve();\n    }),\n  );\n\n  const { solved, error } = await cdp.send('Browserless.solveCaptcha');\n  console.log({\n    solved,\n    error,\n  });\n\n  // Continue...\n  await page.click('#recaptcha-demo-submit');\n})().catch((e) => {\n  console.error(e);\n  process.exit(1);\n});\n```\n\n### Event Parameters\n\n| Parameter | Type     | Description                                    |\n| --------- | -------- | ---------------------------------------------- |\n| `type`    | `string` | Captcha type (`recaptcha`, `cloudflare`, etc.) |\n| `status`  | `string` | Status: `\"found\"` or `\"solving\"`               |\n\n## Browserless.captchaAutoSolved\n\n> This API is only available for Enterprise and Scale and above plans on Cloud. [Contact us for more information here.](https://www.browserless.io/contact/). Only the `/chrome` and `/chromium` routes support Captcha solving.\n\n> Custom CDP Events are not supported in all libraries, including .NET Playwright.\n\nEmitted whenever a captcha widget is solved in the page by the auto-solving feature. Note that this event is not emitted when a captcha is solved manually.\n\nTo enable this feature, you need to set the `solveCaptchas` option to `true` in your query parameters while connecting to the browser.\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n// Helper function to wait for a captcha to be solved\nconst waitForCaptchaResolved = (cdp) => {\n  return new Promise((resolve) => {\n    const onCaptchaFound = (params) => {\n      console.log('Captcha found, type:', params.type, params.status);\n      cdp.on('Browserless.captchaAutoSolved', resolve);\n    };\n\n    cdp.on('Browserless.captchaFound', onCaptchaFound);\n  });\n};\n\n// Recaptcha\n(async () => {\n  const browser = await puppeteer.connect({\n    browserWSEndpoint:\n      'wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN&solveCaptchas=true',\n  });\n  const page = await browser.newPage();\n  const cdp = await page.target().createCDPSession();\n\n  await page.goto('https://www.google.com/recaptcha/api2/demo', {\n    waitUntil: 'networkidle0',\n  });\n  const captchaEvent = await waitForCaptchaResolved(cdp);\n  console.log(captchaEvent);\n\n  await browser.close();\n\n  // Continue...\n  await page.click('#recaptcha-demo-submit');\n})().catch((e) => {\n  console.error(e);\n  process.exit(1);\n});\n```\n\n### Event Parameters\n\n| Parameter    | Type             | Description                                 |\n| ------------ | ---------------- | ------------------------------------------- |\n| `autoSolved` | `true`           | Whether captcha was auto-solved             |\n| `token`      | `null \\| string` | Captcha token if solved                     |\n| `found`      | `boolean`        | Whether a captcha was found                 |\n| `solved`     | `boolean`        | Whether the captcha was successfully solved |\n| `time`       | `number`         | Time taken to solve (in milliseconds)       |\n\n## Browserless.heartbeat\n\n> This API is only available for Enterprise hosted and Starter and above plans on Cloud. [Contact us for more information here.](https://www.browserless.io/contact/).\n\n> Custom CDP Events are not supported in all libraries, including .NET Playwright.\n\nA custom event emitted every several seconds, signaling a live connection. This is useful for a few reasons:\n\n- It ensure that your connection with the browser is still good.\n- Sending data can trigger some load-balancing technologies to not kill the connection.\n\nToday this event is emitted every 30 seconds.\n\n```js\nimport puppeteer from 'puppeteer-core';\n\nconst browserWSEndpoint = `wss://production-sfo.browserless.io/chromium?token=YOUR-API-TOKEN`;\n\n(async () => {\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const page = await browser.newPage();\n  await page.goto('https://example.com/');\n  const client = await page.createCDPSession();\n\n  client.on('Browserless.heartbeat', () => {\n    console.log('Browserless.heartbeat');\n  });\n})();\n```\n\n## Browserless.pageId\n\n> This API is only available for Enterprise hosted and Starter and above plans on Cloud. [Contact us for more information here.](https://www.browserless.io/contact/).\n\nA simple helper utility to return the page's unique ID. Since most libraries treat this ID as opaque, and some even hide it, knowing the page's ID can be of great help when interacting with other parts of Browserless.\n\n```js\nimport puppeteer from 'puppeteer-core';\n\n(async () => {\n  const browserWSEndpoint = 'wss://production-sfo.browserless.io/chromium';\n  const browser = await puppeteer.connect({ browserWSEndpoint });\n  const page = await browser.newPage();\n  const cdp = await page.createCDPSession();\n  const { pageId } = await cdp.send('Browserless.pageId');\n\n  // pageId = 'ABC12354AFDC123';\n})();\n```\n\nYou can, optionally, try and \"find\" this ID in puppeteer or similar libraries. Given that puppeteer has this property underscored, it's likely to change or be unavailable in the future, and requires the infamous `// @ts-ignore` comment to allow TypeScript compilation.\n\n```ts\nconst getPageId = (page: Page): string => {\n  // @ts-ignore\n  return page.target()._targetId;\n};\n```\n\n# Changelog\n<blockquote>\n<p>Note that these changes are only for Browserless&#39; cloud, Enterprise and self-hosted Enterprise deployments. For information on the open-source container <a href=\"https://github.com/browserless/browserless/blob/main/CHANGELOG.md\">please refer to this link</a>.</p>\n</blockquote>\n<h1>Latest</h1>\n<ul>\n<li>Dependency updates.</li>\n</ul>\n<h1>v2.95.2</h1>\n<ul>\n<li>Fix in-page WebSocket connections for <code>/function</code> and <code>/download</code> endpoints being blocked on HTTPS deployments due to mixed-content restrictions.</li>\n</ul>\n<h1>v2.95.1</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Add <code>Browserless.refreshProfile</code> CDP method to update an existing profile&#39;s auth state in place without creating a duplicate.</li>\n<li>Updates to <code>@browserless.io/browserless</code> at <code>v2.49.0</code>.</li>\n<li>Reduce production Docker image size by removing development tooling from the final image.</li>\n</ul>\n<h1>v2.95.0</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Fix billing and <code>Browser Session Ended</code> tracking for persistent session and reconnect WebSocket connections (<code>/session/connect/:id</code> and <code>/reconnect/:id</code>); each WebSocket connection is now billed independently, restoring usage accounting for persistent-session traffic.</li>\n<li>Add <code>POST /profile/upload</code> and <code>POST /profile/refresh</code> endpoints to create a profile from a pre-captured auth state or replace an existing profile&#39;s state in place, with server-side sanitization of cookies, origins, and IndexedDB plus a diagnostics field describing what was filtered or truncated.</li>\n<li>Fix LiveURL OAuth login for authenticated profiles, and default the browser type to <code>stealth</code> when creating a profile without specifying one.</li>\n</ul>\n<h1>v2.94.1</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Cap live viewers at 5 per session ID on <code>/live/&lt;id&gt;</code> and return <code>429 Too Many Requests</code> once exceeded, freeing slots automatically when viewers disconnect.</li>\n<li>Include captcha detection and classification in snapshot captures, giving agents better visibility into security challenges encountered during automation.</li>\n<li>Add an optional <code>profile</code> parameter to crawl requests for authenticated scraping; crawls now end early on critical errors, truncate oversized error messages, and return <code>503</code> if the profile service is unavailable.</li>\n</ul>\n<h1>v2.94.0</h1>\n<ul>\n<li>Updates to <code>@browserless.io/browserless</code> at <code>v2.48.3</code>.</li>\n<li>Dependency updates.</li>\n<li>Fix agent snapshot generation when pages contain malformed or empty HTML attributes, so snapshots no longer fail on attribute encoding edge cases.</li>\n<li>Add an optional <code>profile</code> parameter to <code>/scrape</code> requests for server-side hydration of authenticated browser profiles; requests that use a profile now require an API token and return clearer validation errors.</li>\n<li>LiveURL sessions now show distinct end-of-session messages for timeouts versus manual closures, and the message is delivered before the socket disconnects so users actually see it.</li>\n<li>Credit limit error messages now link to <code>https://browserless.io/account/upgrade</code> instead of the generic account page, and have minor grammar fixes.</li>\n</ul>\n<h1>v2.93.0</h1>\n<ul>\n<li>Update <code>@browserless.io/browserless</code> to v2.48.2</li>\n<li>Improve proxy city targeting</li>\n<li>Add tab management methods for agents</li>\n</ul>\n<h1>v2.92.3</h1>\n<ul>\n<li>Add Akamai captcha solving support.</li>\n</ul>\n<h1>v2.92.2</h1>\n<ul>\n<li>Improve browser fingerprint consistency for CPU architecture and font rendering in Docker images.</li>\n<li>Dependency updates</li>\n</ul>\n<h1>v2.92.1</h1>\n<ul>\n<li>Enable agentic browsing for all accounts</li>\n<li>Dependency updates</li>\n</ul>\n<h1>v2.92.0</h1>\n<ul>\n<li>Add authenticated profiles: capture a logged-in browser&#39;s cookies, localStorage, and IndexedDB once via <code>Browserless.saveProfile</code>, then reuse on any session with <code>?profile=&lt;name&gt;</code>.</li>\n<li>Add HTTP API for profile lifecycle: <code>POST /profile</code>, <code>GET /profiles</code>, <code>GET|PUT|DELETE /profile/:name</code>.</li>\n</ul>\n<h1>v2.91.0</h1>\n<ul>\n<li>Add route for agentic browsing</li>\n</ul>\n<h1>v2.90.6</h1>\n<ul>\n<li>Set default <code>/crawl</code> scrape timeout to 150s.</li>\n<li>Add <code>customer.id</code> to OpenTelemetry resource attributes.</li>\n<li>Add <code>Content-Disposition</code> header for PDF API responses.</li>\n<li>Improve hCaptcha handling by hiding the auto-challenge.</li>\n<li>Cache uBOL-home release metadata in the adblock build.</li>\n</ul>\n<h1>v2.90.5</h1>\n<ul>\n<li>Update search limits: Free 1→3, Prototyping 3→5, Starter 5→10, Scale 10→20.</li>\n<li>Dependency updates.</li>\n</ul>\n<h1>v2.90.4</h1>\n<ul>\n<li>Improve DataDome captcha solving reliability.</li>\n</ul>\n<h1>v2.90.3</h1>\n<ul>\n<li>Add captcha solving support for browser-use sessions.</li>\n</ul>\n<h1>v2.90.2</h1>\n<ul>\n<li>Add DataDome captcha solving support.</li>\n<li>Improve smart-scrape captcha detection and post-challenge navigation.</li>\n<li>Add captcha solving support for browser-use sessions.</li>\n<li>Improve <code>/crawl</code> API with enhanced orchestration and documentation.</li>\n<li>Fix timeout override for applicable routes.</li>\n<li>Fix session TTL display for browser sessions.</li>\n<li>Bug fixes and improvements.</li>\n</ul>\n<h1>v2.90.1</h1>\n<ul>\n<li>Bug fixes and improvements.</li>\n</ul>\n<h1>v2.90.0</h1>\n<ul>\n<li>New crawl API for scalable web crawling.</li>\n<li>Fix BQL <code>close()</code> overwriting reconnect <code>keepUntil</code> with zero TTL.</li>\n</ul>\n<h1>v2.89.2</h1>\n<ul>\n<li>Updates to <code>@browserless.io/browserless</code> at <code>v2.46.0</code>.</li>\n<li>Fix 400 errors caused by strict <code>Record&lt;string,string&gt;</code> types in API schemas.</li>\n<li>Fix Docker multi-heavy base image tagging.</li>\n<li>Dependency updates.</li>\n</ul>\n<h1>v2.89.1</h1>\n<ul>\n<li>Updates to <code>@browserless.io/browserless</code> at <code>v2.45.0</code>.</li>\n<li>Fix proxy SSL certificate errors (<code>ERR_CERT_AUTHORITY_INVALID</code>).</li>\n<li>Improve proxy vendor health checks and failover reliability.</li>\n<li>Harden URL validation against SSRF and DNS rebinding.</li>\n<li>Fix session TTL management.</li>\n<li>Fix <code>stopRecording</code> hanging in certain error conditions.</li>\n<li>Fix recording quality for VHS sessions.</li>\n<li>Unify scrape format types across REST API schemas.</li>\n</ul>\n<h1>v2.89.0</h1>\n<ul>\n<li>Add metadata enrichment for <code>/map</code> endpoint.</li>\n<li>Add option to transfer base64 instead of binary for recordings.</li>\n<li>Fix liveURL blank screen.</li>\n<li>Fix bypass CSP for virtual keyboard and emulated <code>&lt;select&gt;</code>s.</li>\n<li>Fix high CPU consumption for <code>/map</code>.</li>\n<li>Add <code>--disable-component-extensions-with-background-pages</code> to stealth args.</li>\n</ul>\n<h1>v2.88.2</h1>\n<ul>\n<li>Updates to <code>browserless.io/browserless</code> at <code>v2.43.0</code>.</li>\n</ul>\n<h1>v2.88.1</h1>\n<ul>\n<li>New <code>/map</code> API.</li>\n<li>Add <code>emulateComponents</code> option for liveURL.</li>\n<li>Dependency updates.</li>\n</ul>\n<h1>v2.87.0</h1>\n<ul>\n<li>Deprecate <code>codes</code> in <code>waitForResponse</code> mutation, favoring <code>statuses</code> instead.</li>\n<li>Fix <code>&lt;select /&gt;</code> elements in liveURL view.</li>\n<li>Enable uploaded extensions cache.</li>\n<li>New <code>/search</code> API.</li>\n</ul>\n<h1>v2.86.1</h1>\n<ul>\n<li>Power-scrape endpoint is now smart-scrape.</li>\n<li>Improve Turnstile captcha detection and solving.</li>\n<li>Improve session replay in reconnect sessions.</li>\n<li>Improve stealth chromium for persistent sessions.</li>\n</ul>\n<h1>v2.86.0</h1>\n<ul>\n<li>Updates to <code>browserless.io/browserless</code> at <code>v2.42.0</code>.</li>\n<li>Updates NodeJS to <code>24.14.0</code>.</li>\n<li>Supports <code>puppeteer-core</code> version <code>24.37.5</code>.</li>\n<li>Dependency updates.</li>\n<li>Added support for loading extensions from session metadata.</li>\n</ul>\n<h1>v2.85.1</h1>\n<ul>\n<li>Supports HTTPs third party proxies in BQL</li>\n<li>Fixes mobile typing bug in liveURL</li>\n</ul>\n<h1>v2.85.0</h1>\n<ul>\n<li>Updates to <code>browserless.io/browserless</code> at <code>v2.41.0</code>.</li>\n<li>Supports <code>puppeteer-core</code> version <code>24.37.4</code>.</li>\n<li>OTEL support.</li>\n</ul>\n<h1>v2.84.2</h1>\n<ul>\n<li>Fix power scraper initialization bug</li>\n</ul>\n<h1>v2.84.1</h1>\n<ul>\n<li>Fix query param validation bug</li>\n</ul>\n<h1>v2.84.0</h1>\n<ul>\n<li>New power scrape endpoint for intelligent content extraction.</li>\n<li>Fix external proxies in BQL incorrectly charging proxy units.</li>\n</ul>\n<h1>v2.83.0</h1>\n<ul>\n<li>Fix proxy consumption bug</li>\n<li>Fix screencasting video dimensions</li>\n<li>Improve docker image size</li>\n</ul>\n<h1>v2.82.1</h1>\n<ul>\n<li>Bug fixes.</li>\n</ul>\n<h1>v2.82.0</h1>\n<ul>\n<li>Added new proxy vendor.</li>\n<li>New <code>processKeepAlive</code> flag.</li>\n<li>Fix screencasting video dimensions.</li>\n<li><code>liveURL</code> connection issues.</li>\n</ul>\n<h1>v2.81.0</h1>\n<ul>\n<li>Updates to <code>browserless.io/browserless</code> at <code>v2.39.0</code>.</li>\n<li>Session replay improvements.</li>\n<li>Improve proxy mutations in BQL.</li>\n<li>Additional captchas support.</li>\n<li>Supports <code>playwright-core</code> versions <code>1.41.2</code>, <code>1.42.1</code>, <code>1.43.1</code>, <code>1.44.1</code>, <code>1.45.3</code>, <code>1.46.1</code>, <code>1.47.2</code>, <code>1.48.2</code>, <code>1.49.1</code>, <code>1.50.1</code>, <code>1.51.1</code>, <code>1.52.0</code>, <code>1.53.2</code>, <code>1.54.2</code>, <code>1.55.1</code>, <code>1.56.1</code>, <code>1.57.0</code> and <code>1.58.1</code>.</li>\n<li>Supports <code>puppeteer-core</code> version <code>24.36.1</code>.</li>\n</ul>\n<h1>v2.80.1</h1>\n<ul>\n<li>Improve CAPTCHA detection and solving.</li>\n<li>Support for external proxy server parameter.</li>\n</ul>\n<h1>v2.80.0</h1>\n<ul>\n<li>Updates to <code>browserless.io/browserless</code> at <code>v2.38.4</code>.</li>\n<li>Updates NodeJS to <code>24.13.0</code>.</li>\n<li>Improve captcha solving performance.</li>\n<li>Additional captchas support.</li>\n<li>Supports <code>playwright-core</code> versions <code>1.41.2</code>, <code>1.42.1</code>, <code>1.43.1</code>, <code>1.44.1</code>, <code>1.45.3</code>, <code>1.46.1</code>, <code>1.47.2</code>, <code>1.48.2</code>, <code>1.49.1</code>, <code>1.50.1</code>, <code>1.51.1</code>, <code>1.52.0</code>, <code>1.53.2</code>, <code>1.54.2</code>, <code>1.55.1</code>, <code>1.56.1</code> and <code>1.57.0</code>.</li>\n<li>Supports <code>puppeteer-core</code> version <code>24.36.0</code>.</li>\n</ul>\n<h1>v2.79.2</h1>\n<ul>\n<li>Improve CAPTCHA detection and solving.</li>\n</ul>\n<h1>v2.79.1</h1>\n<ul>\n<li>Improve liveURL rendering in high DPI displays.</li>\n<li>Bug fixes.</li>\n</ul>\n<h1>v2.79.0</h1>\n<ul>\n<li>Improve CAPTCHA detection mechanism.</li>\n<li>Fix bug where deeply nested elements weren&#39;t found in nested shadow DOMs</li>\n</ul>\n<h1>v2.78.3</h1>\n<ul>\n<li>Improved BQL proxy URL regeneration on reconnects</li>\n<li>Streamlined event logging</li>\n</ul>\n<h1>v2.78.2</h1>\n<ul>\n<li>Improved proxy connection reliability</li>\n</ul>\n<h1>v2.78.1</h1>\n<ul>\n<li>Upgraded browser tracking TTL</li>\n</ul>\n<h1>v2.78.0</h1>\n<ul>\n<li>Improved stealth and bot detection evasion capabilities</li>\n</ul>\n<h1>v2.77.1</h1>\n<ul>\n<li>Fix black screen issue with live urls</li>\n</ul>\n<h1>v2.77.0</h1>\n<ul>\n<li>New <code>MAX_RECONNECT_TIME</code> launch flag</li>\n<li>Ensure the WS connection is always closed when using the <code>/kill</code> endpoint</li>\n<li>Improve captcha detection</li>\n<li>Fix bug in live URL that added an offset to mouse events</li>\n</ul>\n<h1>v2.76.0</h1>\n<ul>\n<li>Improve proxy reliability and performance</li>\n<li>Fix third party proxies for BQL</li>\n<li>Improve captcha solving performance</li>\n</ul>\n<h1>v2.75.0</h1>\n<ul>\n<li>Improved proxy reliability and performance</li>\n<li>Enhanced captcha detection</li>\n<li>Better stealth mode compatibility</li>\n<li>Session replay improvements</li>\n</ul>\n<h1>v2.74.4</h1>\n<ul>\n<li>Stealth route enhancements</li>\n<li>Connection stability improvements</li>\n</ul>\n<h1>v2.74.3</h1>\n<ul>\n<li>Enhanced captcha handling</li>\n</ul>\n<h1>v2.74.2</h1>\n<ul>\n<li>Bug fixes and improvements</li>\n</ul>\n<h1>v2.74.1</h1>\n<ul>\n<li>Added proxy provider configuration options</li>\n</ul>\n<h1>v2.74.0</h1>\n<ul>\n<li>Dependency updates</li>\n<li>Improved captcha support for BQL</li>\n<li>Performance optimizations</li>\n</ul>\n<h1>v2.73.2</h1>\n<ul>\n<li>Improve Resdential Proxy Quaility</li>\n</ul>\n<h1>v2.73.1</h1>\n<ul>\n<li>Minor improvements in liveURL client</li>\n</ul>\n<h1>v2.73.0</h1>\n<ul>\n<li>Add <code>proxyLocaleMatch</code> parameter to set browser language based on proxy country</li>\n<li>Fix BQL session replay</li>\n</ul>\n<h1>v2.72.1</h1>\n<ul>\n<li>Deprecate <code>verify</code> mutation</li>\n<li>Improve captcha callback function caller</li>\n<li>Improve internal logs</li>\n</ul>\n<h1>v2.72.0</h1>\n<ul>\n<li>Added new proxy vendor</li>\n<li>New <code>solveImageCaptcha</code> mutation</li>\n<li>Better handle proxy requests that contains cities</li>\n</ul>\n<h1>v2.71.1</h1>\n<ul>\n<li>Fix bug in <code>/unblock</code> API where it errored if the <code>screenshot</code> parameter was not set</li>\n<li>Allow all paid accounts to use the screencasting API</li>\n</ul>\n<h1>v2.71.0</h1>\n<ul>\n<li>Implemented new proxy provider</li>\n<li>Improved Cloudflare CAPTCHA solver</li>\n</ul>\n<h1>v2.70.2</h1>\n<ul>\n<li>Updated proxy provider priority</li>\n</ul>\n<h1>v2.70.1</h1>\n<ul>\n<li>Improved recaptcha-v3 solver for speed and reliability improvements</li>\n<li>Added <code>/proxy/cities</code> API endpoint for getting a list of supported proxy cities</li>\n<li>Improved selectors for normal captcha, and Cloudflare captcha</li>\n</ul>\n<h1>v2.70.0</h1>\n<ul>\n<li>Improved recaptcha v3 support</li>\n<li>Add fallback between captcha solvers</li>\n<li>Improve event logging</li>\n</ul>\n<h1>v2.69.1</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Improved recaptcha v2 support in stealth routes</li>\n</ul>\n<h1>v2.69.0</h1>\n<ul>\n<li>Match the browsers to the stealth endpoints.</li>\n<li>Cloudflare captcha tracking improvements</li>\n</ul>\n<h1>v2.68.5</h1>\n<ul>\n<li>Added support for Turnstile Cloudflare captcha</li>\n<li>Fixed amplitude attempt events to track Cloudflare captchas correctly</li>\n<li>Added captcha subtype to amplitude events</li>\n</ul>\n<h1>v2.68.4</h1>\n<ul>\n<li>clean disk space before building docker images</li>\n</ul>\n<h1>v2.68.3</h1>\n<ul>\n<li>Restore automation of timezone and add proxy city validation changes</li>\n</ul>\n<h1>v2.68.1</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Bug fixes and improvements</li>\n</ul>\n<h1>v2.68.0</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Allow <code>--disable-bundled-ppapi-flash</code>, <code>--disable-dev-shm-usage</code>, <code>--disable-domain-reliability</code>, <code>--disable-gpu</code>, <code>--disable-speech-api</code>, <code>--disable-webgl</code>, and <code>--wm-window-animations-disabled</code> flags to be used.</li>\n<li>Improve CAPTCHA solvers.</li>\n</ul>\n<h1>v2.67.1</h1>\n<ul>\n<li>Bug fixes and improvements</li>\n</ul>\n<h1>v2.67.0</h1>\n<ul>\n<li>Updates to <code>browserless.io/browserless</code> at <code>v2.38.2</code>.</li>\n<li>Supports <code>playwright-core</code> versions <code>1.41.2</code>, <code>1.42.1</code>, <code>1.43.1</code>, <code>1.44.1</code>, <code>1.45.3</code>, <code>1.46.1</code>, <code>1.47.2</code>, <code>1.48.2</code>, <code>1.49.1</code>, <code>1.50.1</code>, <code>1.51.1</code>, <code>1.52.0</code>, <code>1.53.2</code>, <code>1.54.2</code>, and <code>1.55.1</code>.</li>\n<li>Supports <code>puppeteer-core</code> version <code>24.26.1</code>.</li>\n<li>Allow using Brave on BQL</li>\n<li>Captcha selector fixes</li>\n</ul>\n<h1>v2.66.2</h1>\n<ul>\n<li>Critical security bug fix</li>\n</ul>\n<h1>v2.66.1</h1>\n<ul>\n<li>Critical security bug fix</li>\n</ul>\n<h1>v2.66.0</h1>\n<ul>\n<li>Revert proxy city and timezone changes</li>\n<li>Upgrade Playwright, Puppeteer and Browserless</li>\n<li>Upgrade Chrome to 141.0</li>\n<li>Support for Capy challenges</li>\n</ul>\n<h1>v2.65.2</h1>\n<ul>\n<li>Improve CAPTCHA detection and solving.</li>\n</ul>\n<h1>v2.65.1</h1>\n<ul>\n<li>Add city database for proxy validation</li>\n<li>Validate cities against supported proxy providers</li>\n<li>Automate timezone based on proxy location</li>\n</ul>\n<h1>v2.65.0</h1>\n<ul>\n<li>Dependency updates</li>\n<li>New <code>@export</code> directive</li>\n<li>Fix <code>timeout</code> in solve captcha mutations</li>\n<li>Normalize allowed cities for proxies</li>\n<li>Fix Amplitude IDs for sessions</li>\n</ul>\n<h1>v2.64.3</h1>\n<ul>\n<li>Fix Amplitude logging error</li>\n</ul>\n<h1>v2.64.1</h1>\n<ul>\n<li>Allow using <code>solveCaptchas</code> on stealth routes.</li>\n</ul>\n<h1>v2.64.0</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>New feature: auto solve captcha.</li>\n<li>Improve captcha resolution state polling.</li>\n<li>Fix captcha solving edge cases.</li>\n</ul>\n<h1>v2.63.3</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Log more event properties on <code>Captcha Solve Error</code> events.</li>\n<li>Allow sending <code>acceptInsecureCerts</code> as query param.</li>\n<li>Improve captcha-solving parameter sanitation.</li>\n</ul>\n<h1>v2.63.2</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Updates to @browserless.io/browserless 2.37.1.</li>\n</ul>\n<h1>v2.63.1</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Switches to <code>ioredis</code> for cloud-unit platform.</li>\n</ul>\n<h1>v2.63.0</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Major <code>/stealth</code> route enhancements.</li>\n<li>Many testing updates for internal stability.</li>\n<li>Fixes BrowserQL <code>goto</code> calls that return a chrome-related error.</li>\n<li>Other fixes and updates for stealth and captcha solving.</li>\n</ul>\n<h1>v2.62.1</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Better timeout messages on cloud platform.</li>\n<li>Other testing fixes.</li>\n</ul>\n<h1>v2.62.0</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Update to @browserless.io/browserless 2.37.0.</li>\n<li>Minor build updates and unit-test enhancements.</li>\n<li>BrowserQL <code>click</code> mutation fixes and reliability improvements.</li>\n<li>Fix /pdf, /screenshot and other REST APIs with requestInterceptors that contain base64 responses.</li>\n<li>Other minor fixes and improvements.</li>\n</ul>\n<h1>v2.61.2</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Cleanup of internal docs.</li>\n<li>Fixes and issue with /unblock API&#39;s <code>waitForFn</code> properties.</li>\n</ul>\n<h1>v2.61.1</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Fixes an issue where /unblock might orphan the browser process.</li>\n<li>Logging and analytics improvements in cloud.</li>\n</ul>\n<h1>v2.61.0</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Update to Ubuntu 24.04.</li>\n<li>Update @browserless.io/browserless to 2.36.0.</li>\n<li>New <code>switchToWindow</code> BrowserQL API.</li>\n<li>Stealth enhancements and updates.</li>\n<li>Prettier changes on source, logging cleanup.</li>\n</ul>\n<h1>v2.60.1</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>BrowserQL documentation updates and enhancements.</li>\n<li>Analytical improvements on the cloud-unit platform.</li>\n</ul>\n<h1>v2.60.0</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Replay feature is now shipped for cloud-unit.</li>\n<li>Documentation cleanup and updates.</li>\n<li>Updated request parsing and parameter handling.</li>\n<li>Hybrid URL logging clean up.</li>\n<li>Stealth enhancements and improvements.</li>\n</ul>\n<h1>v2.59.0</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Stealth updates to all stealth enabled routes.</li>\n<li>Fixes and updates to our captcha-solving capabilities.</li>\n<li>Use <code>npm ci</code> for production builds (prevents unintentional package updates).</li>\n<li>Other fixes and updates.</li>\n</ul>\n<h1>v2.57.0</h1>\n<ul>\n<li>New fingerprint management and rotation for browserless&#39; <code>/stealth</code> CDP routes!</li>\n<li>Updates to browserless.io/browserless@<code>2.34.1</code></li>\n<li>Supports <code>playwright-core</code> versions <code>1.41.2</code>, <code>1.42.1</code>, <code>1.43.1</code>, <code>1.44.1</code>, <code>1.45.3</code>, <code>1.46.1</code>, <code>1.47.2</code>, <code>1.48.2</code>, <code>1.49.1</code>, <code>1.50.1</code>, <code>1.51.1</code>, <code>1.52.0</code>, <code>1.53.1</code>, and <code>1.54.2</code>.</li>\n<li>Supports <code>puppeteer-core</code> version <code>24.16.2</code>.</li>\n<li>Captcha solving updates and improvements.</li>\n</ul>\n<h1>v2.56.0</h1>\n<ul>\n<li>Updates to <code>browserless.io/browserless</code> at <code>v2.34.0</code>.</li>\n<li>Supports <code>playwright-core</code> versions <code>1.41.2</code>, <code>1.42.1</code>, <code>1.43.1</code>, <code>1.44.1</code>, <code>1.45.3</code>, <code>1.46.1</code>, <code>1.47.2</code>, <code>1.48.2</code>, <code>1.49.1</code>, <code>1.50.1</code>, <code>1.51.1</code>, <code>1.52.0</code>, <code>1.53.1</code>, and <code>1.54.2</code>.</li>\n<li>Supports <code>puppeteer-core</code> version <code>24.16.1</code>.</li>\n<li>Supports using of Chrome Extensions in cloud-unit products. Please refer to documentation on how to use this new feature.</li>\n<li>Sessions API now support interoperability with BrowserQL.</li>\n<li>Introduces a new vendor for Captcha Solving.</li>\n<li>New environment variables:<ul>\n<li><code>EXTENSIONS_DIR</code> The directory to store extensions onto.</li>\n<li><code>LOAD_EXTENSIONS_FROM_CLOUD</code> Whether or not to load extensions from a S3 compatible URL.</li>\n<li><code>EXTENSIONS_CLOUD_BUCKET</code> The bucket for extensions to be loaded from.</li>\n<li><code>EXTENSIONS_CLOUD_REGION</code> The region to load extensions from.</li>\n<li><code>CAPSOLVER_API_KEY</code> An API key to use for when Capsolver is used for captcha solving.</li>\n</ul>\n</li>\n</ul>\n<h1>v2.55.0</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Reverts some breaking stealth changes in favor of stability.</li>\n<li>Adds a &quot;mode&quot; option in BQL&#39;s <code>removeAttributes</code> parameter for better HTML parsing.</li>\n</ul>\n<h1>v2.54.0</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>New LiveURL updates that include an optional <code>showBrowserInterface</code> for rendering all the tabs.</li>\n<li>Fixes some issues with stealth and headers that Chrome generates.</li>\n</ul>\n<h1>v2.53.1</h1>\n<ul>\n<li>Revert live-URL updates until they&#39;re backwards compatible.</li>\n</ul>\n<h1>v2.53.0</h1>\n<ul>\n<li>Dependency updates.g</li>\n<li>New <code>viewport</code> API for BQL.</li>\n<li>Consolidation of some internal utilities for consistency sake.</li>\n<li>Big improvements to the <code>/stealth</code> routes for CDP libraries.</li>\n<li>You can <code>solveCaptcha</code> without specifying the vendor in BQL.</li>\n<li>Support for proxying through residential proxy providers.</li>\n<li>Fixes an issue in BQL that can cause a browser to stay open when navigating.</li>\n<li><code>LiveURL</code> can now support multi-tabs workflows.</li>\n<li>Testing fixes.</li>\n</ul>\n<h1>v2.52.4</h1>\n<ul>\n<li>Fixes an issue when deleting sessions</li>\n</ul>\n<h1>v2.52.3</h1>\n<ul>\n<li>Updates to proxying for future compatibility</li>\n</ul>\n<h1>v2.52.2</h1>\n<ul>\n<li>Fixes an issue where proxying can cause un-necessary latency</li>\n</ul>\n<h1>v2.52.1</h1>\n<ul>\n<li>Fix BQL navigation not filtering out iframe page events.</li>\n</ul>\n<h1>v2.52.0</h1>\n<ul>\n<li>Dependency updates.</li>\n<li>Fixes navigation (<code>goto</code>, <code>back</code>, <code>forward</code>) issues in BQL for goto, forward and backward actions.</li>\n<li><code>blockConsentModal</code> is now default to <code>false</code> in BQL as it sometimes causes sites to hang indefinitely when loading.</li>\n<li>New <code>amazonWaf</code> for BQL captcha solving.</li>\n<li>New downloading handling forcing all downloads to be in a configurable path by setting a <code>DOWNLOAD_DIR</code>.</li>\n<li>Fix <code>page</code>&#39;s created by playwright&#39;s <code>context</code> object hanging.</li>\n<li>Fix issues with CDP-based screen-recording.</li>\n<li>Other fixes, improvements, and reliability enhancements.</li>\n<li>Bumps <code>puppeteer-core</code> to <code>24.12.1</code>.</li>\n<li>Bumps <code>playwright-core</code> to <code>1.54.1</code>.</li>\n<li>Drops support for <code>playwright-core</code> at <code>1.49</code>.</li>\n<li>Supports:<ul>\n<li>puppeteer-core: <code>24.12.1</code></li>\n<li>playwright-core: <code>1.41.2</code>, <code>1.42.1</code>, <code>1.43.1</code>, <code>1.44.1</code>, <code>1.45.3</code>, <code>1.46.1</code>, <code>1.47.2</code>, <code>1.48.2</code>, <code>1.49.1</code>, <code>1.50.1</code>, <code>1.51.1</code>, <code>1.52.0</code>,</li>\n<li>Chromium: <code>139.0.7258.5</code></li>\n<li>Firefox: <code>140.0.2</code></li>\n<li>Webkit: <code>26.0</code></li>\n<li>Chrome: <code>138.0.7204.101</code> (amd64 only)</li>\n<li>Edge: <code>138.0.3351.83</code> (amd64 only)</li>\n</ul>\n</li>\n</ul>\n"
+servers: []
+tags:
+- name: Browser WebSocket APIs
+paths:
+  /:
+    get:
+      definitions: {}
+      description: 'Launch and connect to Chromium with a library like puppeteer or others that work over chrome-devtools-protocol.
+
+
+        **Note:** This endpoint is also available at: `/chromium` for backwards compatibility.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrations
+        schema:
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          description: The type of proxy to use, currently just 'residential' is supported
+          type: string
+          const: residential
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests, defaults to true
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: record
+        schema:
+          type: boolean
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: solveCaptchas
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /
+      tags:
+      - Browser WebSocket APIs
+  /devtools/browser/*:
+    get:
+      definitions: {}
+      description: 'Connect to an already-running Chromium process with a library like
+
+        puppeteer, or others, that work over chrome-devtools-protocol. Chromium
+
+        must already be launched in order to not return a 404.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /devtools/browser/*
+      tags:
+      - Browser WebSocket APIs
+  /chrome:
+    get:
+      definitions: {}
+      description: Launch and connect to Chromium with a library like puppeteer or others that work over chrome-devtools-protocol.
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrations
+        schema:
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          description: The type of proxy to use, currently just 'residential' is supported
+          type: string
+          const: residential
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests, defaults to true
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: record
+        schema:
+          type: boolean
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: solveCaptchas
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chrome
+      tags:
+      - Browser WebSocket APIs
+  /function/connect/*:
+    get:
+      definitions: {}
+      description: Internally used by the POST /function API to connect the underlying client-side code to. Not intended for direct use but documented for completeness and to distinguish between other reconnect style calls.
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /function/connect/*
+      tags:
+      - Browser WebSocket APIs
+  /devtools/page/*:
+    get:
+      definitions: {}
+      description: 'Connect to an existing page in Chromium with a library like
+
+        chrome-remote-interface or others that work the page websocketDebugger
+
+        URL. You can get this unique URL by calling the /json/list API
+
+        or by finding the page''s unique ID from your library of choice.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /devtools/page/*
+      tags:
+      - Browser WebSocket APIs
+  /chrome/playwright:
+    get:
+      definitions: {}
+      description: Connect to Chromium with any playwright style library.
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chrome/playwright
+      tags:
+      - Browser WebSocket APIs
+  /chromium:
+    get:
+      definitions: {}
+      description: 'Launch and connect to Chromium with a library like puppeteer or others that work over chrome-devtools-protocol.
+
+
+        **Note:** This endpoint is also available at: `/` for backwards compatibility.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chromium
+      tags:
+      - Browser WebSocket APIs
+  /chromium/playwright:
+    get:
+      definitions: {}
+      description: 'Connect to Chromium with any playwright style library.
+
+
+        **Note:** This endpoint is also available at: `/playwright/chromium` for backwards compatibility.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chromium/playwright
+      tags:
+      - Browser WebSocket APIs
+  /edge:
+    get:
+      definitions: {}
+      description: Launch and connect to Chromium with a library like puppeteer or others that work over chrome-devtools-protocol.
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrations
+        schema:
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          description: The type of proxy to use, currently just 'residential' is supported
+          type: string
+          const: residential
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests, defaults to true
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: record
+        schema:
+          type: boolean
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: solveCaptchas
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /edge
+      tags:
+      - Browser WebSocket APIs
+  /edge/playwright:
+    get:
+      definitions: {}
+      description: Connect to Chromium with any playwright style library.
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /edge/playwright
+      tags:
+      - Browser WebSocket APIs
+  /firefox/playwright:
+    get:
+      definitions: {}
+      description: 'Connect to Firefox with any playwright-compliant library.
+
+
+        **Note:** This endpoint is also available at: `/playwright/firefox` for backwards compatibility.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          additionalProperties: false
+          type: object
+          properties:
+            args:
+              type: array
+              items:
+                type: string
+            chromiumSandbox:
+              type: boolean
+            devtools:
+              type: boolean
+            downloadsPath:
+              type: string
+            headless:
+              type: boolean
+            ignoreDefaultArgs:
+              anyOf:
+              - type: array
+                items:
+                  type: string
+              - type: boolean
+            proxy:
+              type: object
+              properties:
+                bypass:
+                  type: string
+                password:
+                  type: string
+                server:
+                  type: string
+                username:
+                  type: string
+              additionalProperties: false
+              required:
+              - server
+            timeout:
+              type: number
+            tracesDir:
+              type: string
+            firefoxUserPrefs:
+              type: object
+              additionalProperties:
+                type:
+                - string
+                - number
+                - boolean
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /firefox/playwright
+      tags:
+      - Browser WebSocket APIs
+  /webkit/playwright:
+    get:
+      definitions: {}
+      description: 'Connect to Webkit with any playwright-compliant library.
+
+
+        **Note:** This endpoint is also available at: `/playwright/webkit` for backwards compatibility.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /webkit/playwright
+      tags:
+      - Browser WebSocket APIs
+  /stealth/bql?(/*):
+    get:
+      definitions: {}
+      description: 'WebSocket endpoint for BrowserQL. Connect to establish a persistent browser
+
+        session, then send multiple GraphQL operations as JSON messages. The browser
+
+        and page state persist across all messages for the connection duration.
+
+
+        Messages use the same JSON format as the HTTP POST endpoint:
+
+        Send: { "query": "mutation { goto(url: \"..\") { status } }", "variables": {} }
+
+        Receive: { "data": { "goto": { "status": 200 } } }'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockConsentModals
+        schema:
+          type: boolean
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: humanlike
+        schema:
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options for the browser, either as a JSON object or a JSON string.
+
+            Includes options like `headless`, `args`, `defaultViewport`, etc.
+
+            Must be either JSON object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          description: The type of proxy to use, currently just 'residential' is supported
+          type: string
+          const: residential
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests, defaults to true
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /stealth/bql?(/*)
+      tags:
+      - Browser WebSocket APIs
+  /chrome/bql?(/*):
+    get:
+      definitions: {}
+      description: 'WebSocket endpoint for BrowserQL. Connect to establish a persistent browser
+
+        session, then send multiple GraphQL operations as JSON messages. The browser
+
+        and page state persist across all messages for the connection duration.
+
+
+        Messages use the same JSON format as the HTTP POST endpoint:
+
+        Send: { "query": "mutation { goto(url: \"..\") { status } }", "variables": {} }
+
+        Receive: { "data": { "goto": { "status": 200 } } }'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockConsentModals
+        schema:
+          type: boolean
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: humanlike
+        schema:
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options for the browser, either as a JSON object or a JSON string.
+
+            Includes options like `headless`, `args`, `defaultViewport`, etc.
+
+            Must be either JSON object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          description: The type of proxy to use, currently just 'residential' is supported
+          type: string
+          const: residential
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests, defaults to true
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chrome/bql?(/*)
+      tags:
+      - Browser WebSocket APIs
+  /chromium/bql?(/*):
+    get:
+      definitions: {}
+      description: 'WebSocket endpoint for BrowserQL. Connect to establish a persistent browser
+
+        session, then send multiple GraphQL operations as JSON messages. The browser
+
+        and page state persist across all messages for the connection duration.
+
+
+        Messages use the same JSON format as the HTTP POST endpoint:
+
+        Send: { "query": "mutation { goto(url: \"..\") { status } }", "variables": {} }
+
+        Receive: { "data": { "goto": { "status": 200 } } }'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockConsentModals
+        schema:
+          type: boolean
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: humanlike
+        schema:
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options for the browser, either as a JSON object or a JSON string.
+
+            Includes options like `headless`, `args`, `defaultViewport`, etc.
+
+            Must be either JSON object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          description: The type of proxy to use, currently just 'residential' is supported
+          type: string
+          const: residential
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests, defaults to true
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chromium/bql?(/*)
+      tags:
+      - Browser WebSocket APIs
+  /stealth:
+    get:
+      definitions: {}
+      description: Launch and connect to Stealthy Chromium with a library like puppeteer or others that work over chrome-devtools-protocol for scraping in a more stealth-like fashion.
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrations
+        schema:
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          description: The type of proxy to use, currently just 'residential' is supported
+          type: string
+          const: residential
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests, defaults to true
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: record
+        schema:
+          type: boolean
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: solveCaptchas
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /stealth
+      tags:
+      - Browser WebSocket APIs
+  /chrome/live/*:
+    get:
+      definitions: {}
+      description: '> This API is only available on paid plans. [Sign-up here](https://www.browserless.io/pricing/).
+
+
+        Websocket back-end that powers the live session experience.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chrome/live/*
+      tags:
+      - Browser WebSocket APIs
+  /chrome/stealth:
+    get:
+      definitions: {}
+      description: Launch and connect to Stealthy Chrome with a library like puppeteer or others that work over chrome-devtools-protocol for scraping in a more stealth-like fashion.
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrations
+        schema:
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          description: The type of proxy to use, currently just 'residential' is supported
+          type: string
+          const: residential
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests, defaults to true
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: record
+        schema:
+          type: boolean
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: solveCaptchas
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chrome/stealth
+      tags:
+      - Browser WebSocket APIs
+  /live/*:
+    get:
+      definitions: {}
+      description: '> This API is only available on paid plans. [Sign-up here](https://www.browserless.io/pricing/).
+
+
+        Websocket back-end that powers the live session experience.
+
+
+        **Note:** This endpoint is also available at: `/chromium/live/*` for backwards compatibility.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /live/*
+      tags:
+      - Browser WebSocket APIs
+  /chromium/stealth:
+    get:
+      definitions: {}
+      description: Launch and connect to Stealthy Chromium with a library like puppeteer or others that work over chrome-devtools-protocol for scraping in a more stealth-like fashion.
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrations
+        schema:
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          description: The type of proxy to use, currently just 'residential' is supported
+          type: string
+          const: residential
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests, defaults to true
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: record
+        schema:
+          type: boolean
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: solveCaptchas
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chromium/stealth
+      tags:
+      - Browser WebSocket APIs
+  /reconnect/*:
+    get:
+      definitions: {}
+      description: Reconnect to an existing Chromium or Chrome session with a library like puppeteer or others that work over chrome-devtools-protocol.
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: integrations
+        schema:
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - $ref: '#/definitions/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: solveCaptchas
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /reconnect/*
+      tags:
+      - Browser WebSocket APIs
+  /session/connect/*:
+    get:
+      definitions: {}
+      description: 'Connect to an existing session with a library like puppeteer or playwright that work over chrome-devtools-protocol. See documentation for more details on how to start the session.
+
+
+        The browser type (Chrome/Chromium, stealth/regular) is determined from the session metadata when it was created initially.'
+      parameters:
+      - in: query
+        name: launch
+        schema:
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          type: number
+      - in: query
+        name: token
+        schema:
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /session/connect/*
+      tags:
+      - Browser WebSocket APIs
+  /chromium/agent:
+    get:
+      definitions: {}
+      description: 'WebSocket endpoint for agentic browser interaction. Connect to establish a
+
+        persistent browser session, then send JSON-RPC messages to control the browser.
+
+
+        Uses a simple JSON protocol instead of GraphQL:
+
+        Send: { "id": 1, "method": "goto", "params": { "url": "https://example.com" } }
+
+        Receive: { "id": 1, "result": { "status": 200, "url": "https://example.com" } }
+
+
+        All BQL mutations are available as methods (goto, click, type, screenshot, etc.).
+
+        Additionally supports a "snapshot" method that returns interactive page elements
+
+        with CSS selectors, plus tab-management methods (getTabs, switchTab, createTab,
+
+        closeTab) for multi-tab workflows.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockConsentModals
+        schema:
+          description: Whether to automatically block cookie consent modals and popups.
+          type: boolean
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: humanlike
+        schema:
+          description: 'Whether to enable human-like behavior for interactions.
+
+            When true, actions like typing and clicking will have randomized delays.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options for the browser, either as a JSON object or a JSON string.
+
+            Includes options like `headless`, `args`, `defaultViewport`, etc.
+
+            Must be either JSON object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          description: The type of proxy to use, currently just 'residential' is supported
+          type: string
+          const: residential
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests, defaults to true
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: replay
+        schema:
+          description: 'Whether to enable session recording for replay.
+
+            When true, the session will be recorded and can be replayed later.'
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chromium/agent
+      tags:
+      - Browser WebSocket APIs
+definitions:
+  CDPLaunchOptions:
+    type: object
+    properties:
+      args:
+        type: array
+        items:
+          type: string
+      defaultViewport:
+        type: object
+        properties:
+          deviceScaleFactor:
+            type: number
+          hasTouch:
+            type: boolean
+          height:
+            type: number
+          isLandscape:
+            type: boolean
+          isMobile:
+            type: boolean
+          width:
+            type: number
+        additionalProperties: false
+        required:
+        - height
+        - width
+      devtools:
+        type: boolean
+      dumpio:
+        type: boolean
+      headless:
+        enum:
+        - false
+        - shell
+        - true
+      ignoreDefaultArgs:
+        anyOf:
+        - type: array
+          items:
+            type: string
+        - type: boolean
+      ignoreHTTPSErrors:
+        type: boolean
+      acceptInsecureCerts:
+        type: boolean
+      slowMo:
+        type: number
+      stealth:
+        type: boolean
+      timeout:
+        type: number
+      userDataDir:
+        type: string
+      waitForInitialPage:
+        type: boolean
+    additionalProperties: false
+  BrowserServerOptions:
+    type: object
+    properties:
+      args:
+        type: array
+        items:
+          type: string
+      chromiumSandbox:
+        type: boolean
+      devtools:
+        type: boolean
+      downloadsPath:
+        type: string
+      headless:
+        type: boolean
+      ignoreDefaultArgs:
+        anyOf:
+        - type: array
+          items:
+            type: string
+        - type: boolean
+      proxy:
+        type: object
+        properties:
+          bypass:
+            type: string
+          password:
+            type: string
+          server:
+            type: string
+          username:
+            type: string
+        additionalProperties: false
+        required:
+        - server
+      timeout:
+        type: number
+      tracesDir:
+        type: string
+    additionalProperties: false
