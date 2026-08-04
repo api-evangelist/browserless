@@ -1,0 +1,23 @@
+{
+  "provider": "browserless",
+  "sources": [
+    "browserless-browser-rest-apis-api-openapi.yml",
+    "browserless-browser-websocket-apis-api-openapi.yml",
+    "browserless-management-rest-apis-api-openapi.yml"
+  ],
+  "outputs": [
+    "browserless-browser-rest-apis-api-openapi.yml",
+    "browserless-browser-websocket-apis-api-openapi.yml",
+    "browserless-management-rest-apis-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [
+    "browserless-browser-rest-apis-api-openapi.yml: dangling $ref: #/definitions/Record%3Cstring%2Cany%3E",
+    "browserless-browser-rest-apis-api-openapi.yml: dangling $ref: #/definitions/Record%3Cstring%2Cstring%3E",
+    "browserless-browser-rest-apis-api-openapi.yml: dangling $ref: #/definitions/Record%3Cstring%2Cunknown%3E",
+    "browserless-management-rest-apis-api-openapi.yml: dangling $ref: #/definitions/Record%3Cstring%2Cany%3E"
+  ],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}
