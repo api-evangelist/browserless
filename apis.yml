@@ -138,7 +138,7 @@ apis:
     url: https://www.browserless.io/pricing
   - type: Enterprise
     url: https://www.browserless.io/enterprise
-  - type: MCP
+  - type: MCPServer
     url: https://mcp.browserless.io/mcp
   - type: GraphQL
     url: graphql/browserless-graphql.md
@@ -223,7 +223,7 @@ apis:
     url: https://www.browserless.io/pricing
   - type: Enterprise
     url: https://www.browserless.io/enterprise
-  - type: MCP
+  - type: MCPServer
     url: https://mcp.browserless.io/mcp
   - type: GraphQL
     url: graphql/browserless-graphql.md
@@ -308,7 +308,7 @@ apis:
     url: https://www.browserless.io/pricing
   - type: Enterprise
     url: https://www.browserless.io/enterprise
-  - type: MCP
+  - type: MCPServer
     url: https://mcp.browserless.io/mcp
   - type: GraphQL
     url: graphql/browserless-graphql.md
