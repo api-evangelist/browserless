@@ -118,14 +118,6 @@ apis:
     url: rate-limits/browserless-rate-limits.yml
   - type: FinOps
     url: finops/browserless-finops.yml
-  - type: Capabilities
-    url: capabilities/rest-apis.yaml
-  - type: Capabilities
-    url: capabilities/browserql.yaml
-  - type: Capabilities
-    url: capabilities/sessions.yaml
-  - type: Capabilities
-    url: capabilities/profiles.yaml
   - type: Vocabulary
     url: vocabulary/browserless-vocabulary.yml
   - type: Rules
@@ -203,14 +195,6 @@ apis:
     url: rate-limits/browserless-rate-limits.yml
   - type: FinOps
     url: finops/browserless-finops.yml
-  - type: Capabilities
-    url: capabilities/rest-apis.yaml
-  - type: Capabilities
-    url: capabilities/browserql.yaml
-  - type: Capabilities
-    url: capabilities/sessions.yaml
-  - type: Capabilities
-    url: capabilities/profiles.yaml
   - type: Vocabulary
     url: vocabulary/browserless-vocabulary.yml
   - type: Rules
@@ -288,14 +272,6 @@ apis:
     url: rate-limits/browserless-rate-limits.yml
   - type: FinOps
     url: finops/browserless-finops.yml
-  - type: Capabilities
-    url: capabilities/rest-apis.yaml
-  - type: Capabilities
-    url: capabilities/browserql.yaml
-  - type: Capabilities
-    url: capabilities/sessions.yaml
-  - type: Capabilities
-    url: capabilities/profiles.yaml
   - type: Vocabulary
     url: vocabulary/browserless-vocabulary.yml
   - type: Rules
@@ -313,6 +289,10 @@ apis:
   - type: GraphQL
     url: graphql/browserless-graphql.md
 common:
+- type: IssueTracker
+  url: https://github.com/browserless/browserless/issues
+- type: Releases
+  url: https://github.com/browserless/browserless/releases
 - type: AgenticAccess
   url: agentic-access/browserless-agentic-access.yml
 - type: TrustCenter
