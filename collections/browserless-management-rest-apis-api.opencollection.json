@@ -1,0 +1,397 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Browserless Browser REST APIs Management REST APIs API",
+    "version": "2.49.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Management REST APIs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "/active",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/active"
+          },
+          "docs": "Returns a simple \"204\" HTTP code, with no response, indicating that the service itself is up and running.\nUseful for liveliness probes or other external checks."
+        },
+        {
+          "info": {
+            "name": "/kill/+([0-9a-zA-Z-_])",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/kill/+([0-9a-zA-Z-_])",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "browserId",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Kill running sessions based on BrowserId or TrackingId."
+        },
+        {
+          "info": {
+            "name": "/meta",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/meta"
+          },
+          "docs": "Returns a JSON payload of the current system versions, including the core API version."
+        },
+        {
+          "info": {
+            "name": "/browser/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/browser/*"
+          },
+          "docs": "Terminates a browser instance by browserId. The browser must belong to the authenticated user."
+        },
+        {
+          "info": {
+            "name": "/proxy/cities",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/proxy/cities",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "country",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Returns a list of available cities for proxy connections.\n\nThis endpoint requires city proxying to be enabled on your plan.\n\nQuery Parameters:\n- country (optional): Filter cities by two-letter country code (e.g., 'US', 'GB', 'DE')\n\nThe response includes a list of available cities grouped by country code."
+        },
+        {
+          "info": {
+            "name": "/session",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/session",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a new browser session with the specified parameters. The session can be used for persistent browser connections\nwith well-defined lifetimes and reconnection semantics. BrowserQL support is only available for stealth sessions."
+        },
+        {
+          "info": {
+            "name": "/session/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/session/*",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "force",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Deletes a session and its associated data. This will immediately terminate any active connections to the session if \"force\" is applied.\n\nQuery Parameters:\n- force (optional): If true, forces deletion even if the session has active connections"
+        },
+        {
+          "info": {
+            "name": "/session/bql/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/session/bql/*",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "replay",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "> Executes BrowserQL queries against an existing session. The session must be a stealth session to support BrowserQL.\n\nBrowserQL is a GraphQL-based query language for browser automation that allows you to interact with web pages using a declarative syntax.\nQueries execute within the context of your existing session, maintaining browser state and session data across multiple operations."
+        },
+        {
+          "info": {
+            "name": "/profile",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/profile",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Launches a temporary browser session for creating an authenticated profile.\nConnect via the returned WebSocket URL, authenticate in the browser,\nthen call Browserless.saveProfile via CDP to capture and persist the auth state.\nThe profile is NOT saved automatically — you must explicitly call\nBrowserless.saveProfile before disconnecting. The session expires after 10 minutes."
+        },
+        {
+          "info": {
+            "name": "/profile/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/profile/*"
+          },
+          "docs": "Returns metadata for a specific authentication profile.\nThe profile name is the URL-encoded path segment after \"/profile/\".\nReturns 404 if no profile with that name exists for this token."
+        },
+        {
+          "info": {
+            "name": "/profile/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/profile/*",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Renames an authentication profile. The new name must be unique per token.\nThe current name is the URL-encoded path segment after \"/profile/\".\nReturns 400 if the new name is already taken, 404 if the source profile is not found."
+        },
+        {
+          "info": {
+            "name": "/profile/*",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/profile/*"
+          },
+          "docs": "Deletes an authentication profile and its captured state.\nThe profile name is the URL-encoded path segment after \"/profile/\".\nReturns 404 if no profile with that name exists for this token."
+        },
+        {
+          "info": {
+            "name": "/profiles",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "{{baseUrl}}/profiles",
+            "params": [
+              {
+                "name": "blockAds",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "launch",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "profile",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timeout",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "token",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "trackingId",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Lists authentication profiles owned by the requesting token.\nPaginated via \"limit\" (default 100, capped at 1000) and \"offset\" (default 0).\nReturns an empty array if the token has no profiles."
+        },
+        {
+          "info": {
+            "name": "/profile/refresh",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/profile/refresh",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Replaces the state of an existing authentication profile in place.\nThe \"name\" must already exist for the requesting token. Counts of any\ndropped or truncated entries are surfaced under \"diagnostics\"."
+        },
+        {
+          "info": {
+            "name": "/profile/upload",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "{{baseUrl}}/profile/upload",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a new authentication profile from a pre-captured \"state\" payload\n(cookies plus per-origin localStorage and IndexedDB). The \"name\" must be\nunique per token. Counts of any dropped or truncated entries are\nsurfaced under \"diagnostics\"."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
