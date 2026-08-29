@@ -13,8 +13,8 @@ info:
     and executed without opening the underlying OpenAPI description.
   version: 1.0.0
 sourceDescriptions:
-- name: browserlessApi
-  url: ../openapi/browserless-openapi.yml
+- name: browserRestApisApi
+  url: ../openapi/browserless-browser-rest-apis-api-openapi.yml
   type: openapi
 workflows:
 - workflowId: content-to-pdf
@@ -40,7 +40,7 @@ workflows:
     description: >-
       Render the URL to fully parsed HTML and return it as the html output for
       reuse in the PDF step.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1content/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1content/post'
     parameters:
     - name: token
       in: query
@@ -58,7 +58,7 @@ workflows:
     description: >-
       Generate a PDF from the captured HTML string by supplying it as the html
       payload instead of a URL, producing a self-contained document.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1pdf/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1pdf/post'
     parameters:
     - name: token
       in: query

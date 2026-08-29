@@ -13,8 +13,8 @@ info:
     description.
   version: 1.0.0
 sourceDescriptions:
-- name: browserlessApi
-  url: ../openapi/browserless-openapi.yml
+- name: browserRestApisApi
+  url: ../openapi/browserless-browser-rest-apis-api-openapi.yml
   type: openapi
 workflows:
 - workflowId: unblock-then-render
@@ -40,7 +40,7 @@ workflows:
     description: >-
       Clear bot detection on the URL, returning the page cookies, HTML content,
       and a base64 full-page screenshot.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1unblock/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1unblock/post'
     parameters:
     - name: token
       in: query
@@ -63,7 +63,7 @@ workflows:
     description: >-
       Re-render the page HTML via /chrome/content, injecting the cookies
       recovered from the unblock step so the render reuses the cleared session.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1content/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1content/post'
     parameters:
     - name: token
       in: query
@@ -82,7 +82,7 @@ workflows:
     description: >-
       Generate a PDF of the same URL, reusing the recovered cookies so the PDF
       reflects the unblocked page.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1pdf/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1pdf/post'
     parameters:
     - name: token
       in: query

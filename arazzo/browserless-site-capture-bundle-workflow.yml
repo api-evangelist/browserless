@@ -12,8 +12,8 @@ info:
     and executed without opening the underlying OpenAPI description.
   version: 1.0.0
 sourceDescriptions:
-- name: browserlessApi
-  url: ../openapi/browserless-openapi.yml
+- name: browserRestApisApi
+  url: ../openapi/browserless-browser-rest-apis-api-openapi.yml
   type: openapi
 workflows:
 - workflowId: site-capture-bundle
@@ -43,7 +43,7 @@ workflows:
     description: >-
       Load the URL and return the fully rendered HTML content after JavaScript
       has parsed and executed.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1content/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1content/post'
     parameters:
     - name: token
       in: query
@@ -64,7 +64,7 @@ workflows:
     description: >-
       Capture a PNG screenshot of the same URL. Returns a base64-encoded or
       binary image payload.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1screenshot/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1screenshot/post'
     parameters:
     - name: token
       in: query
@@ -88,7 +88,7 @@ workflows:
     description: >-
       Generate a print-ready PDF of the same URL, returning the binary PDF
       payload.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1pdf/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1pdf/post'
     parameters:
     - name: token
       in: query

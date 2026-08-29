@@ -13,8 +13,8 @@ info:
     underlying OpenAPI description.
   version: 1.0.0
 sourceDescriptions:
-- name: browserlessApi
-  url: ../openapi/browserless-openapi.yml
+- name: browserRestApisApi
+  url: ../openapi/browserless-browser-rest-apis-api-openapi.yml
   type: openapi
 workflows:
 - workflowId: function-download
@@ -47,7 +47,7 @@ workflows:
     description: >-
       Run the setup JavaScript against a Browserless session to navigate to and
       prepare the page that will emit the download.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1function/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1function/post'
     parameters:
     - name: token
       in: query
@@ -65,7 +65,7 @@ workflows:
     description: >-
       Run the download JavaScript, which triggers the file download. The
       response carries the captured downloaded artifacts.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1download/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1download/post'
     parameters:
     - name: token
       in: query

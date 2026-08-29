@@ -14,8 +14,8 @@ info:
     executed without opening the underlying OpenAPI description.
   version: 1.0.0
 sourceDescriptions:
-- name: browserlessApi
-  url: ../openapi/browserless-openapi.yml
+- name: browserRestApisApi
+  url: ../openapi/browserless-browser-rest-apis-api-openapi.yml
   type: openapi
 workflows:
 - workflowId: function-then-screenshot
@@ -48,7 +48,7 @@ workflows:
     description: >-
       Execute the supplied JavaScript against a Browserless session. The
       response shape is determined by the function's returned value.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1function/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1function/post'
     parameters:
     - name: token
       in: query
@@ -66,7 +66,7 @@ workflows:
     description: >-
       Capture a full-page PNG screenshot of the URL to confirm the page state
       after the function executed.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1screenshot/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1screenshot/post'
     parameters:
     - name: token
       in: query

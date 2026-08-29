@@ -15,8 +15,8 @@ info:
     description.
   version: 1.0.0
 sourceDescriptions:
-- name: browserlessApi
-  url: ../openapi/browserless-openapi.yml
+- name: browserRestApisApi
+  url: ../openapi/browserless-browser-rest-apis-api-openapi.yml
   type: openapi
 workflows:
 - workflowId: full-page-archive
@@ -58,7 +58,7 @@ workflows:
     description: >-
       Clear bot detection on the URL, returning cookies, HTML content, and a
       base64 full-page screenshot.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1unblock/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1unblock/post'
     parameters:
     - name: token
       in: query
@@ -96,7 +96,7 @@ workflows:
     description: >-
       Extract structured element data for the supplied selectors from the
       unblocked URL, reusing the cookies recovered from the unblock step.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1scrape/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1scrape/post'
     parameters:
     - name: token
       in: query
@@ -119,7 +119,7 @@ workflows:
     description: >-
       Fall back to rendering the page HTML via /chrome/content when the unblock
       step returned no content, reusing the recovered cookies.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1content/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1content/post'
     parameters:
     - name: token
       in: query

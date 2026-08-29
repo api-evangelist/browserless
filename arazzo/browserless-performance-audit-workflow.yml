@@ -13,8 +13,8 @@ info:
     description.
   version: 1.0.0
 sourceDescriptions:
-- name: browserlessApi
-  url: ../openapi/browserless-openapi.yml
+- name: browserRestApisApi
+  url: ../openapi/browserless-browser-rest-apis-api-openapi.yml
   type: openapi
 workflows:
 - workflowId: performance-audit
@@ -45,7 +45,7 @@ workflows:
     description: >-
       Run a Lighthouse-style performance audit on the URL, returning the audit
       report as a JSON object.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1performance/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1performance/post'
     parameters:
     - name: token
       in: query
@@ -63,7 +63,7 @@ workflows:
     description: >-
       Capture a full-page PNG screenshot of the audited URL to accompany the
       performance report.
-    operationPath: '{$sourceDescriptions.browserlessApi.url}#/paths/~1chrome~1screenshot/post'
+    operationPath: '{$sourceDescriptions.browserRestApisApi.url}#/paths/~1chrome~1screenshot/post'
     parameters:
     - name: token
       in: query
