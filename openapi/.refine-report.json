@@ -1,9 +1,7 @@
 {
   "provider": "browserless",
   "sources": [
-    "browserless-browser-rest-apis-api-openapi.yml",
-    "browserless-browser-websocket-apis-api-openapi.yml",
-    "browserless-management-rest-apis-api-openapi.yml"
+    "_original/browserless-openapi.yml"
   ],
   "outputs": [
     "browserless-browser-rest-apis-api-openapi.yml",
@@ -12,12 +10,22 @@
   ],
   "archived": [],
   "errors": [
-    "browserless-browser-rest-apis-api-openapi.yml: dangling $ref: #/definitions/Record%3Cstring%2Cany%3E",
-    "browserless-browser-rest-apis-api-openapi.yml: dangling $ref: #/definitions/Record%3Cstring%2Cstring%3E",
-    "browserless-browser-rest-apis-api-openapi.yml: dangling $ref: #/definitions/Record%3Cstring%2Cunknown%3E",
-    "browserless-management-rest-apis-api-openapi.yml: dangling $ref: #/definitions/Record%3Cstring%2Cany%3E"
+    "browserless-openapi.yml: dangling $ref: #/definitions/Record%3Cstring%2Cany%3E",
+    "browserless-openapi.yml: dangling $ref: #/definitions/Record%3Cstring%2Cstring%3E",
+    "browserless-openapi.yml: dangling $ref: #/definitions/Record%3Cstring%2Cunknown%3E"
   ],
   "warnings": [],
-  "notes": [],
-  "skipped": []
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "browserless-openapi.yml: upgraded openapi 3.0.0 -> OpenAPI 3.2.0",
+    "browserless-openapi.yml: declared missing tag: Browser REST APIs",
+    "browserless-openapi.yml: declared missing tag: Browser WebSocket APIs",
+    "browserless-openapi.yml: declared missing tag: Management REST APIs",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "browserless-browser-rest-apis-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "browserless-browser-websocket-apis-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "browserless-management-rest-apis-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }
