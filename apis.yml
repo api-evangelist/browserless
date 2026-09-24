@@ -149,8 +149,6 @@ apis:
     url: https://www.browserless.io/enterprise
   - type: MCPServer
     url: https://mcp.browserless.io/mcp
-  - type: GraphQL
-    url: graphql/browserless-graphql.md
 - aid: browserless:browserless-browser-websocket-apis-api
   name: Browserless Browser WebSocket APIs API
   description: >-
@@ -226,8 +224,6 @@ apis:
     url: https://www.browserless.io/enterprise
   - type: MCPServer
     url: https://mcp.browserless.io/mcp
-  - type: GraphQL
-    url: graphql/browserless-graphql.md
 - aid: browserless:browserless-management-rest-apis-api
   name: Browserless Management REST APIs API
   description: >-
@@ -303,8 +299,6 @@ apis:
     url: https://www.browserless.io/enterprise
   - type: MCPServer
     url: https://mcp.browserless.io/mcp
-  - type: GraphQL
-    url: graphql/browserless-graphql.md
 common:
 - type: IssueTracker
   url: https://github.com/browserless/browserless/issues

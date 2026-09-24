@@ -1,1 +1,0 @@
-# Browserless GraphQL API
