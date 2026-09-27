@@ -9505,149 +9505,179 @@ paths:
       operationId: postCrawl
       x-operation-id-source: derived
 definitions:
-  CDPLaunchOptions:
+  PageStatus:
+    enum:
+    - cancelled
+    - completed
+    - failed
+    - in-progress
+    - queued
+    type: string
+  ScrapeElementSelector:
     type: object
     properties:
-      args:
-        type: array
-        items:
-          type: string
-      defaultViewport:
-        type: object
-        properties:
-          deviceScaleFactor:
-            type: number
-          hasTouch:
-            type: boolean
-          height:
-            type: number
-          isLandscape:
-            type: boolean
-          isMobile:
-            type: boolean
-          width:
-            type: number
-        additionalProperties: false
-        required:
-        - height
-        - width
-      devtools:
-        type: boolean
-      dumpio:
-        type: boolean
-      headless:
-        enum:
-        - false
-        - shell
-        - true
-      ignoreDefaultArgs:
-        anyOf:
-        - type: array
-          items:
-            type: string
-        - type: boolean
-      ignoreHTTPSErrors:
-        type: boolean
-      acceptInsecureCerts:
-        type: boolean
-      slowMo:
-        type: number
-      stealth:
-        type: boolean
+      selector:
+        type: string
       timeout:
         type: number
-      userDataDir:
+    additionalProperties: false
+    required:
+    - selector
+  CookieParam:
+    description: 'Cookie parameter object used to set cookies in the page-level cookies
+
+      API.'
+    type: object
+    properties:
+      name:
+        description: Cookie name.
         type: string
-      waitForInitialPage:
+      value:
+        description: Cookie value.
+        type: string
+      url:
+        description: 'The request-URI to associate with the setting of the cookie. This value can affect
+
+          the default domain, path, and source scheme values of the created cookie.'
+        type: string
+      domain:
+        description: Cookie domain.
+        type: string
+      path:
+        description: Cookie path.
+        type: string
+      secure:
+        description: True if cookie is secure.
+        type: boolean
+      httpOnly:
+        description: True if cookie is http-only.
+        type: boolean
+      sameSite:
+        description: Cookie SameSite type.
+        enum:
+        - Default
+        - Lax
+        - None
+        - Strict
+        type: string
+      expires:
+        description: Cookie expiration date, session cookie if not set
+        type: number
+      priority:
+        description: Cookie Priority. Supported only in Chrome.
+        enum:
+        - High
+        - Low
+        - Medium
+        type: string
+      sameParty:
+        type: boolean
+      sourceScheme:
+        description: Cookie source scheme type. Supported only in Chrome.
+        enum:
+        - NonSecure
+        - Secure
+        - Unset
+        type: string
+      partitionKey:
+        description: 'Cookie partition key. In Chrome, it matches the top-level site the
+
+          partitioned cookie is available in. In Firefox, it matches the
+
+          source origin in the
+
+          {@link https://w3c.github.io/webdriver-bidi/#type-storage-PartitionKey PartitionKey}.'
+        anyOf:
+        - $ref: '#/definitions/CookiePartitionKey'
+        - type: string
+    additionalProperties: false
+    required:
+    - name
+    - value
+  JSONSchema:
+    type: object
+    properties:
+      code:
+        type: string
+      context:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/ContextValue'
+    additionalProperties: false
+    required:
+    - code
+  Viewport:
+    type: object
+    properties:
+      width:
+        description: The page width in CSS pixels.
+        type: number
+      height:
+        description: The page height in CSS pixels.
+        type: number
+      deviceScaleFactor:
+        description: 'Specify device scale factor.
+
+          See {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio devicePixelRatio} for more info.'
+        type: number
+      isMobile:
+        description: Whether the `meta viewport` tag is taken into account.
+        type: boolean
+      isLandscape:
+        description: Specifies if the viewport is in landscape mode.
+        type: boolean
+      hasTouch:
+        description: Specify if the viewport supports touch events.
         type: boolean
     additionalProperties: false
-  TimeBasedOptions:
-    type: string
-    enum:
-    - day
-    - week
-    - month
-    - year
-    - day
-    - week
-    - month
-    - year
-  OutBoundRequest:
-    type: object
-    properties:
-      headers: {}
-      method:
-        type: string
-      url:
-        type: string
-    additionalProperties: false
     required:
-    - headers
-    - method
-    - url
-  PDFMargin:
+    - height
+    - width
+  ScreenshotOptions:
     type: object
     properties:
-      top:
-        type:
-        - string
-        - number
-      bottom:
-        type:
-        - string
-        - number
-      left:
-        type:
-        - string
-        - number
-      right:
-        type:
-        - string
-        - number
-    additionalProperties: false
-  InBoundRequest:
-    type: object
-    properties:
-      headers: {}
-      status:
+      optimizeForSpeed:
+        type: boolean
+      type:
+        enum:
+        - jpeg
+        - png
+        - webp
+        type: string
+      quality:
+        description: Quality of the image, between 0-100. Not applicable to `png` images.
         type: number
-      url:
+      fromSurface:
+        description: Capture the screenshot from the surface, rather than the view.
+        type: boolean
+      fullPage:
+        description: When `true`, takes a screenshot of the full page.
+        type: boolean
+      omitBackground:
+        description: Hides default white background and allows capturing screenshots with transparency.
+        type: boolean
+      path:
+        description: 'The file path to save the image to. The screenshot type will be inferred
+
+          from file extension. If path is a relative path, then it is resolved
+
+          relative to current working directory. If no path is provided, the image
+
+          won''t be saved to the disk.'
         type: string
+      clip:
+        description: Specifies the region of the page/element to clip.
+        $ref: '#/definitions/ScreenshotClip'
+      encoding:
+        description: Encoding of the image.
+        enum:
+        - base64
+        - binary
+        type: string
+      captureBeyondViewport:
+        description: Capture the screenshot beyond the viewport.
+        type: boolean
     additionalProperties: false
-    required:
-    - headers
-    - status
-    - url
-  PaperFormat:
-    description: All the valid paper format types when printing a PDF.
-    enum:
-    - A0
-    - A1
-    - A2
-    - A3
-    - A4
-    - A5
-    - A6
-    - LEDGER
-    - LEGAL
-    - LETTER
-    - Ledger
-    - Legal
-    - Letter
-    - TABLOID
-    - Tabloid
-    - a0
-    - a1
-    - a2
-    - a3
-    - a4
-    - a5
-    - a6
-    - ledger
-    - legal
-    - letter
-    - tabloid
-    type: string
   Cookie:
     description: Represents a cookie object.
     type: object
@@ -9729,6 +9759,162 @@ definitions:
     - session
     - size
     - value
+  ScreenshotClip:
+    type: object
+    properties:
+      scale:
+        type: number
+      width:
+        description: the width of the element in pixels.
+        type: number
+      height:
+        description: the height of the element in pixels.
+        type: number
+      x:
+        type: number
+      y:
+        type: number
+    additionalProperties: false
+    required:
+    - height
+    - width
+    - x
+    - y
+  ScrapeDebugOptions:
+    type: object
+    properties:
+      console:
+        type: boolean
+      cookies:
+        type: boolean
+      html:
+        type: boolean
+      network:
+        type: boolean
+      screenshot:
+        type: boolean
+    additionalProperties: false
+  CrawlListItem:
+    type: object
+    properties:
+      id:
+        type: string
+      url:
+        type: string
+      status:
+        $ref: '#/definitions/CrawlStatus'
+      total:
+        type: number
+      completed:
+        type: number
+      createdAt:
+        type: string
+      completedAt:
+        type: string
+    additionalProperties: false
+    required:
+    - completed
+    - completedAt
+    - createdAt
+    - id
+    - status
+    - total
+    - url
+  CrawlPageResponse:
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/PageStatus'
+      contentUrl:
+        type: string
+      metadata:
+        type: object
+        properties:
+          title:
+            type: string
+          description:
+            type: string
+          language:
+            type: string
+          scrapedAt:
+            type: string
+          sourceURL:
+            type: string
+          statusCode:
+            type: number
+          error:
+            type: string
+        additionalProperties: false
+        required:
+        - description
+        - error
+        - language
+        - scrapedAt
+        - sourceURL
+        - statusCode
+        - title
+    additionalProperties: false
+    required:
+    - contentUrl
+    - metadata
+    - status
+  ContextValue:
+    anyOf:
+    - type: array
+      items:
+        $ref: '#/definitions/ContextValue'
+    - type: object
+      additionalProperties:
+        $ref: '#/definitions/ContextValue'
+    - type:
+      - 'null'
+      - string
+      - number
+      - boolean
+  FrameAddStyleTagOptions:
+    type: object
+    properties:
+      url:
+        description: the URL of the CSS file to be added.
+        type: string
+      path:
+        description: The path to a CSS file to be injected into the frame.
+        type: string
+      content:
+        description: Raw CSS content to be injected into the frame.
+        type: string
+    additionalProperties: false
+  TimeBasedOptions:
+    type: string
+    enum:
+    - day
+    - week
+    - month
+    - year
+    - day
+    - week
+    - month
+    - year
+  PDFMargin:
+    type: object
+    properties:
+      top:
+        type:
+        - string
+        - number
+      bottom:
+        type:
+        - string
+        - number
+      left:
+        type:
+        - string
+        - number
+      right:
+        type:
+        - string
+        - number
+    additionalProperties: false
   BrowserServerOptions:
     type: object
     properties:
@@ -9769,87 +9955,126 @@ definitions:
       tracesDir:
         type: string
     additionalProperties: false
-  CookieParam:
-    description: 'Cookie parameter object used to set cookies in the page-level cookies
+  PuppeteerLifeCycleEvent:
+    enum:
+    - domcontentloaded
+    - load
+    - networkidle0
+    - networkidle2
+    type: string
+  CookieSourceScheme:
+    description: 'Represents the source scheme of the origin that originally set the cookie. A value of
 
-      API.'
+      "Unset" allows protocol clients to emulate legacy cookie scope for the scheme.
+
+      This is a temporary ability and it will be removed in the future.'
+    enum:
+    - NonSecure
+    - Secure
+    - Unset
+    type: string
+  Credentials:
     type: object
     properties:
-      name:
-        description: Cookie name.
+      username:
         type: string
-      value:
-        description: Cookie value.
+      password:
         type: string
-      url:
-        description: 'The request-URI to associate with the setting of the cookie. This value can affect
-
-          the default domain, path, and source scheme values of the created cookie.'
-        type: string
-      domain:
-        description: Cookie domain.
-        type: string
-      path:
-        description: Cookie path.
-        type: string
-      secure:
-        description: True if cookie is secure.
-        type: boolean
-      httpOnly:
-        description: True if cookie is http-only.
-        type: boolean
-      sameSite:
-        description: Cookie SameSite type.
-        enum:
-        - Default
-        - Lax
-        - None
-        - Strict
-        type: string
-      expires:
-        description: Cookie expiration date, session cookie if not set
-        type: number
-      priority:
-        description: Cookie Priority. Supported only in Chrome.
-        enum:
-        - High
-        - Low
-        - Medium
-        type: string
-      sameParty:
-        type: boolean
-      sourceScheme:
-        description: Cookie source scheme type. Supported only in Chrome.
-        enum:
-        - NonSecure
-        - Secure
-        - Unset
-        type: string
-      partitionKey:
-        description: 'Cookie partition key. In Chrome, it matches the top-level site the
-
-          partitioned cookie is available in. In Firefox, it matches the
-
-          source origin in the
-
-          {@link https://w3c.github.io/webdriver-bidi/#type-storage-PartitionKey PartitionKey}.'
-        anyOf:
-        - $ref: '#/definitions/CookiePartitionKey'
-        - type: string
     additionalProperties: false
     required:
-    - name
-    - value
-  CookieSameSite:
-    description: 'Represents the cookie''s ''SameSite'' status:
+    - password
+    - username
+  CDPLaunchOptions:
+    type: object
+    properties:
+      args:
+        type: array
+        items:
+          type: string
+      defaultViewport:
+        type: object
+        properties:
+          deviceScaleFactor:
+            type: number
+          hasTouch:
+            type: boolean
+          height:
+            type: number
+          isLandscape:
+            type: boolean
+          isMobile:
+            type: boolean
+          width:
+            type: number
+        additionalProperties: false
+        required:
+        - height
+        - width
+      devtools:
+        type: boolean
+      dumpio:
+        type: boolean
+      headless:
+        enum:
+        - false
+        - shell
+        - true
+      ignoreDefaultArgs:
+        anyOf:
+        - type: array
+          items:
+            type: string
+        - type: boolean
+      ignoreHTTPSErrors:
+        type: boolean
+      acceptInsecureCerts:
+        type: boolean
+      slowMo:
+        type: number
+      stealth:
+        type: boolean
+      timeout:
+        type: number
+      userDataDir:
+        type: string
+      waitForInitialPage:
+        type: boolean
+    additionalProperties: false
+  Protocol.Emulation.UserAgentBrandVersion:
+    description: Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
+    type: object
+    properties:
+      brand:
+        type: string
+      version:
+        type: string
+    additionalProperties: false
+    required:
+    - brand
+    - version
+  CookiePartitionKey:
+    description: Represents a cookie partition key in Chrome.
+    type: object
+    properties:
+      sourceOrigin:
+        description: 'The site of the top-level URL the browser was visiting at the start of the request
 
-      https://tools.ietf.org/html/draft-west-first-party-cookies'
-    enum:
-    - Default
-    - Lax
-    - None
-    - Strict
-    type: string
+          to the endpoint that set the cookie.
+
+
+          In Chrome, maps to the CDP''s `topLevelSite` partition key.'
+        type: string
+      hasCrossSiteAncestor:
+        description: 'Indicates if the cookie has any ancestors that are cross-site to
+
+          the topLevelSite.
+
+
+          Supported only in Chrome.'
+        type: boolean
+    additionalProperties: false
+    required:
+    - sourceOrigin
   Protocol.Emulation.UserAgentMetadata:
     description: 'Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
 
@@ -9896,6 +10121,22 @@ definitions:
     - model
     - platform
     - platformVersion
+  AbortSignal:
+    type: object
+    properties:
+      aborted:
+        type: boolean
+      onabort:
+        anyOf:
+        - type: object
+          additionalProperties: false
+        - type: 'null'
+      reason: {}
+    additionalProperties: false
+    required:
+    - aborted
+    - onabort
+    - reason
   CookiePriority:
     description: 'Represents the cookie''s ''Priority'' status:
 
@@ -9904,203 +10145,6 @@ definitions:
     - High
     - Low
     - Medium
-    type: string
-  ContextValue:
-    anyOf:
-    - type: array
-      items:
-        $ref: '#/definitions/ContextValue'
-    - type: object
-      additionalProperties:
-        $ref: '#/definitions/ContextValue'
-    - type:
-      - 'null'
-      - string
-      - number
-      - boolean
-  ScrapeDebugOptions:
-    type: object
-    properties:
-      console:
-        type: boolean
-      cookies:
-        type: boolean
-      html:
-        type: boolean
-      network:
-        type: boolean
-      screenshot:
-        type: boolean
-    additionalProperties: false
-  Credentials:
-    type: object
-    properties:
-      username:
-        type: string
-      password:
-        type: string
-    additionalProperties: false
-    required:
-    - password
-    - username
-  Viewport:
-    type: object
-    properties:
-      width:
-        description: The page width in CSS pixels.
-        type: number
-      height:
-        description: The page height in CSS pixels.
-        type: number
-      deviceScaleFactor:
-        description: 'Specify device scale factor.
-
-          See {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio devicePixelRatio} for more info.'
-        type: number
-      isMobile:
-        description: Whether the `meta viewport` tag is taken into account.
-        type: boolean
-      isLandscape:
-        description: Specifies if the viewport is in landscape mode.
-        type: boolean
-      hasTouch:
-        description: Specify if the viewport supports touch events.
-        type: boolean
-    additionalProperties: false
-    required:
-    - height
-    - width
-  JSONSchema:
-    type: object
-    properties:
-      code:
-        type: string
-      context:
-        type: object
-        additionalProperties:
-          $ref: '#/definitions/ContextValue'
-    additionalProperties: false
-    required:
-    - code
-  ScreenshotClip:
-    type: object
-    properties:
-      scale:
-        type: number
-      width:
-        description: the width of the element in pixels.
-        type: number
-      height:
-        description: the height of the element in pixels.
-        type: number
-      x:
-        type: number
-      y:
-        type: number
-    additionalProperties: false
-    required:
-    - height
-    - width
-    - x
-    - y
-  Protocol.Emulation.UserAgentBrandVersion:
-    description: Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
-    type: object
-    properties:
-      brand:
-        type: string
-      version:
-        type: string
-    additionalProperties: false
-    required:
-    - brand
-    - version
-  FrameAddStyleTagOptions:
-    type: object
-    properties:
-      url:
-        description: the URL of the CSS file to be added.
-        type: string
-      path:
-        description: The path to a CSS file to be injected into the frame.
-        type: string
-      content:
-        description: Raw CSS content to be injected into the frame.
-        type: string
-    additionalProperties: false
-  ScrapeElementSelector:
-    type: object
-    properties:
-      selector:
-        type: string
-      timeout:
-        type: number
-    additionalProperties: false
-    required:
-    - selector
-  FrameAddScriptTagOptions:
-    type: object
-    properties:
-      url:
-        description: URL of the script to be added.
-        type: string
-      path:
-        description: Path to a JavaScript file to be injected into the frame.
-        type: string
-      content:
-        description: JavaScript to be injected into the frame.
-        type: string
-      type:
-        description: Sets the `type` of the script. Use `module` in order to load an ES2015 module.
-        type: string
-      id:
-        description: Sets the `id` of the script.
-        type: string
-    additionalProperties: false
-  CrawlPageResponse:
-    type: object
-    properties:
-      status:
-        $ref: '#/definitions/PageStatus'
-      contentUrl:
-        type: string
-      metadata:
-        type: object
-        properties:
-          title:
-            type: string
-          description:
-            type: string
-          language:
-            type: string
-          scrapedAt:
-            type: string
-          sourceURL:
-            type: string
-          statusCode:
-            type: number
-          error:
-            type: string
-        additionalProperties: false
-        required:
-        - description
-        - error
-        - language
-        - scrapedAt
-        - sourceURL
-        - statusCode
-        - title
-    additionalProperties: false
-    required:
-    - contentUrl
-    - metadata
-    - status
-  CrawlStatus:
-    enum:
-    - cancelled
-    - completed
-    - failed
-    - in-progress
     type: string
   GoToOptions:
     type: object
@@ -10143,139 +10187,95 @@ definitions:
         description: A signal object that allows you to cancel the call.
         $ref: '#/definitions/AbortSignal'
     additionalProperties: false
-  CrawlListItem:
+  PaperFormat:
+    description: All the valid paper format types when printing a PDF.
+    enum:
+    - A0
+    - A1
+    - A2
+    - A3
+    - A4
+    - A5
+    - A6
+    - LEDGER
+    - LEGAL
+    - LETTER
+    - Ledger
+    - Legal
+    - Letter
+    - TABLOID
+    - Tabloid
+    - a0
+    - a1
+    - a2
+    - a3
+    - a4
+    - a5
+    - a6
+    - ledger
+    - legal
+    - letter
+    - tabloid
+    type: string
+  InBoundRequest:
     type: object
     properties:
-      id:
-        type: string
-      url:
-        type: string
+      headers: {}
       status:
-        $ref: '#/definitions/CrawlStatus'
-      total:
         type: number
-      completed:
-        type: number
-      createdAt:
-        type: string
-      completedAt:
+      url:
         type: string
     additionalProperties: false
     required:
-    - completed
-    - completedAt
-    - createdAt
-    - id
+    - headers
     - status
-    - total
     - url
-  PageStatus:
+  CookieSameSite:
+    description: 'Represents the cookie''s ''SameSite'' status:
+
+      https://tools.ietf.org/html/draft-west-first-party-cookies'
+    enum:
+    - Default
+    - Lax
+    - None
+    - Strict
+    type: string
+  FrameAddScriptTagOptions:
+    type: object
+    properties:
+      url:
+        description: URL of the script to be added.
+        type: string
+      path:
+        description: Path to a JavaScript file to be injected into the frame.
+        type: string
+      content:
+        description: JavaScript to be injected into the frame.
+        type: string
+      type:
+        description: Sets the `type` of the script. Use `module` in order to load an ES2015 module.
+        type: string
+      id:
+        description: Sets the `id` of the script.
+        type: string
+    additionalProperties: false
+  OutBoundRequest:
+    type: object
+    properties:
+      headers: {}
+      method:
+        type: string
+      url:
+        type: string
+    additionalProperties: false
+    required:
+    - headers
+    - method
+    - url
+  CrawlStatus:
     enum:
     - cancelled
     - completed
     - failed
     - in-progress
-    - queued
     type: string
-  PuppeteerLifeCycleEvent:
-    enum:
-    - domcontentloaded
-    - load
-    - networkidle0
-    - networkidle2
-    type: string
-  CookiePartitionKey:
-    description: Represents a cookie partition key in Chrome.
-    type: object
-    properties:
-      sourceOrigin:
-        description: 'The site of the top-level URL the browser was visiting at the start of the request
-
-          to the endpoint that set the cookie.
-
-
-          In Chrome, maps to the CDP''s `topLevelSite` partition key.'
-        type: string
-      hasCrossSiteAncestor:
-        description: 'Indicates if the cookie has any ancestors that are cross-site to
-
-          the topLevelSite.
-
-
-          Supported only in Chrome.'
-        type: boolean
-    additionalProperties: false
-    required:
-    - sourceOrigin
-  CookieSourceScheme:
-    description: 'Represents the source scheme of the origin that originally set the cookie. A value of
-
-      "Unset" allows protocol clients to emulate legacy cookie scope for the scheme.
-
-      This is a temporary ability and it will be removed in the future.'
-    enum:
-    - NonSecure
-    - Secure
-    - Unset
-    type: string
-  AbortSignal:
-    type: object
-    properties:
-      aborted:
-        type: boolean
-      onabort:
-        anyOf:
-        - type: object
-          additionalProperties: false
-        - type: 'null'
-      reason: {}
-    additionalProperties: false
-    required:
-    - aborted
-    - onabort
-    - reason
-  ScreenshotOptions:
-    type: object
-    properties:
-      optimizeForSpeed:
-        type: boolean
-      type:
-        enum:
-        - jpeg
-        - png
-        - webp
-        type: string
-      quality:
-        description: Quality of the image, between 0-100. Not applicable to `png` images.
-        type: number
-      fromSurface:
-        description: Capture the screenshot from the surface, rather than the view.
-        type: boolean
-      fullPage:
-        description: When `true`, takes a screenshot of the full page.
-        type: boolean
-      omitBackground:
-        description: Hides default white background and allows capturing screenshots with transparency.
-        type: boolean
-      path:
-        description: 'The file path to save the image to. The screenshot type will be inferred
-
-          from file extension. If path is a relative path, then it is resolved
-
-          relative to current working directory. If no path is provided, the image
-
-          won''t be saved to the disk.'
-        type: string
-      clip:
-        description: Specifies the region of the page/element to clip.
-        $ref: '#/definitions/ScreenshotClip'
-      encoding:
-        description: Encoding of the image.
-        enum:
-        - base64
-        - binary
-        type: string
-      captureBeyondViewport:
-        description: Capture the screenshot beyond the viewport.
-        type: boolean
-    additionalProperties: false
