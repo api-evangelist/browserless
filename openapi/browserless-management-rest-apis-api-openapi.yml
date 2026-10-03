@@ -1715,6 +1715,46 @@ definitions:
     - truncatedIdbDatabases
     - truncatedIdbEntries
     - truncatedOrigins
+  BrowserServerOptions:
+    type: object
+    properties:
+      args:
+        type: array
+        items:
+          type: string
+      chromiumSandbox:
+        type: boolean
+      devtools:
+        type: boolean
+      downloadsPath:
+        type: string
+      headless:
+        type: boolean
+      ignoreDefaultArgs:
+        anyOf:
+        - type: array
+          items:
+            type: string
+        - type: boolean
+      proxy:
+        type: object
+        properties:
+          bypass:
+            type: string
+          password:
+            type: string
+          server:
+            type: string
+          username:
+            type: string
+        additionalProperties: false
+        required:
+        - server
+      timeout:
+        type: number
+      tracesDir:
+        type: string
+    additionalProperties: false
   CDPLaunchOptions:
     type: object
     properties:
@@ -1815,43 +1855,3 @@ definitions:
     - truncatedIdbDatabases
     - truncatedIdbEntries
     - truncatedOrigins
-  BrowserServerOptions:
-    type: object
-    properties:
-      args:
-        type: array
-        items:
-          type: string
-      chromiumSandbox:
-        type: boolean
-      devtools:
-        type: boolean
-      downloadsPath:
-        type: string
-      headless:
-        type: boolean
-      ignoreDefaultArgs:
-        anyOf:
-        - type: array
-          items:
-            type: string
-        - type: boolean
-      proxy:
-        type: object
-        properties:
-          bypass:
-            type: string
-          password:
-            type: string
-          server:
-            type: string
-          username:
-            type: string
-        additionalProperties: false
-        required:
-        - server
-      timeout:
-        type: number
-      tracesDir:
-        type: string
-    additionalProperties: false
