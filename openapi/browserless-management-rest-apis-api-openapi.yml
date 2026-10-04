@@ -1671,50 +1671,6 @@ paths:
       operationId: postProfileUpload
       x-operation-id-source: derived
 definitions:
-  UploadResponseDiagnostics:
-    description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
-
-      dropped or truncated before persisting. All zero on a clean upload.'
-    type: object
-    properties:
-      skippedMalformedCookies:
-        description: Cookies dropped because required fields were missing or wrong type.
-        type: number
-      skippedPrivateCookies:
-        description: Cookies dropped because their domain pointed at a private/internal host.
-        type: number
-      skippedMalformedOrigins:
-        description: Origins dropped because they were malformed or non-http(s).
-        type: number
-      skippedPrivateOrigins:
-        description: Origins dropped because they targeted a private/internal network.
-        type: number
-      truncatedOrigins:
-        description: Origins dropped because the per-profile cap was exceeded.
-        type: number
-      skippedMalformedIdbDatabases:
-        description: IndexedDB databases dropped because required fields were missing.
-        type: number
-      truncatedIdbDatabases:
-        description: IndexedDB databases dropped because the per-origin cap was exceeded.
-        type: number
-      skippedMalformedIdbStores:
-        description: IndexedDB object-stores dropped because required fields were missing.
-        type: number
-      truncatedIdbEntries:
-        description: IndexedDB entries dropped because the per-store cap was exceeded.
-        type: number
-    additionalProperties: false
-    required:
-    - skippedMalformedCookies
-    - skippedMalformedIdbDatabases
-    - skippedMalformedIdbStores
-    - skippedMalformedOrigins
-    - skippedPrivateCookies
-    - skippedPrivateOrigins
-    - truncatedIdbDatabases
-    - truncatedIdbEntries
-    - truncatedOrigins
   BrowserServerOptions:
     type: object
     properties:
@@ -1815,6 +1771,50 @@ definitions:
     description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
 
       dropped or truncated before persisting. All zero on a clean refresh.'
+    type: object
+    properties:
+      skippedMalformedCookies:
+        description: Cookies dropped because required fields were missing or wrong type.
+        type: number
+      skippedPrivateCookies:
+        description: Cookies dropped because their domain pointed at a private/internal host.
+        type: number
+      skippedMalformedOrigins:
+        description: Origins dropped because they were malformed or non-http(s).
+        type: number
+      skippedPrivateOrigins:
+        description: Origins dropped because they targeted a private/internal network.
+        type: number
+      truncatedOrigins:
+        description: Origins dropped because the per-profile cap was exceeded.
+        type: number
+      skippedMalformedIdbDatabases:
+        description: IndexedDB databases dropped because required fields were missing.
+        type: number
+      truncatedIdbDatabases:
+        description: IndexedDB databases dropped because the per-origin cap was exceeded.
+        type: number
+      skippedMalformedIdbStores:
+        description: IndexedDB object-stores dropped because required fields were missing.
+        type: number
+      truncatedIdbEntries:
+        description: IndexedDB entries dropped because the per-store cap was exceeded.
+        type: number
+    additionalProperties: false
+    required:
+    - skippedMalformedCookies
+    - skippedMalformedIdbDatabases
+    - skippedMalformedIdbStores
+    - skippedMalformedOrigins
+    - skippedPrivateCookies
+    - skippedPrivateOrigins
+    - truncatedIdbDatabases
+    - truncatedIdbEntries
+    - truncatedOrigins
+  UploadResponseDiagnostics:
+    description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+      dropped or truncated before persisting. All zero on a clean upload.'
     type: object
     properties:
       skippedMalformedCookies:

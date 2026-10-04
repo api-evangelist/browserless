@@ -9505,6 +9505,181 @@ paths:
       operationId: postCrawl
       x-operation-id-source: derived
 definitions:
+  TimeBasedOptions:
+    type: string
+    enum:
+    - day
+    - week
+    - month
+    - year
+    - day
+    - week
+    - month
+    - year
+  Viewport:
+    type: object
+    properties:
+      width:
+        description: The page width in CSS pixels.
+        type: number
+      height:
+        description: The page height in CSS pixels.
+        type: number
+      deviceScaleFactor:
+        description: 'Specify device scale factor.
+
+          See {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio devicePixelRatio} for more info.'
+        type: number
+      isMobile:
+        description: Whether the `meta viewport` tag is taken into account.
+        type: boolean
+      isLandscape:
+        description: Specifies if the viewport is in landscape mode.
+        type: boolean
+      hasTouch:
+        description: Specify if the viewport supports touch events.
+        type: boolean
+    additionalProperties: false
+    required:
+    - height
+    - width
+  CrawlStatus:
+    enum:
+    - cancelled
+    - completed
+    - failed
+    - in-progress
+    type: string
+  CookiePriority:
+    description: 'Represents the cookie''s ''Priority'' status:
+
+      https://tools.ietf.org/html/draft-west-cookie-priority-00'
+    enum:
+    - High
+    - Low
+    - Medium
+    type: string
+  PuppeteerLifeCycleEvent:
+    enum:
+    - domcontentloaded
+    - load
+    - networkidle0
+    - networkidle2
+    type: string
+  ScrapeDebugOptions:
+    type: object
+    properties:
+      console:
+        type: boolean
+      cookies:
+        type: boolean
+      html:
+        type: boolean
+      network:
+        type: boolean
+      screenshot:
+        type: boolean
+    additionalProperties: false
+  GoToOptions:
+    type: object
+    properties:
+      referer:
+        description: 'If provided, it will take preference over the referer header value set by
+
+          {@link Page.setExtraHTTPHeaderspage.setExtraHTTPHeaders()}.'
+        type: string
+      referrerPolicy:
+        description: 'If provided, it will take preference over the referer-policy header value
+
+          set by {@link Page.setExtraHTTPHeaderspage.setExtraHTTPHeaders()}.'
+        type: string
+      timeout:
+        description: 'Maximum wait time in milliseconds. Pass 0 to disable the timeout.
+
+
+          The default value can be changed by using the
+
+          {@link Page.setDefaultTimeout} or {@link Page.setDefaultNavigationTimeout}
+
+          methods.'
+        type: number
+      waitUntil:
+        description: 'When to consider waiting succeeds. Given an array of event strings, waiting
+
+          is considered to be successful after all events have been fired.'
+        anyOf:
+        - type: array
+          items:
+            $ref: '#/definitions/PuppeteerLifeCycleEvent'
+        - enum:
+          - domcontentloaded
+          - load
+          - networkidle0
+          - networkidle2
+          type: string
+      signal:
+        description: A signal object that allows you to cancel the call.
+        $ref: '#/definitions/AbortSignal'
+    additionalProperties: false
+  Protocol.Emulation.UserAgentMetadata:
+    description: 'Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
+
+      Missing optional values will be filled in by the target with what it would normally use.'
+    type: object
+    properties:
+      brands:
+        description: Brands appearing in Sec-CH-UA.
+        type: array
+        items:
+          $ref: '#/definitions/Protocol.Emulation.UserAgentBrandVersion'
+      fullVersionList:
+        description: Brands appearing in Sec-CH-UA-Full-Version-List.
+        type: array
+        items:
+          $ref: '#/definitions/Protocol.Emulation.UserAgentBrandVersion'
+      fullVersion:
+        type: string
+      platform:
+        type: string
+      platformVersion:
+        type: string
+      architecture:
+        type: string
+      model:
+        type: string
+      mobile:
+        type: boolean
+      bitness:
+        type: string
+      wow64:
+        type: boolean
+      formFactors:
+        description: 'Used to specify User Agent form-factor values.
+
+          See https://wicg.github.io/ua-client-hints/#sec-ch-ua-form-factors'
+        type: array
+        items:
+          type: string
+    additionalProperties: false
+    required:
+    - architecture
+    - mobile
+    - model
+    - platform
+    - platformVersion
+  InBoundRequest:
+    type: object
+    properties:
+      headers: {}
+      status:
+        type: number
+      url:
+        type: string
+    additionalProperties: false
+    required:
+    - headers
+    - status
+    - url
   ScreenshotClip:
     type: object
     properties:
@@ -9526,31 +9701,170 @@ definitions:
     - width
     - x
     - y
-  OutBoundRequest:
+  CookiePartitionKey:
+    description: Represents a cookie partition key in Chrome.
     type: object
     properties:
-      headers: {}
-      method:
+      sourceOrigin:
+        description: 'The site of the top-level URL the browser was visiting at the start of the request
+
+          to the endpoint that set the cookie.
+
+
+          In Chrome, maps to the CDP''s `topLevelSite` partition key.'
         type: string
+      hasCrossSiteAncestor:
+        description: 'Indicates if the cookie has any ancestors that are cross-site to
+
+          the topLevelSite.
+
+
+          Supported only in Chrome.'
+        type: boolean
+    additionalProperties: false
+    required:
+    - sourceOrigin
+  Credentials:
+    type: object
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+    additionalProperties: false
+    required:
+    - password
+    - username
+  FrameAddStyleTagOptions:
+    type: object
+    properties:
       url:
+        description: the URL of the CSS file to be added.
+        type: string
+      path:
+        description: The path to a CSS file to be injected into the frame.
+        type: string
+      content:
+        description: Raw CSS content to be injected into the frame.
         type: string
     additionalProperties: false
-    required:
-    - headers
-    - method
-    - url
-  Protocol.Emulation.UserAgentBrandVersion:
-    description: Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
+  JSONSchema:
     type: object
     properties:
-      brand:
+      code:
         type: string
-      version:
-        type: string
+      context:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/ContextValue'
     additionalProperties: false
     required:
-    - brand
-    - version
+    - code
+  BrowserServerOptions:
+    type: object
+    properties:
+      args:
+        type: array
+        items:
+          type: string
+      chromiumSandbox:
+        type: boolean
+      devtools:
+        type: boolean
+      downloadsPath:
+        type: string
+      headless:
+        type: boolean
+      ignoreDefaultArgs:
+        anyOf:
+        - type: array
+          items:
+            type: string
+        - type: boolean
+      proxy:
+        type: object
+        properties:
+          bypass:
+            type: string
+          password:
+            type: string
+          server:
+            type: string
+          username:
+            type: string
+        additionalProperties: false
+        required:
+        - server
+      timeout:
+        type: number
+      tracesDir:
+        type: string
+    additionalProperties: false
+  ScreenshotOptions:
+    type: object
+    properties:
+      optimizeForSpeed:
+        type: boolean
+      type:
+        enum:
+        - jpeg
+        - png
+        - webp
+        type: string
+      quality:
+        description: Quality of the image, between 0-100. Not applicable to `png` images.
+        type: number
+      fromSurface:
+        description: Capture the screenshot from the surface, rather than the view.
+        type: boolean
+      fullPage:
+        description: When `true`, takes a screenshot of the full page.
+        type: boolean
+      omitBackground:
+        description: Hides default white background and allows capturing screenshots with transparency.
+        type: boolean
+      path:
+        description: 'The file path to save the image to. The screenshot type will be inferred
+
+          from file extension. If path is a relative path, then it is resolved
+
+          relative to current working directory. If no path is provided, the image
+
+          won''t be saved to the disk.'
+        type: string
+      clip:
+        description: Specifies the region of the page/element to clip.
+        $ref: '#/definitions/ScreenshotClip'
+      encoding:
+        description: Encoding of the image.
+        enum:
+        - base64
+        - binary
+        type: string
+      captureBeyondViewport:
+        description: Capture the screenshot beyond the viewport.
+        type: boolean
+    additionalProperties: false
+  PDFMargin:
+    type: object
+    properties:
+      top:
+        type:
+        - string
+        - number
+      bottom:
+        type:
+        - string
+        - number
+      left:
+        type:
+        - string
+        - number
+      right:
+        type:
+        - string
+        - number
+    additionalProperties: false
   CDPLaunchOptions:
     type: object
     properties:
@@ -9607,117 +9921,6 @@ definitions:
       waitForInitialPage:
         type: boolean
     additionalProperties: false
-  CookiePriority:
-    description: 'Represents the cookie''s ''Priority'' status:
-
-      https://tools.ietf.org/html/draft-west-cookie-priority-00'
-    enum:
-    - High
-    - Low
-    - Medium
-    type: string
-  GoToOptions:
-    type: object
-    properties:
-      referer:
-        description: 'If provided, it will take preference over the referer header value set by
-
-          {@link Page.setExtraHTTPHeaderspage.setExtraHTTPHeaders()}.'
-        type: string
-      referrerPolicy:
-        description: 'If provided, it will take preference over the referer-policy header value
-
-          set by {@link Page.setExtraHTTPHeaderspage.setExtraHTTPHeaders()}.'
-        type: string
-      timeout:
-        description: 'Maximum wait time in milliseconds. Pass 0 to disable the timeout.
-
-
-          The default value can be changed by using the
-
-          {@link Page.setDefaultTimeout} or {@link Page.setDefaultNavigationTimeout}
-
-          methods.'
-        type: number
-      waitUntil:
-        description: 'When to consider waiting succeeds. Given an array of event strings, waiting
-
-          is considered to be successful after all events have been fired.'
-        anyOf:
-        - type: array
-          items:
-            $ref: '#/definitions/PuppeteerLifeCycleEvent'
-        - enum:
-          - domcontentloaded
-          - load
-          - networkidle0
-          - networkidle2
-          type: string
-      signal:
-        description: A signal object that allows you to cancel the call.
-        $ref: '#/definitions/AbortSignal'
-    additionalProperties: false
-  FrameAddScriptTagOptions:
-    type: object
-    properties:
-      url:
-        description: URL of the script to be added.
-        type: string
-      path:
-        description: Path to a JavaScript file to be injected into the frame.
-        type: string
-      content:
-        description: JavaScript to be injected into the frame.
-        type: string
-      type:
-        description: Sets the `type` of the script. Use `module` in order to load an ES2015 module.
-        type: string
-      id:
-        description: Sets the `id` of the script.
-        type: string
-    additionalProperties: false
-  CookieSameSite:
-    description: 'Represents the cookie''s ''SameSite'' status:
-
-      https://tools.ietf.org/html/draft-west-first-party-cookies'
-    enum:
-    - Default
-    - Lax
-    - None
-    - Strict
-    type: string
-  Credentials:
-    type: object
-    properties:
-      username:
-        type: string
-      password:
-        type: string
-    additionalProperties: false
-    required:
-    - password
-    - username
-  PuppeteerLifeCycleEvent:
-    enum:
-    - domcontentloaded
-    - load
-    - networkidle0
-    - networkidle2
-    type: string
-  ScrapeDebugOptions:
-    type: object
-    properties:
-      console:
-        type: boolean
-      cookies:
-        type: boolean
-      html:
-        type: boolean
-      network:
-        type: boolean
-      screenshot:
-        type: boolean
-    additionalProperties: false
   CookieSourceScheme:
     description: 'Represents the source scheme of the origin that originally set the cookie. A value of
 
@@ -9729,81 +9932,6 @@ definitions:
     - Secure
     - Unset
     type: string
-  ContextValue:
-    anyOf:
-    - type: array
-      items:
-        $ref: '#/definitions/ContextValue'
-    - type: object
-      additionalProperties:
-        $ref: '#/definitions/ContextValue'
-    - type:
-      - 'null'
-      - string
-      - number
-      - boolean
-  Protocol.Emulation.UserAgentMetadata:
-    description: 'Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
-
-      Missing optional values will be filled in by the target with what it would normally use.'
-    type: object
-    properties:
-      brands:
-        description: Brands appearing in Sec-CH-UA.
-        type: array
-        items:
-          $ref: '#/definitions/Protocol.Emulation.UserAgentBrandVersion'
-      fullVersionList:
-        description: Brands appearing in Sec-CH-UA-Full-Version-List.
-        type: array
-        items:
-          $ref: '#/definitions/Protocol.Emulation.UserAgentBrandVersion'
-      fullVersion:
-        type: string
-      platform:
-        type: string
-      platformVersion:
-        type: string
-      architecture:
-        type: string
-      model:
-        type: string
-      mobile:
-        type: boolean
-      bitness:
-        type: string
-      wow64:
-        type: boolean
-      formFactors:
-        description: 'Used to specify User Agent form-factor values.
-
-          See https://wicg.github.io/ua-client-hints/#sec-ch-ua-form-factors'
-        type: array
-        items:
-          type: string
-    additionalProperties: false
-    required:
-    - architecture
-    - mobile
-    - model
-    - platform
-    - platformVersion
-  AbortSignal:
-    type: object
-    properties:
-      aborted:
-        type: boolean
-      onabort:
-        anyOf:
-        - type: object
-          additionalProperties: false
-        - type: 'null'
-      reason: {}
-    additionalProperties: false
-    required:
-    - aborted
-    - onabort
-    - reason
   PageStatus:
     enum:
     - cancelled
@@ -9812,155 +9940,18 @@ definitions:
     - in-progress
     - queued
     type: string
-  CrawlStatus:
-    enum:
-    - cancelled
-    - completed
-    - failed
-    - in-progress
-    type: string
-  CrawlListItem:
-    type: object
-    properties:
-      id:
-        type: string
-      url:
-        type: string
-      status:
-        $ref: '#/definitions/CrawlStatus'
-      total:
-        type: number
-      completed:
-        type: number
-      createdAt:
-        type: string
-      completedAt:
-        type: string
-    additionalProperties: false
-    required:
-    - completed
-    - completedAt
-    - createdAt
-    - id
-    - status
-    - total
-    - url
-  BrowserServerOptions:
-    type: object
-    properties:
-      args:
-        type: array
-        items:
-          type: string
-      chromiumSandbox:
-        type: boolean
-      devtools:
-        type: boolean
-      downloadsPath:
-        type: string
-      headless:
-        type: boolean
-      ignoreDefaultArgs:
-        anyOf:
-        - type: array
-          items:
-            type: string
-        - type: boolean
-      proxy:
-        type: object
-        properties:
-          bypass:
-            type: string
-          password:
-            type: string
-          server:
-            type: string
-          username:
-            type: string
-        additionalProperties: false
-        required:
-        - server
-      timeout:
-        type: number
-      tracesDir:
-        type: string
-    additionalProperties: false
-  CookiePartitionKey:
-    description: Represents a cookie partition key in Chrome.
-    type: object
-    properties:
-      sourceOrigin:
-        description: 'The site of the top-level URL the browser was visiting at the start of the request
-
-          to the endpoint that set the cookie.
-
-
-          In Chrome, maps to the CDP''s `topLevelSite` partition key.'
-        type: string
-      hasCrossSiteAncestor:
-        description: 'Indicates if the cookie has any ancestors that are cross-site to
-
-          the topLevelSite.
-
-
-          Supported only in Chrome.'
-        type: boolean
-    additionalProperties: false
-    required:
-    - sourceOrigin
-  TimeBasedOptions:
-    type: string
-    enum:
-    - day
-    - week
-    - month
-    - year
-    - day
-    - week
-    - month
-    - year
-  PaperFormat:
-    description: All the valid paper format types when printing a PDF.
-    enum:
-    - A0
-    - A1
-    - A2
-    - A3
-    - A4
-    - A5
-    - A6
-    - LEDGER
-    - LEGAL
-    - LETTER
-    - Ledger
-    - Legal
-    - Letter
-    - TABLOID
-    - Tabloid
-    - a0
-    - a1
-    - a2
-    - a3
-    - a4
-    - a5
-    - a6
-    - ledger
-    - legal
-    - letter
-    - tabloid
-    type: string
-  InBoundRequest:
+  OutBoundRequest:
     type: object
     properties:
       headers: {}
-      status:
-        type: number
+      method:
+        type: string
       url:
         type: string
     additionalProperties: false
     required:
     - headers
-    - status
+    - method
     - url
   Cookie:
     description: Represents a cookie object.
@@ -10043,26 +10034,107 @@ definitions:
     - session
     - size
     - value
-  PDFMargin:
+  AbortSignal:
     type: object
     properties:
-      top:
-        type:
-        - string
-        - number
-      bottom:
-        type:
-        - string
-        - number
-      left:
-        type:
-        - string
-        - number
-      right:
-        type:
-        - string
-        - number
+      aborted:
+        type: boolean
+      onabort:
+        anyOf:
+        - type: object
+          additionalProperties: false
+        - type: 'null'
+      reason: {}
     additionalProperties: false
+    required:
+    - aborted
+    - onabort
+    - reason
+  CrawlListItem:
+    type: object
+    properties:
+      id:
+        type: string
+      url:
+        type: string
+      status:
+        $ref: '#/definitions/CrawlStatus'
+      total:
+        type: number
+      completed:
+        type: number
+      createdAt:
+        type: string
+      completedAt:
+        type: string
+    additionalProperties: false
+    required:
+    - completed
+    - completedAt
+    - createdAt
+    - id
+    - status
+    - total
+    - url
+  FrameAddScriptTagOptions:
+    type: object
+    properties:
+      url:
+        description: URL of the script to be added.
+        type: string
+      path:
+        description: Path to a JavaScript file to be injected into the frame.
+        type: string
+      content:
+        description: JavaScript to be injected into the frame.
+        type: string
+      type:
+        description: Sets the `type` of the script. Use `module` in order to load an ES2015 module.
+        type: string
+      id:
+        description: Sets the `id` of the script.
+        type: string
+    additionalProperties: false
+  PaperFormat:
+    description: All the valid paper format types when printing a PDF.
+    enum:
+    - A0
+    - A1
+    - A2
+    - A3
+    - A4
+    - A5
+    - A6
+    - LEDGER
+    - LEGAL
+    - LETTER
+    - Ledger
+    - Legal
+    - Letter
+    - TABLOID
+    - Tabloid
+    - a0
+    - a1
+    - a2
+    - a3
+    - a4
+    - a5
+    - a6
+    - ledger
+    - legal
+    - letter
+    - tabloid
+    type: string
+  ScrapeElementSelector:
+    type: object
+    properties:
+      selector:
+        type: string
+      timeout:
+        type: number
+    additionalProperties: false
+    required:
+    - selector
   CookieParam:
     description: 'Cookie parameter object used to set cookies in the page-level cookies
 
@@ -10134,6 +10206,41 @@ definitions:
     required:
     - name
     - value
+  ContextValue:
+    anyOf:
+    - type: array
+      items:
+        $ref: '#/definitions/ContextValue'
+    - type: object
+      additionalProperties:
+        $ref: '#/definitions/ContextValue'
+    - type:
+      - 'null'
+      - string
+      - number
+      - boolean
+  Protocol.Emulation.UserAgentBrandVersion:
+    description: Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
+    type: object
+    properties:
+      brand:
+        type: string
+      version:
+        type: string
+    additionalProperties: false
+    required:
+    - brand
+    - version
+  CookieSameSite:
+    description: 'Represents the cookie''s ''SameSite'' status:
+
+      https://tools.ietf.org/html/draft-west-first-party-cookies'
+    enum:
+    - Default
+    - Lax
+    - None
+    - Strict
+    type: string
   CrawlPageResponse:
     type: object
     properties:
@@ -10172,110 +10279,3 @@ definitions:
     - contentUrl
     - metadata
     - status
-  ScrapeElementSelector:
-    type: object
-    properties:
-      selector:
-        type: string
-      timeout:
-        type: number
-    additionalProperties: false
-    required:
-    - selector
-  Viewport:
-    type: object
-    properties:
-      width:
-        description: The page width in CSS pixels.
-        type: number
-      height:
-        description: The page height in CSS pixels.
-        type: number
-      deviceScaleFactor:
-        description: 'Specify device scale factor.
-
-          See {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio devicePixelRatio} for more info.'
-        type: number
-      isMobile:
-        description: Whether the `meta viewport` tag is taken into account.
-        type: boolean
-      isLandscape:
-        description: Specifies if the viewport is in landscape mode.
-        type: boolean
-      hasTouch:
-        description: Specify if the viewport supports touch events.
-        type: boolean
-    additionalProperties: false
-    required:
-    - height
-    - width
-  JSONSchema:
-    type: object
-    properties:
-      code:
-        type: string
-      context:
-        type: object
-        additionalProperties:
-          $ref: '#/definitions/ContextValue'
-    additionalProperties: false
-    required:
-    - code
-  FrameAddStyleTagOptions:
-    type: object
-    properties:
-      url:
-        description: the URL of the CSS file to be added.
-        type: string
-      path:
-        description: The path to a CSS file to be injected into the frame.
-        type: string
-      content:
-        description: Raw CSS content to be injected into the frame.
-        type: string
-    additionalProperties: false
-  ScreenshotOptions:
-    type: object
-    properties:
-      optimizeForSpeed:
-        type: boolean
-      type:
-        enum:
-        - jpeg
-        - png
-        - webp
-        type: string
-      quality:
-        description: Quality of the image, between 0-100. Not applicable to `png` images.
-        type: number
-      fromSurface:
-        description: Capture the screenshot from the surface, rather than the view.
-        type: boolean
-      fullPage:
-        description: When `true`, takes a screenshot of the full page.
-        type: boolean
-      omitBackground:
-        description: Hides default white background and allows capturing screenshots with transparency.
-        type: boolean
-      path:
-        description: 'The file path to save the image to. The screenshot type will be inferred
-
-          from file extension. If path is a relative path, then it is resolved
-
-          relative to current working directory. If no path is provided, the image
-
-          won''t be saved to the disk.'
-        type: string
-      clip:
-        description: Specifies the region of the page/element to clip.
-        $ref: '#/definitions/ScreenshotClip'
-      encoding:
-        description: Encoding of the image.
-        enum:
-        - base64
-        - binary
-        type: string
-      captureBeyondViewport:
-        description: Capture the screenshot beyond the viewport.
-        type: boolean
-    additionalProperties: false
