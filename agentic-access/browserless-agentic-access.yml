@@ -1,21 +1,23 @@
-generated: '2026-07-15'
+generated: '2026-09-23'
 method: generated
-source: openapi/browserless-openapi.yml
+source: openapi/browserless-browser-rest-apis-api-openapi.yml, openapi/browserless-browser-websocket-apis-api-openapi.yml,
+  openapi/browserless-management-rest-apis-api-openapi.yml
 description: Recommended x-agentic-access execution contracts, classified heuristically from
   the OpenAPI. A governance starting point for exposing this API to AI agents — review and bind
   audience per deployment. See research/curity/agentic-governance/.
 summary:
-  operations: 76
+  operations: 81
   by_action_class:
-    acting: 43
-    connected: 33
+    acting: 46
+    connected: 35
   by_consequence:
-    write: 43
-    read: 33
+    write: 46
+    read: 35
   human_in_the_loop_required: 0
 operations:
 - path: /chrome/content
   method: post
+  operationId: postChromeContent
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -31,6 +33,7 @@ operations:
     audit: required
 - path: /chrome/download
   method: post
+  operationId: postChromeDownload
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -46,6 +49,7 @@ operations:
     audit: required
 - path: /chrome/function
   method: post
+  operationId: postChromeFunction
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -61,6 +65,7 @@ operations:
     audit: required
 - path: /json/new
   method: put
+  operationId: putJsonNew
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -76,6 +81,7 @@ operations:
     audit: required
 - path: /json/protocol
   method: get
+  operationId: getJsonProtocol
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -85,6 +91,7 @@ operations:
     audit: none
 - path: /json/version
   method: get
+  operationId: getJsonVersion
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -94,6 +101,7 @@ operations:
     audit: none
 - path: /chrome/pdf
   method: post
+  operationId: postChromePdf
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -109,6 +117,7 @@ operations:
     audit: required
 - path: /chrome/performance
   method: post
+  operationId: postChromePerformance
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -124,6 +133,7 @@ operations:
     audit: required
 - path: /chrome/scrape
   method: post
+  operationId: postChromeScrape
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -139,6 +149,7 @@ operations:
     audit: required
 - path: /chrome/screenshot
   method: post
+  operationId: postChromeScreenshot
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -154,6 +165,7 @@ operations:
     audit: required
 - path: /chromium/content
   method: post
+  operationId: postChromiumContent
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -169,6 +181,7 @@ operations:
     audit: required
 - path: /chromium/download
   method: post
+  operationId: postChromiumDownload
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -184,6 +197,7 @@ operations:
     audit: required
 - path: /chromium/function
   method: post
+  operationId: postChromiumFunction
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -199,6 +213,7 @@ operations:
     audit: required
 - path: /chromium/performance
   method: post
+  operationId: postChromiumPerformance
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -214,6 +229,7 @@ operations:
     audit: required
 - path: /chromium/scrape
   method: post
+  operationId: postChromiumScrape
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -229,6 +245,7 @@ operations:
     audit: required
 - path: /edge/content
   method: post
+  operationId: postEdgeContent
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -244,6 +261,7 @@ operations:
     audit: required
 - path: /edge/download
   method: post
+  operationId: postEdgeDownload
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -259,6 +277,7 @@ operations:
     audit: required
 - path: /edge/function
   method: post
+  operationId: postEdgeFunction
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -274,6 +293,7 @@ operations:
     audit: required
 - path: /edge/pdf
   method: post
+  operationId: postEdgePdf
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -289,6 +309,7 @@ operations:
     audit: required
 - path: /edge/performance
   method: post
+  operationId: postEdgePerformance
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -304,6 +325,7 @@ operations:
     audit: required
 - path: /edge/scrape
   method: post
+  operationId: postEdgeScrape
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -319,6 +341,7 @@ operations:
     audit: required
 - path: /edge/screenshot
   method: post
+  operationId: postEdgeScreenshot
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -332,143 +355,9 @@ operations:
       - abnormal
       - high-value
     audit: required
-- path: /active
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /kill/+([0-9a-zA-Z-_])
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /meta
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /devtools/browser/*
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /chrome
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /function/connect/*
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /devtools/page/*
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /chrome/playwright
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /chromium
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /chromium/playwright
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /edge
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /edge/playwright
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /firefox/playwright
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /webkit/playwright
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
 - path: /browser/*
   method: delete
+  operationId: deleteBrowser*
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -484,6 +373,7 @@ operations:
     audit: required
 - path: /chrome/export
   method: post
+  operationId: postChromeExport
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -499,6 +389,7 @@ operations:
     audit: required
 - path: /chrome/unblock
   method: post
+  operationId: postChromeUnblock
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -514,6 +405,7 @@ operations:
     audit: required
 - path: /chromium/export
   method: post
+  operationId: postChromiumExport
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -529,6 +421,7 @@ operations:
     audit: required
 - path: /unblock
   method: post
+  operationId: postUnblock
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -544,6 +437,7 @@ operations:
     audit: required
 - path: /proxy/cities
   method: get
+  operationId: getProxyCities
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -553,6 +447,7 @@ operations:
     audit: none
 - path: /map
   method: post
+  operationId: postMap
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -568,6 +463,7 @@ operations:
     audit: required
 - path: /pdf
   method: post
+  operationId: postPdf
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -583,6 +479,7 @@ operations:
     audit: required
 - path: /screenshot
   method: post
+  operationId: postScreenshot
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -598,21 +495,17 @@ operations:
     audit: required
 - path: /search
   method: post
+  operationId: postSearch
   x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
+    action-class: connected
+    consequence: read
+    subject: optional
     token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
+      max-ttl: 3600
+    audit: none
 - path: /session
   method: post
+  operationId: postSession
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -628,6 +521,7 @@ operations:
     audit: required
 - path: /session/*
   method: delete
+  operationId: deleteSession*
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -643,6 +537,7 @@ operations:
     audit: required
 - path: /smart-scrape
   method: post
+  operationId: postSmartScrape
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -658,30 +553,7 @@ operations:
     audit: required
 - path: /stealth/bql?(/*)
   method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /stealth/bql?(/*)
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /chrome/bql?(/*)
-  method: post
+  operationId: postStealthBql?(*)
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -696,16 +568,8 @@ operations:
       - high-value
     audit: required
 - path: /chrome/bql?(/*)
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /chromium/bql?(/*)
   method: post
+  operationId: postChromeBql?(*)
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -720,16 +584,24 @@ operations:
       - high-value
     audit: required
 - path: /chromium/bql?(/*)
-  method: get
+  method: post
+  operationId: postChromiumBql?(*)
   x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
     token:
-      max-ttl: 3600
-    audit: none
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
 - path: /session/bql/*
   method: post
+  operationId: postSessionBql*
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -745,6 +617,7 @@ operations:
     audit: required
 - path: /crawl/*
   method: delete
+  operationId: deleteCrawl*
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -760,6 +633,7 @@ operations:
     audit: required
 - path: /crawl/*
   method: get
+  operationId: getCrawl*
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -769,6 +643,7 @@ operations:
     audit: none
 - path: /crawl
   method: get
+  operationId: getCrawl
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -778,6 +653,341 @@ operations:
     audit: none
 - path: /crawl
   method: post
+  operationId: postCrawl
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /
+  method: get
+  operationId: getRoot
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /devtools/browser/*
+  method: get
+  operationId: getDevtoolsBrowser*
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /chrome
+  method: get
+  operationId: getChrome
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /function/connect/*
+  method: get
+  operationId: getFunctionConnect*
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /devtools/page/*
+  method: get
+  operationId: getDevtoolsPage*
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /chrome/playwright
+  method: get
+  operationId: getChromePlaywright
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /chromium
+  method: get
+  operationId: getChromium
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /chromium/playwright
+  method: get
+  operationId: getChromiumPlaywright
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /edge
+  method: get
+  operationId: getEdge
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /edge/playwright
+  method: get
+  operationId: getEdgePlaywright
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /firefox/playwright
+  method: get
+  operationId: getFirefoxPlaywright
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /webkit/playwright
+  method: get
+  operationId: getWebkitPlaywright
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /stealth/bql?(/*)
+  method: get
+  operationId: getStealthBql?(*)
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /chrome/bql?(/*)
+  method: get
+  operationId: getChromeBql?(*)
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /chromium/bql?(/*)
+  method: get
+  operationId: getChromiumBql?(*)
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /stealth
+  method: get
+  operationId: getStealth
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /chrome/live/*
+  method: get
+  operationId: getChromeLive*
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /chrome/stealth
+  method: get
+  operationId: getChromeStealth
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /live/*
+  method: get
+  operationId: getLive*
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /chromium/stealth
+  method: get
+  operationId: getChromiumStealth
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /reconnect/*
+  method: get
+  operationId: getReconnect*
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /session/connect/*
+  method: get
+  operationId: getSessionConnect*
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /chromium/agent
+  method: get
+  operationId: getChromiumAgent
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /active
+  method: get
+  operationId: getActive
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /kill/+([0-9a-zA-Z-_])
+  method: get
+  operationId: getKill+([09aZAZ])
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /meta
+  method: get
+  operationId: getMeta
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /browser/*
+  method: delete
+  operationId: deleteBrowser*
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /proxy/cities
+  method: get
+  operationId: getProxyCities
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /session
+  method: post
+  operationId: postSession
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /session/*
+  method: delete
+  operationId: deleteSession*
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /session/bql/*
+  method: post
+  operationId: postSessionBql*
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -793,6 +1003,7 @@ operations:
     audit: required
 - path: /profile
   method: post
+  operationId: postProfile
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -808,6 +1019,7 @@ operations:
     audit: required
 - path: /profile/*
   method: delete
+  operationId: deleteProfile*
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -823,6 +1035,7 @@ operations:
     audit: required
 - path: /profile/*
   method: get
+  operationId: getProfile*
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -832,6 +1045,7 @@ operations:
     audit: none
 - path: /profile/*
   method: put
+  operationId: putProfile*
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -847,6 +1061,7 @@ operations:
     audit: required
 - path: /profiles
   method: get
+  operationId: getProfiles
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -856,6 +1071,7 @@ operations:
     audit: none
 - path: /profile/refresh
   method: post
+  operationId: postProfileRefresh
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -871,6 +1087,7 @@ operations:
     audit: required
 - path: /profile/upload
   method: post
+  operationId: postProfileUpload
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -884,75 +1101,3 @@ operations:
       - abnormal
       - high-value
     audit: required
-- path: /stealth
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /chrome/live/*
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /chrome/stealth
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /live/*
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /chromium/stealth
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /reconnect/*
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /session/connect/*
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /chromium/agent
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
