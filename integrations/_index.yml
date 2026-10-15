@@ -26,7 +26,7 @@
     app_slug: browserless
     beta: false
     builder: unknown (not in the directory record)
-  status: pending-generation
+  status: not-a-workflow
   arazzo: null
 - slug: browserless-n8n
   label: n8n
@@ -55,7 +55,7 @@
     builder: provider (package published from the provider's own domain)
     other_packages:
     - '@browserless.io/n8n-nodes-browserless'
-  status: pending-generation
+  status: not-a-workflow
   arazzo: null
 - slug: browserless-pipedream
   label: Pipedream
@@ -81,5 +81,5 @@
     actions: true
     sources: false
     builder: Pipedream repo (component)
-  status: pending-generation
+  status: not-a-workflow
   arazzo: null
