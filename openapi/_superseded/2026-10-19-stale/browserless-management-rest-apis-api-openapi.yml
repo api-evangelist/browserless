@@ -1,0 +1,1857 @@
+openapi: 3.2.0
+info:
+  title: Browserless Management REST APIs API
+  version: 2.49.0
+  x-logo:
+    altText: browserless logo
+    url: ./docs/browserless-logo-inline.svg
+  description: '# Browserless.io
+
+
+    This service extends the Browserless open-source image with many features and enhancements for teams automating at scale.'
+servers: []
+tags:
+- name: Management REST APIs
+paths:
+  /active:
+    get:
+      definitions: {}
+      description: 'Returns a simple "204" HTTP code, with no response, indicating that the service itself is up and running.
+
+        Useful for liveliness probes or other external checks.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /active
+      tags:
+      - Management REST APIs
+      operationId: getActive
+      x-operation-id-source: derived
+  /kill/+([0-9a-zA-Z-_]):
+    get:
+      definitions: {}
+      description: Kill running sessions based on BrowserId or TrackingId.
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: browserId
+        schema:
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - $ref: '#/definitions/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /kill/+([0-9a-zA-Z-_])
+      tags:
+      - Management REST APIs
+      operationId: getKill+([09aZAZ])
+      x-operation-id-source: derived
+  /meta:
+    get:
+      definitions: {}
+      description: Returns a JSON payload of the current system versions, including the core API version.
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    description: The semantic version of the Browserless API
+                    type: string
+                  chromium:
+                    description: The version of Chromium installed, or null if not installed
+                    type:
+                    - 'null'
+                    - string
+                  webkit:
+                    description: The version of Webkit installed, or null if not installed
+                    type:
+                    - 'null'
+                    - string
+                  firefox:
+                    description: The version of Firefox installed, or null if not installed
+                    type:
+                    - 'null'
+                    - string
+                  playwright:
+                    description: The supported version(s) of puppeteer
+                    type: array
+                    items:
+                      type: string
+                  puppeteer:
+                    description: The supported version(s) of playwright
+                    type: array
+                    items:
+                      type: string
+                additionalProperties: false
+                required:
+                - chromium
+                - firefox
+                - playwright
+                - puppeteer
+                - version
+                - webkit
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /meta
+      tags:
+      - Management REST APIs
+      operationId: getMeta
+      x-operation-id-source: derived
+  /browser/*:
+    delete:
+      definitions: {}
+      description: Terminates a browser instance by browserId. The browser must belong to the authenticated user.
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /browser/*
+      tags:
+      - Management REST APIs
+      operationId: deleteBrowser*
+      x-operation-id-source: derived
+  /proxy/cities:
+    get:
+      definitions: {}
+      description: 'Returns a list of available cities for proxy connections.
+
+
+        This endpoint requires city proxying to be enabled on your plan.
+
+
+        Query Parameters:
+
+        - country (optional): Filter cities by two-letter country code (e.g., ''US'', ''GB'', ''DE'')
+
+
+        The response includes a list of available cities grouped by country code.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: country
+        schema:
+          description: Optional two-letter country code to filter cities by country (e.g., 'US', 'GB', 'DE').
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - $ref: '#/definitions/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  countries:
+                    description: Countries with their available cities
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          description: Two-letter country code
+                          type: string
+                        cities:
+                          description: List of city names in this country
+                          type: array
+                          items:
+                            type: string
+                      additionalProperties: false
+                      required:
+                      - cities
+                      - code
+                  totalCountries:
+                    description: Total number of countries
+                    type: number
+                  totalCities:
+                    description: Total number of cities across all countries
+                    type: number
+                  filters:
+                    description: Applied filters
+                    type: object
+                    properties:
+                      country:
+                        type: string
+                    additionalProperties: false
+                additionalProperties: false
+                required:
+                - countries
+                - filters
+                - totalCities
+                - totalCountries
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /proxy/cities
+      tags:
+      - Management REST APIs
+      operationId: getProxyCities
+      x-operation-id-source: derived
+  /session:
+    post:
+      definitions: {}
+      description: 'Creates a new browser session with the specified parameters. The session can be used for persistent browser connections
+
+        with well-defined lifetimes and reconnection semantics. BrowserQL support is only available for stealth sessions.'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                ttl:
+                  description: 'The time-to-live (TTL) for the session in milliseconds. Once reached, will be forcefully terminated
+
+                    and all files and processes will be cleaned up. Must be a non-negative number greater than 0.'
+                  type: number
+                processKeepAlive:
+                  description: 'An optional time, in milliseconds, to keep the underlying browser process alive after a connection to the session closes.
+
+                    If a connection happens within the keep-alive window, the browser process will remain running and the session can be reconnected to.
+
+                    If a connection happens after the keep-alive window has expired, a new browser process will be launched for the session, with the prior
+
+                    session data. Defaults to 0 (no keep-alive).'
+                  type: number
+                stealth:
+                  description: Whether or not to enable advanced stealth mode. Defaults to false.
+                  type: boolean
+                blockAds:
+                  description: Whether or not to enable ad-blocking. Defaults to false.
+                  type: boolean
+                headless:
+                  description: 'Whether the browser should be launched in headless mode.
+
+                    Ignored if `stealth` is true, defaults to "true".'
+                  type: boolean
+                args:
+                  description: 'An array of command-line arguments to pass to the browser.
+
+                    Defaults to an empty array.'
+                  type: array
+                  items:
+                    type: string
+                browser:
+                  description: 'The type of browser to use for the session.
+
+                    ''stealth'' uses the Brave browser with advanced anti-detection. Defaults to ''chromium''.'
+                  enum:
+                  - chrome
+                  - chromium
+                  - stealth
+                  type: string
+                url:
+                  description: 'The underlying page URL you''re attempting to automate. Some pages may
+
+                    required special handling in order to work correctly or unblock.
+
+                    This is not required, but can be useful or required for certain sites.'
+                  type: string
+                proxy:
+                  description: 'Proxy Parameters for the session if desired.
+
+                    If not specified, the session will use the default network settings.'
+                  type: object
+                  properties:
+                    type:
+                      description: The type of proxy to use, currently only 'residential' is supported.
+                      type: string
+                      const: residential
+                    sticky:
+                      description: Whether or not to use the same IP address for all proxied requests. Defaults to true
+                      type: boolean
+                    country:
+                      description: The country to proxy through. Defaults to 'us' or United States
+                      type: string
+                    city:
+                      description: The city to proxy through.
+                      type: string
+                    state:
+                      description: The state to proxy through.
+                      type: string
+                    preset:
+                      description: Preset code for website-specific proxy configurations (e.g., 'px_gov01' for government sites)
+                      type: string
+                  additionalProperties: false
+                replay:
+                  description: 'Whether to enable session recording for replay.
+
+                    When true, the session will be recorded and can be replayed later.'
+                  type: boolean
+                extensions:
+                  description: 'An array of extension IDs to load into the browser session.
+
+                    Extensions must be previously uploaded to the browserless extension storage.
+
+                    This allows sessions to start with extensions pre-loaded without specifying
+
+                    them in launch arguments at connection time.'
+                  type: array
+                  items:
+                    type: string
+                profile:
+                  description: 'Optional name of an authentication profile to use as initial browser state.
+
+                    The profile''s cookies, localStorage, and IndexedDB entries are injected via
+
+                    CDP before your code runs. sessionStorage is intentionally not restored —
+
+                    it is tab-scoped and stale values break OAuth/CSRF flows. Changes during
+
+                    the session do not affect the source profile.'
+                  type: string
+              type: object
+              required:
+              - ttl
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: The ID of the session
+                    type: string
+                  connect:
+                    description: The fully-qualified URL to connect CDP-based libraries to the session
+                    type: string
+                  ttl:
+                    description: The total time of life in milliseconds
+                    type: number
+                  stop:
+                    description: The fully qualified URL to stop and remove the session with a DELETE method.
+                    type: string
+                  browserQL:
+                    description: The fully-qualified URL to run BrowserQL queries against the session
+                    type: string
+                  cloudEndpointId:
+                    description: 'The encrypted cloud endpoint ID for the session when ran in the browserless cloud.
+
+                      This is a cloud-specific property and is only present when using browserless cloud.'
+                    type: string
+                additionalProperties: false
+                required:
+                - browserQL
+                - cloudEndpointId
+                - connect
+                - id
+                - stop
+                - ttl
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /session
+      tags:
+      - Management REST APIs
+      operationId: postSession
+      x-operation-id-source: derived
+  /session/*:
+    delete:
+      definitions: {}
+      description: 'Deletes a session and its associated data. This will immediately terminate any active connections to the session if "force" is applied.
+
+
+        Query Parameters:
+
+        - force (optional): If true, forces deletion even if the session has active connections'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: force
+        schema:
+          description: 'Whether to force the deletion of the session even if it has active connections.
+
+            Defaults to false.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - $ref: '#/definitions/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /session/*
+      tags:
+      - Management REST APIs
+      operationId: deleteSession*
+      x-operation-id-source: derived
+  /session/bql/*:
+    post:
+      definitions: {}
+      description: '> Executes BrowserQL queries against an existing session. The session must be a stealth session to support BrowserQL.
+
+
+        BrowserQL is a GraphQL-based query language for browser automation that allows you to interact with web pages using a declarative syntax.
+
+        Queries execute within the context of your existing session, maintaining browser state and session data across multiple operations.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options for the browser, either as a JSON object or a JSON string.
+
+            Includes options like `headless`, `args`, `defaultViewport`, etc.
+
+            Must be either JSON object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                query:
+                  description: 'The GraphQL query string to execute against the browser session.
+
+
+                    Example queries:
+
+                    - Get browser info: `query { version browser }`
+
+                    - Navigate and get content: `mutation { goto(url: "https://example.com") { status } title { title } url { url } }`
+
+                    - Fill form and submit: `mutation { goto(url: "https://example.com") { status } type(selector: "input[name=''email'']", text: "user@example.com") { time } click(selector: "button[type=''submit'']") { time } }`
+
+                    - Extract data: `mutation { querySelector(selector: "h1") { innerHTML } querySelectorAll(selector: ".product") { innerHTML className } }`'
+                  type: string
+                variables:
+                  description: 'Variables to pass to the GraphQL query. Useful for dynamic values.
+
+
+                    Example: `{ "url": "https://example.com", "selector": "h1", "text": "Hello World" }`'
+                  type: object
+                  additionalProperties: {}
+                operationName:
+                  description: 'The name of the operation to execute if the query contains multiple operations.
+
+                    Optional - only needed when query has multiple named operations.'
+                  type: string
+              type: object
+              required:
+              - query
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/definitions/Record%3Cstring%2Cany%3E'
+                    description: 'The GraphQL response data. Contains the result of the executed query.
+
+                      Structure depends on the specific query executed.
+
+
+                      Example responses:
+
+                      - Navigation + Title + Element: `{ "goto": { "status": 200 }, "title": { "title": "Example Domain" }, "querySelector": { "innerHTML": "Example Domain" } }`
+
+                      - Multiple elements: `{ "querySelectorAll": [{ "innerHTML": "Item 1" }, { "innerHTML": "Item 2" }] }`
+
+                      - Screenshot: `{ "screenshot": { "data": "base64encodedimage", "type": "png" } }`
+
+                      - PDF: `{ "pdf": { "data": "base64encodedpdf" } }`
+
+                      - System info: `{ "version": "1.0.0", "browser": "Chrome/120.0.0.0" }`
+
+                      - Form interaction: `{ "type": { "success": true }, "click": { "success": true } }`'
+                  errors:
+                    description: 'Array of GraphQL errors, if any occurred during query execution.
+
+                      Only present when errors exist.'
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        message:
+                          description: Error message describing what went wrong
+                          type: string
+                        locations:
+                          description: Locations in the query where the error occurred
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              line:
+                                type: number
+                              column:
+                                type: number
+                            additionalProperties: false
+                            required:
+                            - column
+                            - line
+                        path:
+                          description: Path to the field that caused the error
+                          type: array
+                          items:
+                            type:
+                            - string
+                            - number
+                      additionalProperties: false
+                      required:
+                      - message
+                additionalProperties: false
+                definitions:
+                  Record<string,any>:
+                    type: object
+                    additionalProperties: false
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /session/bql/*
+      tags:
+      - Management REST APIs
+      operationId: postSessionBql*
+      x-operation-id-source: derived
+  /profile:
+    post:
+      definitions: {}
+      description: 'Launches a temporary browser session for creating an authenticated profile.
+
+        Connect via the returned WebSocket URL, authenticate in the browser,
+
+        then call Browserless.saveProfile via CDP to capture and persist the auth state.
+
+        The profile is NOT saved automatically — you must explicitly call
+
+        Browserless.saveProfile before disconnecting. The session expires after 10 minutes.'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  description: 'A user-visible name for the profile.
+
+                    Must be unique per token.'
+                  type: string
+                stealth:
+                  description: Whether or not to enable advanced stealth mode. Defaults to false.
+                  type: boolean
+                browser:
+                  description: The type of browser to use. Defaults to 'stealth'.
+                  enum:
+                  - chrome
+                  - chromium
+                  - stealth
+                  type: string
+                args:
+                  description: An array of command-line arguments to pass to the browser.
+                  type: array
+                  items:
+                    type: string
+                proxy:
+                  description: Proxy parameters for the profile creation session.
+                  type: object
+                  properties:
+                    type:
+                      description: The type of proxy to use, currently only 'residential' is supported.
+                      type: string
+                      const: residential
+                    sticky:
+                      description: Whether or not to use the same IP address for all proxied requests. Defaults to true.
+                      type: boolean
+                    country:
+                      description: The country to proxy through. Defaults to 'us' or United States.
+                      type: string
+                    city:
+                      description: The city to proxy through.
+                      type: string
+                    state:
+                      description: The state to proxy through.
+                      type: string
+                    preset:
+                      description: Preset code for website-specific proxy configurations (e.g., 'px_gov01' for government sites).
+                      type: string
+                  additionalProperties: false
+              type: object
+              required:
+              - name
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Temporary session ID used for the profile creation browser
+                    type: string
+                  name:
+                    description: The profile name that will be used when saving
+                    type: string
+                  connect:
+                    description: WebSocket URL to connect to the browser
+                    type: string
+                  stop:
+                    description: URL to stop/delete the temporary session
+                    type: string
+                additionalProperties: false
+                required:
+                - connect
+                - id
+                - name
+                - stop
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile
+      tags:
+      - Management REST APIs
+      operationId: postProfile
+      x-operation-id-source: derived
+  /profile/*:
+    delete:
+      definitions: {}
+      description: 'Deletes an authentication profile and its captured state.
+
+        The profile name is the URL-encoded path segment after "/profile/".
+
+        Returns 404 if no profile with that name exists for this token.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    description: Always true on success.
+                    type: boolean
+                  message:
+                    description: Human-readable confirmation message.
+                    type: string
+                  name:
+                    description: Name of the profile that was deleted.
+                    type: string
+                additionalProperties: false
+                required:
+                - message
+                - name
+                - success
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile/*
+      tags:
+      - Management REST APIs
+      operationId: deleteProfile*
+      x-operation-id-source: derived
+    get:
+      definitions: {}
+      description: 'Returns metadata for a specific authentication profile.
+
+        The profile name is the URL-encoded path segment after "/profile/".
+
+        Returns 404 if no profile with that name exists for this token.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Unique profile identifier.
+                    type: string
+                  name:
+                    description: User-supplied profile name. Unique per token.
+                    type: string
+                  cookieCount:
+                    description: Number of cookies captured in the profile.
+                    type: number
+                  originCount:
+                    description: Number of distinct origins with stored localStorage or IndexedDB.
+                    type: number
+                  lastUsedAt:
+                    description: ISO timestamp of the last time this profile was applied to a session, or null if never used.
+                    type: string
+                  createdAt:
+                    description: ISO timestamp of when the profile was created.
+                    type: string
+                  updatedAt:
+                    description: ISO timestamp of the last metadata change (e.g., rename).
+                    type: string
+                additionalProperties: false
+                required:
+                - cookieCount
+                - createdAt
+                - id
+                - lastUsedAt
+                - name
+                - originCount
+                - updatedAt
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile/*
+      tags:
+      - Management REST APIs
+      operationId: getProfile*
+      x-operation-id-source: derived
+    put:
+      definitions: {}
+      description: 'Renames an authentication profile. The new name must be unique per token.
+
+        The current name is the URL-encoded path segment after "/profile/".
+
+        Returns 400 if the new name is already taken, 404 if the source profile is not found.'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  description: The new name for the profile.
+                  type: string
+              type: object
+              required:
+              - name
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Unique profile identifier.
+                    type: string
+                  name:
+                    description: User-supplied profile name. Unique per token.
+                    type: string
+                  cookieCount:
+                    description: Number of cookies captured in the profile.
+                    type: number
+                  originCount:
+                    description: Number of distinct origins with stored localStorage or IndexedDB.
+                    type: number
+                  lastUsedAt:
+                    description: ISO timestamp of the last time this profile was applied to a session, or null if never used.
+                    type: string
+                  createdAt:
+                    description: ISO timestamp of when the profile was created.
+                    type: string
+                  updatedAt:
+                    description: ISO timestamp of the last metadata change (e.g., rename).
+                    type: string
+                additionalProperties: false
+                required:
+                - cookieCount
+                - createdAt
+                - id
+                - lastUsedAt
+                - name
+                - originCount
+                - updatedAt
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile/*
+      tags:
+      - Management REST APIs
+      operationId: putProfile*
+      x-operation-id-source: derived
+  /profiles:
+    get:
+      definitions: {}
+      description: 'Lists authentication profiles owned by the requesting token.
+
+        Paginated via "limit" (default 100, capped at 1000) and "offset" (default 0).
+
+        Returns an empty array if the token has no profiles.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or nor to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/definitions/CDPLaunchOptions'
+          - $ref: '#/definitions/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: limit
+        schema:
+          description: Maximum number of profiles to return (1–1000). Defaults to 100.
+          type: number
+      - in: query
+        name: offset
+        schema:
+          description: Number of profiles to skip for pagination. Defaults to 0.
+          type: number
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profiles
+      tags:
+      - Management REST APIs
+      operationId: getProfiles
+      x-operation-id-source: derived
+  /profile/refresh:
+    post:
+      definitions: {}
+      description: 'Replaces the state of an existing authentication profile in place.
+
+        The "name" must already exist for the requesting token. Counts of any
+
+        dropped or truncated entries are surfaced under "diagnostics".'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  description: 'Name of the existing profile to refresh. Must already exist for the
+
+                    requesting token.'
+                  type: string
+                state:
+                  description: Pre-captured authentication state. Same shape as `POST /profile/upload`.
+              type: object
+              required:
+              - name
+              - state
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  diagnostics:
+                    $ref: '#/definitions/RefreshResponseDiagnostics'
+                    description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+                      dropped or truncated before persisting. All zero on a clean refresh.'
+                  id:
+                    description: Unique profile identifier.
+                    type: string
+                  name:
+                    description: User-supplied profile name. Unique per token.
+                    type: string
+                  cookieCount:
+                    description: Number of cookies captured in the profile.
+                    type: number
+                  originCount:
+                    description: Number of distinct origins with stored localStorage or IndexedDB.
+                    type: number
+                  lastUsedAt:
+                    description: ISO timestamp of the last time this profile was applied to a session, or null if never used.
+                    type: string
+                  createdAt:
+                    description: ISO timestamp of when the profile was created.
+                    type: string
+                  updatedAt:
+                    description: ISO timestamp of the last metadata change (e.g., rename).
+                    type: string
+                additionalProperties: false
+                required:
+                - cookieCount
+                - createdAt
+                - diagnostics
+                - id
+                - lastUsedAt
+                - name
+                - originCount
+                - updatedAt
+                definitions:
+                  RefreshResponseDiagnostics:
+                    description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+                      dropped or truncated before persisting. All zero on a clean refresh.'
+                    type: object
+                    properties:
+                      skippedMalformedCookies:
+                        description: Cookies dropped because required fields were missing or wrong type.
+                        type: number
+                      skippedPrivateCookies:
+                        description: Cookies dropped because their domain pointed at a private/internal host.
+                        type: number
+                      skippedMalformedOrigins:
+                        description: Origins dropped because they were malformed or non-http(s).
+                        type: number
+                      skippedPrivateOrigins:
+                        description: Origins dropped because they targeted a private/internal network.
+                        type: number
+                      truncatedOrigins:
+                        description: Origins dropped because the per-profile cap was exceeded.
+                        type: number
+                      skippedMalformedIdbDatabases:
+                        description: IndexedDB databases dropped because required fields were missing.
+                        type: number
+                      truncatedIdbDatabases:
+                        description: IndexedDB databases dropped because the per-origin cap was exceeded.
+                        type: number
+                      skippedMalformedIdbStores:
+                        description: IndexedDB object-stores dropped because required fields were missing.
+                        type: number
+                      truncatedIdbEntries:
+                        description: IndexedDB entries dropped because the per-store cap was exceeded.
+                        type: number
+                    additionalProperties: false
+                    required:
+                    - skippedMalformedCookies
+                    - skippedMalformedIdbDatabases
+                    - skippedMalformedIdbStores
+                    - skippedMalformedOrigins
+                    - skippedPrivateCookies
+                    - skippedPrivateOrigins
+                    - truncatedIdbDatabases
+                    - truncatedIdbEntries
+                    - truncatedOrigins
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile/refresh
+      tags:
+      - Management REST APIs
+      operationId: postProfileRefresh
+      x-operation-id-source: derived
+  /profile/upload:
+    post:
+      definitions: {}
+      description: 'Creates a new authentication profile from a pre-captured "state" payload
+
+        (cookies plus per-origin localStorage and IndexedDB). The "name" must be
+
+        unique per token. Counts of any dropped or truncated entries are
+
+        surfaced under "diagnostics".'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  description: A user-visible name for the profile. Must be unique per token.
+                  type: string
+                state:
+                  description: 'Pre-captured authentication state. An object with two arrays —
+
+                    `cookies` (browser cookies) and `origins` (per-origin localStorage and
+
+                    IndexedDB).'
+              type: object
+              required:
+              - name
+              - state
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  diagnostics:
+                    $ref: '#/definitions/UploadResponseDiagnostics'
+                    description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+                      dropped or truncated before persisting. All zero on a clean upload.'
+                  id:
+                    description: Unique profile identifier.
+                    type: string
+                  name:
+                    description: User-supplied profile name. Unique per token.
+                    type: string
+                  cookieCount:
+                    description: Number of cookies captured in the profile.
+                    type: number
+                  originCount:
+                    description: Number of distinct origins with stored localStorage or IndexedDB.
+                    type: number
+                  lastUsedAt:
+                    description: ISO timestamp of the last time this profile was applied to a session, or null if never used.
+                    type: string
+                  createdAt:
+                    description: ISO timestamp of when the profile was created.
+                    type: string
+                  updatedAt:
+                    description: ISO timestamp of the last metadata change (e.g., rename).
+                    type: string
+                additionalProperties: false
+                required:
+                - cookieCount
+                - createdAt
+                - diagnostics
+                - id
+                - lastUsedAt
+                - name
+                - originCount
+                - updatedAt
+                definitions:
+                  UploadResponseDiagnostics:
+                    description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+                      dropped or truncated before persisting. All zero on a clean upload.'
+                    type: object
+                    properties:
+                      skippedMalformedCookies:
+                        description: Cookies dropped because required fields were missing or wrong type.
+                        type: number
+                      skippedPrivateCookies:
+                        description: Cookies dropped because their domain pointed at a private/internal host.
+                        type: number
+                      skippedMalformedOrigins:
+                        description: Origins dropped because they were malformed or non-http(s).
+                        type: number
+                      skippedPrivateOrigins:
+                        description: Origins dropped because they targeted a private/internal network.
+                        type: number
+                      truncatedOrigins:
+                        description: Origins dropped because the per-profile cap was exceeded.
+                        type: number
+                      skippedMalformedIdbDatabases:
+                        description: IndexedDB databases dropped because required fields were missing.
+                        type: number
+                      truncatedIdbDatabases:
+                        description: IndexedDB databases dropped because the per-origin cap was exceeded.
+                        type: number
+                      skippedMalformedIdbStores:
+                        description: IndexedDB object-stores dropped because required fields were missing.
+                        type: number
+                      truncatedIdbEntries:
+                        description: IndexedDB entries dropped because the per-store cap was exceeded.
+                        type: number
+                    additionalProperties: false
+                    required:
+                    - skippedMalformedCookies
+                    - skippedMalformedIdbDatabases
+                    - skippedMalformedIdbStores
+                    - skippedMalformedOrigins
+                    - skippedPrivateCookies
+                    - skippedPrivateOrigins
+                    - truncatedIdbDatabases
+                    - truncatedIdbEntries
+                    - truncatedOrigins
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile/upload
+      tags:
+      - Management REST APIs
+      operationId: postProfileUpload
+      x-operation-id-source: derived
+definitions:
+  UploadResponseDiagnostics:
+    description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+      dropped or truncated before persisting. All zero on a clean upload.'
+    type: object
+    properties:
+      skippedMalformedCookies:
+        description: Cookies dropped because required fields were missing or wrong type.
+        type: number
+      skippedPrivateCookies:
+        description: Cookies dropped because their domain pointed at a private/internal host.
+        type: number
+      skippedMalformedOrigins:
+        description: Origins dropped because they were malformed or non-http(s).
+        type: number
+      skippedPrivateOrigins:
+        description: Origins dropped because they targeted a private/internal network.
+        type: number
+      truncatedOrigins:
+        description: Origins dropped because the per-profile cap was exceeded.
+        type: number
+      skippedMalformedIdbDatabases:
+        description: IndexedDB databases dropped because required fields were missing.
+        type: number
+      truncatedIdbDatabases:
+        description: IndexedDB databases dropped because the per-origin cap was exceeded.
+        type: number
+      skippedMalformedIdbStores:
+        description: IndexedDB object-stores dropped because required fields were missing.
+        type: number
+      truncatedIdbEntries:
+        description: IndexedDB entries dropped because the per-store cap was exceeded.
+        type: number
+    additionalProperties: false
+    required:
+    - skippedMalformedCookies
+    - skippedMalformedIdbDatabases
+    - skippedMalformedIdbStores
+    - skippedMalformedOrigins
+    - skippedPrivateCookies
+    - skippedPrivateOrigins
+    - truncatedIdbDatabases
+    - truncatedIdbEntries
+    - truncatedOrigins
+  CDPLaunchOptions:
+    type: object
+    properties:
+      args:
+        type: array
+        items:
+          type: string
+      defaultViewport:
+        type: object
+        properties:
+          deviceScaleFactor:
+            type: number
+          hasTouch:
+            type: boolean
+          height:
+            type: number
+          isLandscape:
+            type: boolean
+          isMobile:
+            type: boolean
+          width:
+            type: number
+        additionalProperties: false
+        required:
+        - height
+        - width
+      devtools:
+        type: boolean
+      dumpio:
+        type: boolean
+      headless:
+        enum:
+        - false
+        - shell
+        - true
+      ignoreDefaultArgs:
+        anyOf:
+        - type: array
+          items:
+            type: string
+        - type: boolean
+      ignoreHTTPSErrors:
+        type: boolean
+      acceptInsecureCerts:
+        type: boolean
+      slowMo:
+        type: number
+      stealth:
+        type: boolean
+      timeout:
+        type: number
+      userDataDir:
+        type: string
+      waitForInitialPage:
+        type: boolean
+    additionalProperties: false
+  BrowserServerOptions:
+    type: object
+    properties:
+      args:
+        type: array
+        items:
+          type: string
+      chromiumSandbox:
+        type: boolean
+      devtools:
+        type: boolean
+      downloadsPath:
+        type: string
+      headless:
+        type: boolean
+      ignoreDefaultArgs:
+        anyOf:
+        - type: array
+          items:
+            type: string
+        - type: boolean
+      proxy:
+        type: object
+        properties:
+          bypass:
+            type: string
+          password:
+            type: string
+          server:
+            type: string
+          username:
+            type: string
+        additionalProperties: false
+        required:
+        - server
+      timeout:
+        type: number
+      tracesDir:
+        type: string
+    additionalProperties: false
+  RefreshResponseDiagnostics:
+    description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+      dropped or truncated before persisting. All zero on a clean refresh.'
+    type: object
+    properties:
+      skippedMalformedCookies:
+        description: Cookies dropped because required fields were missing or wrong type.
+        type: number
+      skippedPrivateCookies:
+        description: Cookies dropped because their domain pointed at a private/internal host.
+        type: number
+      skippedMalformedOrigins:
+        description: Origins dropped because they were malformed or non-http(s).
+        type: number
+      skippedPrivateOrigins:
+        description: Origins dropped because they targeted a private/internal network.
+        type: number
+      truncatedOrigins:
+        description: Origins dropped because the per-profile cap was exceeded.
+        type: number
+      skippedMalformedIdbDatabases:
+        description: IndexedDB databases dropped because required fields were missing.
+        type: number
+      truncatedIdbDatabases:
+        description: IndexedDB databases dropped because the per-origin cap was exceeded.
+        type: number
+      skippedMalformedIdbStores:
+        description: IndexedDB object-stores dropped because required fields were missing.
+        type: number
+      truncatedIdbEntries:
+        description: IndexedDB entries dropped because the per-store cap was exceeded.
+        type: number
+    additionalProperties: false
+    required:
+    - skippedMalformedCookies
+    - skippedMalformedIdbDatabases
+    - skippedMalformedIdbStores
+    - skippedMalformedOrigins
+    - skippedPrivateCookies
+    - skippedPrivateOrigins
+    - truncatedIdbDatabases
+    - truncatedIdbEntries
+    - truncatedOrigins

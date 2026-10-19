@@ -1,0 +1,1362 @@
+openapi: 3.2.0
+info:
+  title: Browserless BQL Execution API
+  version: 2.57.0
+  description: 'This is the API reference for **Browserless Enterprise and Cloud** deployments. You''ll find endpoints for capturing screenshots and PDFs, scraping content, running custom browser functions, solving CAPTCHAs, bypassing bot detection with stealth browsing, managing authenticated browser profiles, and orchestrating crawls.
+
+
+    The API includes REST endpoints (JSON in, JSON or binary out), WebSocket connections for direct CDP/Playwright/Puppeteer access, and CDP extensions that expose Browserless-specific commands like `liveURL`, `solveCaptcha`, and `reconnect`. For the open-source container API, see the GitHub repository.
+
+
+    ## Just Getting Started?
+
+
+    Check out the Quick Start guide to launch your first session, or explore the BrowserQL IDE for a GraphQL-based automation workflow.
+
+
+    ## Base URL
+
+
+    All API requests go to your deployment''s base URL. For Browserless Cloud:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io
+
+    ```
+
+
+    Self-hosted Enterprise deployments use the host and port where the container is running (default `http://localhost:3000`).
+
+
+    ## Authentication
+
+
+    Include your API token as a query parameter on every request:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io/chromium/content?token=YOUR_API_TOKEN
+
+    ```
+
+
+    Tokens are managed from the Account dashboard. Self-hosted deployments set the token via the `TOKEN` environment variable. See connection details for all authentication options.
+
+
+    ## Changelog
+
+
+    For release notes and version history, see the Enterprise Changelog.
+
+
+    ## Software keys
+
+
+    Self-hosted Enterprise deployments use time-limited software keys for offline licensing. No external connections or callbacks are required. Keys are cryptographically secure and can''t be reverse engineered. When a key expires, the container exits with a semantic error code.
+
+
+    To use a software key, set the `KEY` environment variable when running the container:
+
+
+    ```bash
+
+    docker run -e KEY=your-generated-key browserless/enterprise
+
+    ```'
+servers:
+- url: https://production-sfo.browserless.io
+security:
+- tokenAuth: []
+tags:
+- name: BQL Execution
+  description: Run BrowserQL (BQL) queries over REST, or connect over WebSocket for a persistent BQL session. `/chromium/bql` runs standard BQL; `/stealth/bql` adds fingerprint randomization for bot-detection-sensitive automation.
+  x-displayName: BQL Execution
+paths:
+  /chromium/bql?(/*):
+    post:
+      description: Parses and executes BrowserQL requests, powered by the BrowserQL Editor or by other API integrations. See the BrowserQL Editor for more documentation on this API.
+      parameters:
+      - in: query
+        name: acceptInsecureCerts
+        schema:
+          description: 'Whether to ignore TLS certificate errors (e.g. self-signed or untrusted
+
+            authorities) so the browser navigates to sites with invalid certificates.'
+          type: boolean
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: blockConsentModals
+        schema:
+          description: Whether to automatically block cookie consent modals and popups.
+          type: boolean
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: deviceScaleFactor
+        schema:
+          description: 'Device pixel ratio for the desktop screen above (allowed: 1 or 1.25).
+
+            Omit to default to the seeded/profile scale. Ignored for emulationOs=android.'
+          type: number
+      - in: query
+        name: deviceSlot
+        schema:
+          description: 'Pin this session to one of your identity''s N stable device slots (0-based,
+
+            default N=8). Each slot is one virtual machine: its GPU, screen, cores, memory
+
+            and OS version stay fixed across sessions, so traffic spreads over N machines
+
+            instead of clustering on one. Requires a desktop emulationOs.'
+          type: number
+      - in: query
+        name: emulatedDevice
+        schema:
+          description: 'Device model for the mobile persona (emulationOs=android): a device slug such
+
+            as ''pixel-8'', ''pixel-8-pro'', ''galaxy-s23'', ''galaxy-s23-ultra''. Drives the
+
+            UA-CH model/version, viewport/DPR, touch points, cores, memory and GPU string.
+
+            Omit to auto-pick a device seeded per session (stable per identity, spread
+
+            across the fleet; an unknown slug does the same). Requires emulationOs=android
+
+            on a stealth request — sent otherwise, the request is rejected with 400.'
+          type: string
+      - in: query
+        name: emulationOs
+        schema:
+          $ref: '#/components/schemas/Platform'
+          description: 'Spoof OS for the session: ''windows'', ''macos'', or ''linux''. When set, the
+
+            session runs the full per-platform stealth stack (User-Agent, UA Client
+
+            Hints, navigator.platform, GPU, fonts, and media/speech/audio fingerprints)
+
+            — the same stack the /stealth routes use. Omit for the native (Linux) host
+
+            identity.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: humanlike
+        schema:
+          description: 'Whether to enable human-like behavior for interactions.
+
+            When true, actions like typing and clicking will have randomized delays.'
+          type: boolean
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options for the browser, either as a JSON object or a JSON string.
+
+            Includes options like `headless`, `args`, `defaultViewport`, etc.
+
+            Must be either JSON object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: replay
+        schema:
+          description: 'Whether to enable session recording for replay.
+
+            When true, the session will be recorded and can be replayed later.'
+          type: boolean
+      - in: query
+        name: screen
+        schema:
+          description: 'Desktop screen resolution as WIDTHxHEIGHT (e.g. ''1920x1080''). Sets the
+
+            reported screen.*, window size and (with deviceScaleFactor) DPR for a
+
+            desktop persona. Omit to auto-pick a screen seeded per session (stable per
+
+            identity, spread across the fleet). Ignored for emulationOs=android.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                query:
+                  description: The BrowserQL query string to execute.
+                  type: string
+                operationName:
+                  description: The name of the operation to execute if the query contains multiple operations.
+                  type: string
+                variables:
+                  description: Variables to pass to the BrowserQL query.
+                  type: object
+                  additionalProperties: {}
+              type: object
+              required:
+              - query
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chromium/bql?(/*)
+      tags:
+      - BQL Execution
+      operationId: chromium-bql-execute
+    get:
+      description: 'WebSocket endpoint for BrowserQL. Connect to establish a persistent browser
+
+        session, then send multiple GraphQL operations as JSON messages. The browser
+
+        and page state persist across all messages for the connection duration.
+
+
+        Messages use the same JSON format as the HTTP POST endpoint:
+
+        Send: { "query": "mutation { goto(url: \"..\") { status } }", "variables": {} }
+
+        Receive: { "data": { "goto": { "status": 200 } } }'
+      parameters:
+      - in: query
+        name: acceptInsecureCerts
+        schema:
+          description: 'Whether to ignore TLS certificate errors (e.g. self-signed or untrusted
+
+            authorities) so the browser navigates to sites with invalid certificates.'
+          type: boolean
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: blockConsentModals
+        schema:
+          type: boolean
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: deviceScaleFactor
+        schema:
+          description: 'Device pixel ratio for the desktop screen above (allowed: 1 or 1.25).
+
+            Omit to default to the seeded/profile scale. Ignored for emulationOs=android.'
+          type: number
+      - in: query
+        name: deviceSlot
+        schema:
+          description: 'Pin this session to one of your identity''s N stable device slots (0-based,
+
+            default N=8). Each slot is one virtual machine: its GPU, screen, cores, memory
+
+            and OS version stay fixed across sessions, so traffic spreads over N machines
+
+            instead of clustering on one. Requires a desktop emulationOs.'
+          type: number
+      - in: query
+        name: emulatedDevice
+        schema:
+          description: 'Device model for the mobile persona (emulationOs=android): a device slug such
+
+            as ''pixel-8'', ''pixel-8-pro'', ''galaxy-s23'', ''galaxy-s23-ultra''. Drives the
+
+            UA-CH model/version, viewport/DPR, touch points, cores, memory and GPU string.
+
+            Omit to auto-pick a device seeded per session (stable per identity, spread
+
+            across the fleet; an unknown slug does the same). Requires emulationOs=android
+
+            on a stealth request — sent otherwise, the request is rejected with 400.'
+          type: string
+      - in: query
+        name: emulationOs
+        schema:
+          $ref: '#/components/schemas/Platform'
+          description: 'Spoof OS for the session: ''windows'', ''macos'', or ''linux''. When set, the
+
+            session runs the full per-platform stealth stack (User-Agent, UA Client
+
+            Hints, navigator.platform, GPU, fonts, and media/speech/audio fingerprints)
+
+            — the same stack the /stealth routes use. Omit for the native (Linux) host
+
+            identity.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: humanlike
+        schema:
+          type: boolean
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options for the browser, either as a JSON object or a JSON string.
+
+            Includes options like `headless`, `args`, `defaultViewport`, etc.
+
+            Must be either JSON object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: screen
+        schema:
+          description: 'Desktop screen resolution as WIDTHxHEIGHT (e.g. ''1920x1080''). Sets the
+
+            reported screen.*, window size and (with deviceScaleFactor) DPR for a
+
+            desktop persona. Omit to auto-pick a screen seeded per session (stable per
+
+            identity, spread across the fleet). Ignored for emulationOs=android.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chromium/bql?(/*)
+      tags:
+      - BQL Execution
+      operationId: chromium-bql-connect
+  /stealth/bql?(/*):
+    post:
+      description: Parses and executes BrowserQL requests, powered by the BrowserQL Editor or by other API integrations. See the BrowserQL Editor for more documentation on this API.
+      parameters:
+      - in: query
+        name: acceptInsecureCerts
+        schema:
+          description: 'Whether to ignore TLS certificate errors (e.g. self-signed or untrusted
+
+            authorities) so the browser navigates to sites with invalid certificates.'
+          type: boolean
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: blockConsentModals
+        schema:
+          description: Whether to automatically block cookie consent modals and popups.
+          type: boolean
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: deviceScaleFactor
+        schema:
+          description: 'Device pixel ratio for the desktop screen above (allowed: 1 or 1.25).
+
+            Omit to default to the seeded/profile scale. Ignored for emulationOs=android.'
+          type: number
+      - in: query
+        name: deviceSlot
+        schema:
+          description: 'Pin this session to one of your identity''s N stable device slots (0-based,
+
+            default N=8). Each slot is one virtual machine: its GPU, screen, cores, memory
+
+            and OS version stay fixed across sessions, so traffic spreads over N machines
+
+            instead of clustering on one. Requires a desktop emulationOs.'
+          type: number
+      - in: query
+        name: emulatedDevice
+        schema:
+          description: 'Device model for the mobile persona (emulationOs=android): a device slug such
+
+            as ''pixel-8'', ''pixel-8-pro'', ''galaxy-s23'', ''galaxy-s23-ultra''. Drives the
+
+            UA-CH model/version, viewport/DPR, touch points, cores, memory and GPU string.
+
+            Omit to auto-pick a device seeded per session (stable per identity, spread
+
+            across the fleet; an unknown slug does the same). Requires emulationOs=android
+
+            on a stealth request — sent otherwise, the request is rejected with 400.'
+          type: string
+      - in: query
+        name: emulationOs
+        schema:
+          $ref: '#/components/schemas/Platform'
+          description: 'Spoof OS for the session: ''windows'', ''macos'', or ''linux''. When set, the
+
+            session runs the full per-platform stealth stack (User-Agent, UA Client
+
+            Hints, navigator.platform, GPU, fonts, and media/speech/audio fingerprints)
+
+            — the same stack the /stealth routes use. Omit for the native (Linux) host
+
+            identity.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: humanlike
+        schema:
+          description: 'Whether to enable human-like behavior for interactions.
+
+            When true, actions like typing and clicking will have randomized delays.'
+          type: boolean
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options for the browser, either as a JSON object or a JSON string.
+
+            Includes options like `headless`, `args`, `defaultViewport`, etc.
+
+            Must be either JSON object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: replay
+        schema:
+          description: 'Whether to enable session recording for replay.
+
+            When true, the session will be recorded and can be replayed later.'
+          type: boolean
+      - in: query
+        name: screen
+        schema:
+          description: 'Desktop screen resolution as WIDTHxHEIGHT (e.g. ''1920x1080''). Sets the
+
+            reported screen.*, window size and (with deviceScaleFactor) DPR for a
+
+            desktop persona. Omit to auto-pick a screen seeded per session (stable per
+
+            identity, spread across the fleet). Ignored for emulationOs=android.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                query:
+                  description: The BrowserQL query string to execute.
+                  type: string
+                operationName:
+                  description: The name of the operation to execute if the query contains multiple operations.
+                  type: string
+                variables:
+                  description: Variables to pass to the BrowserQL query.
+                  type: object
+                  additionalProperties: {}
+              type: object
+              required:
+              - query
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /stealth/bql?(/*)
+      tags:
+      - BQL Execution
+      operationId: stealth-bql-execute
+    get:
+      description: 'WebSocket endpoint for BrowserQL. Connect to establish a persistent browser
+
+        session, then send multiple GraphQL operations as JSON messages. The browser
+
+        and page state persist across all messages for the connection duration.
+
+
+        Messages use the same JSON format as the HTTP POST endpoint:
+
+        Send: { "query": "mutation { goto(url: \"..\") { status } }", "variables": {} }
+
+        Receive: { "data": { "goto": { "status": 200 } } }'
+      parameters:
+      - in: query
+        name: acceptInsecureCerts
+        schema:
+          description: 'Whether to ignore TLS certificate errors (e.g. self-signed or untrusted
+
+            authorities) so the browser navigates to sites with invalid certificates.'
+          type: boolean
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: blockConsentModals
+        schema:
+          type: boolean
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: deviceScaleFactor
+        schema:
+          description: 'Device pixel ratio for the desktop screen above (allowed: 1 or 1.25).
+
+            Omit to default to the seeded/profile scale. Ignored for emulationOs=android.'
+          type: number
+      - in: query
+        name: deviceSlot
+        schema:
+          description: 'Pin this session to one of your identity''s N stable device slots (0-based,
+
+            default N=8). Each slot is one virtual machine: its GPU, screen, cores, memory
+
+            and OS version stay fixed across sessions, so traffic spreads over N machines
+
+            instead of clustering on one. Requires a desktop emulationOs.'
+          type: number
+      - in: query
+        name: emulatedDevice
+        schema:
+          description: 'Device model for the mobile persona (emulationOs=android): a device slug such
+
+            as ''pixel-8'', ''pixel-8-pro'', ''galaxy-s23'', ''galaxy-s23-ultra''. Drives the
+
+            UA-CH model/version, viewport/DPR, touch points, cores, memory and GPU string.
+
+            Omit to auto-pick a device seeded per session (stable per identity, spread
+
+            across the fleet; an unknown slug does the same). Requires emulationOs=android
+
+            on a stealth request — sent otherwise, the request is rejected with 400.'
+          type: string
+      - in: query
+        name: emulationOs
+        schema:
+          $ref: '#/components/schemas/Platform'
+          description: 'Spoof OS for the session: ''windows'', ''macos'', or ''linux''. When set, the
+
+            session runs the full per-platform stealth stack (User-Agent, UA Client
+
+            Hints, navigator.platform, GPU, fonts, and media/speech/audio fingerprints)
+
+            — the same stack the /stealth routes use. Omit for the native (Linux) host
+
+            identity.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: humanlike
+        schema:
+          type: boolean
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options for the browser, either as a JSON object or a JSON string.
+
+            Includes options like `headless`, `args`, `defaultViewport`, etc.
+
+            Must be either JSON object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: screen
+        schema:
+          description: 'Desktop screen resolution as WIDTHxHEIGHT (e.g. ''1920x1080''). Sets the
+
+            reported screen.*, window size and (with deviceScaleFactor) DPR for a
+
+            desktop persona. Omit to auto-pick a screen seeded per session (stable per
+
+            identity, spread across the fleet). Ignored for emulationOs=android.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /stealth/bql?(/*)
+      tags:
+      - BQL Execution
+      operationId: stealth-bql-connect
+components:
+  schemas:
+    ProxyType:
+      description: 'The proxy networks the platform can route through. `residential` uses the
+
+        built-in residential vendors; `datacenter` uses the Geonode datacenter
+
+        network (cheaper, billed at a lower per-MB rate).'
+      enum:
+      - datacenter
+      - residential
+      type: string
+    StringRecord:
+      type: object
+      additionalProperties: false
+    CDPLaunchOptions:
+      type: object
+      additionalProperties: {}
+      properties:
+        args:
+          type: array
+          items:
+            type: string
+        defaultViewport:
+          type: object
+          properties:
+            deviceScaleFactor:
+              type: number
+            hasTouch:
+              type: boolean
+            height:
+              type: number
+            isLandscape:
+              type: boolean
+            isMobile:
+              type: boolean
+            width:
+              type: number
+          additionalProperties: false
+          required:
+          - height
+          - width
+        devtools:
+          type: boolean
+        dumpio:
+          type: boolean
+        headless:
+          enum:
+          - false
+          - shell
+          - true
+        ignoreDefaultArgs:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+        ignoreHTTPSErrors:
+          type: boolean
+        acceptInsecureCerts:
+          type: boolean
+        slowMo:
+          type: number
+        stealth:
+          type: boolean
+        timeout:
+          type: number
+        userDataDir:
+          type: string
+        waitForInitialPage:
+          type: boolean
+    Platform:
+      enum:
+      - android
+      - linux
+      - macos
+      - windows
+      type: string
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: query
+      name: token
+      description: Your Browserless API token. Find it on your [Account dashboard](https://www.browserless.io/account).
+x-tagGroups:
+- name: Core APIs
+  tags:
+  - Screenshots & PDFs
+  - Scraping & Content
+  - Functions & Downloads
+- name: Browser Control
+  tags:
+  - Sessions & Connections
+  - Browser Management
+  - Crawling
+- name: Anti-Bot & Stealth
+  tags:
+  - Unblock & Stealth
+  - Proxy
+- name: Auth & Profiles
+  tags:
+  - Profiles
+  - Integrations
+- name: WebSocket / CDP
+  tags:
+  - WebSocket APIs
+  - Agent
+  - BQL Execution
+  - CDP & DevTools Connections
+- name: Chrome
+  tags:
+  - Chrome (licensed build)
+- name: Platform
+  tags:
+  - Platform / Skills

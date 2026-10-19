@@ -154,81 +154,6 @@ apis:
     url: https://www.browserless.io/enterprise
   - type: MCPServer
     url: https://mcp.browserless.io/mcp
-- aid: browserless:browserless-browser-websocket-apis-api
-  name: Browserless Browser WebSocket APIs API
-  description: >-
-    The Browser WebSocket APIs API from Browserless — 23 operation(s) for browser websocket apis.
-  humanURL: https://docs.browserless.io
-  baseURL: https://production-sfo.browserless.io
-  tags:
-  - Browser WebSocket APIs
-  properties:
-  - type: OpenAPI
-    url: openapi/browserless-browser-websocket-apis-api-openapi.yml
-  - type: Documentation
-    url: https://docs.browserless.io
-  - type: APIReference
-    url: https://docs.browserless.io/open-api
-  - type: GettingStarted
-    url: https://docs.browserless.io/overview/quick-start
-  - type: Signup
-    url: https://account.browserless.io/signup
-  - type: SDKs
-    url: https://github.com/puppeteer/puppeteer
-  - type: SDKs
-    url: https://github.com/microsoft/playwright
-  - type: SDKs
-    url: https://github.com/SeleniumHQ/selenium
-  - type: GitHubRepository
-    url: https://github.com/browserless/browserless
-  - type: GitHubRepository
-    url: https://github.com/browserless/browserless-mcp
-  - type: GitHubRepository
-    url: https://github.com/browserless/claude-plugin
-  - type: GitHubRepository
-    url: https://github.com/browserless/gemini-extension
-  - type: GitHubRepository
-    url: https://github.com/browserless/n8n-nodes-browserless-api
-  - type: GitHubRepository
-    url: https://github.com/browserless/dify-plugin
-  - type: GitHubRepository
-    url: https://github.com/browserless/cursor-mcp-plugin
-  - type: GitHubRepository
-    url: https://github.com/browserless/browserless-langchain
-  - type: GitHubRepository
-    url: https://github.com/browserless/browserless-llamaindex
-  - type: GitHubRepository
-    url: https://github.com/browserless/browserless-agno
-  - type: GitHubRepository
-    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
-  - type: JSONSchema
-    url: json-schema/browserless-session-schema.json
-  - type: JSONStructure
-    url: json-structure/browserless-session-structure.json
-  - type: JSONLD
-    url: json-ld/browserless-context.jsonld
-  - type: Examples
-    url: examples/browserless-screenshot-example.json
-  - type: Plans
-    url: plans/browserless-plans-pricing.yml
-  - type: RateLimits
-    url: rate-limits/browserless-rate-limits.yml
-  - type: FinOps
-    url: finops/browserless-finops.yml
-  - type: Vocabulary
-    url: vocabulary/browserless-vocabulary.yml
-  - type: Rules
-    url: rules/browserless-rules.yml
-  - type: ChangeLog
-    url: https://www.browserless.io/changelog
-  - type: StatusPage
-    url: https://status.browserless.io
-  - type: Pricing
-    url: https://www.browserless.io/pricing
-  - type: Enterprise
-    url: https://www.browserless.io/enterprise
-  - type: MCPServer
-    url: https://mcp.browserless.io/mcp
 - aid: browserless:browserless-management-rest-apis-api
   name: Browserless Management REST APIs API
   description: >-
@@ -304,6 +229,1217 @@ apis:
     url: https://www.browserless.io/enterprise
   - type: MCPServer
     url: https://mcp.browserless.io/mcp
+- aid: browserless:browserless-agent-api
+  name: Browserless Agent API
+  description: >-
+    Run autonomous browser agents. `POST /agent/run` starts an asynchronous run and returns an id to poll
+    via `GET /agent/run/:id`; `POST /agent/run/:id/continue` sends it a follow-up task (not enabled in
+    v1). `/chromium/agent` connects over WebSocket for a persistent, JSON-RPC-driven agentic browser session
+    instead.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Agent
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-agent-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-bql-execution-api
+  name: Browserless BQL Execution API
+  description: >-
+    Run BrowserQL (BQL) queries over REST, or connect over WebSocket for a persistent BQL session. `/chromium/bql`
+    runs standard BQL; `/stealth/bql` adds fingerprint randomization for bot-detection-sensitive automation.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - BQL Execution
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-bql-execution-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-browser-management-api
+  name: Browserless Browser Management API
+  description: >-
+    Inspect running sessions, terminate browsers, and retrieve server metadata. `/active` lists current
+    sessions, `/kill/:id` terminates one, and `/meta` returns server configuration.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Browser Management
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-browser-management-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-cdp-devtools-connections-api
+  name: Browserless CDP & DevTools Connections API
+  description: >-
+    Low-level WebSocket connections for CDP tooling: the hosted-agent CLI chat (`/chromium/cli`), reconnecting
+    to an existing stealth session, attaching to an already-running Chromium process, and the underlying
+    connections `/function` uses internally.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - CDP & DevTools Connections
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-cdp-devtools-connections-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-chrome-licensed-build-api
+  name: Browserless Chrome (licensed build) API
+  description: >-
+    The `/chrome/*` endpoints use the licensed Google Chrome binary, which includes proprietary codec
+    and DRM support. Use these when a site requires Chrome-specific features, video codecs (Twitch, YouTube,
+    Netflix), or enhanced bot detection evasion. For most automation tasks, the `/chromium/*` equivalents
+    work identically.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Chrome (licensed build)
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-chrome-licensed-build-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-crawling-api
+  name: Browserless Crawling API
+  description: >-
+    Launch, monitor, and cancel multi-page crawl jobs. `POST /crawl` starts a crawl, `GET /crawl/:id`
+    polls for progress, and `DELETE /crawl/:id` cancels it.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Crawling
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-crawling-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-functions-downloads-api
+  name: Browserless Functions & Downloads API
+  description: >-
+    Run custom JavaScript in a browser context and retrieve the resulting files. Use `/function` to execute
+    a Puppeteer or Playwright script server-side, and `/download` to capture binary assets triggered by
+    in-page actions.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Functions & Downloads
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-functions-downloads-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-integrations-api
+  name: Browserless Integrations API
+  description: >-
+    Connect external services to browser sessions. Currently supports 1Password for injecting stored credentials
+    into a session without exposing secrets in your code.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Integrations
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-integrations-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-platform-skills-api
+  name: Browserless Platform / Skills API
+  description: >-
+    Site-specific browser-automation skills: tuned recipes an agent should follow for a given domain instead
+    of planning its own steps.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Platform / Skills
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-platform-skills-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-profiles-api
+  name: Browserless Profiles API
+  description: >-
+    Create and manage persistent browser profiles that preserve cookies, localStorage, and IndexedDB across
+    sessions. Capture a logged-in state once with `Browserless.saveProfile`, then rehydrate it on any
+    future session with `?profile=<name>`.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Profiles
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-profiles-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-proxy-api
+  name: Browserless Proxy API
+  description: >-
+    Discover available proxy locations and configure residential or datacenter routing for your sessions.
+
+
+    > Residential proxies are only available on Enterprise and Cloud plans.
+
+
+    Add these parameters to your library or API calls:
+
+
+    - `?proxy=residential` — residential proxy (6 units/MB).
+
+    - `?proxy=datacenter` — datacenter proxy pool (2 units/MB). Cheaper but more easily detected.
+
+    - `?proxyCountry=us` — two-digit ISO country code.
+
+    - `?proxySticky=true` — keep the same IP for the entire session. Recommended for most cases.
+
+    - `?proxyPreset=px_gov01` — website-specific proxy configuration.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Proxy
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-proxy-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-scraping-content-api
+  name: Browserless Scraping & Content API
+  description: >-
+    Load pages and extract HTML, text, or structured data. `/chromium/content` returns raw HTML. `/chromium/scrape`
+    runs `querySelectorAll` against the rendered DOM and returns matched elements. `/smart-scrape` cascades
+    through multiple extraction strategies automatically.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Scraping & Content
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-scraping-content-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-screenshots-pdfs-api
+  name: Browserless Screenshots & PDFs API
+  description: >-
+    Capture full-page or element screenshots and generate PDFs from web pages. The root `/screenshot`
+    and `/pdf` routes work for most cases. Use browser-specific variants like `/edge/screenshot` when
+    you need a particular engine.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Screenshots & PDFs
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-screenshots-pdfs-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-sessions-connections-api
+  name: Browserless Sessions & Connections API
+  description: >-
+    Create persistent browser sessions, reconnect to running browsers, and query CDP metadata. `/session`
+    spins up a session that outlives a single WebSocket connection. `/reconnect/:id` reattaches to it
+    later.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Sessions & Connections
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-sessions-connections-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-unblock-stealth-api
+  name: Browserless Unblock & Stealth API
+  description: >-
+    Bypass bot detection and anti-scraping measures. `/unblock` handles aggressive anti-bot challenges
+    end-to-end. The stealth toggle (`/stealth`, `/chromium/stealth`, `/chrome/stealth`) randomizes browser
+    fingerprints for longer-running automation.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - Unblock & Stealth
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-unblock-stealth-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
+- aid: browserless:browserless-websocket-apis-api
+  name: Browserless WebSocket APIs API
+  description: >-
+    Connect Puppeteer, Playwright, or raw DevTools Protocol clients over WebSocket. Launch a browser with
+    `wss://` and get back a CDP session for full programmatic control.
+  humanURL: https://docs.browserless.io
+  baseURL: https://production-sfo.browserless.io
+  tags:
+  - WebSocket APIs
+  properties:
+  - type: OpenAPI
+    url: openapi/browserless-websocket-apis-api-openapi.yml
+  - type: Documentation
+    url: https://docs.browserless.io
+  - type: APIReference
+    url: https://docs.browserless.io/open-api
+  - type: GettingStarted
+    url: https://docs.browserless.io/overview/quick-start
+  - type: Signup
+    url: https://account.browserless.io/signup
+  - type: SDKs
+    url: https://github.com/puppeteer/puppeteer
+  - type: SDKs
+    url: https://github.com/microsoft/playwright
+  - type: SDKs
+    url: https://github.com/SeleniumHQ/selenium
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-mcp
+  - type: GitHubRepository
+    url: https://github.com/browserless/claude-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/gemini-extension
+  - type: GitHubRepository
+    url: https://github.com/browserless/n8n-nodes-browserless-api
+  - type: GitHubRepository
+    url: https://github.com/browserless/dify-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/cursor-mcp-plugin
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-langchain
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-llamaindex
+  - type: GitHubRepository
+    url: https://github.com/browserless/browserless-agno
+  - type: GitHubRepository
+    url: https://github.com/browserless/bolt-diy-browserless-mcp-starter
+  - type: JSONSchema
+    url: json-schema/browserless-session-schema.json
+  - type: JSONStructure
+    url: json-structure/browserless-session-structure.json
+  - type: JSONLD
+    url: json-ld/browserless-context.jsonld
+  - type: Examples
+    url: examples/browserless-screenshot-example.json
+  - type: Plans
+    url: plans/browserless-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/browserless-rate-limits.yml
+  - type: FinOps
+    url: finops/browserless-finops.yml
+  - type: Vocabulary
+    url: vocabulary/browserless-vocabulary.yml
+  - type: Rules
+    url: rules/browserless-rules.yml
+  - type: ChangeLog
+    url: https://www.browserless.io/changelog
+  - type: StatusPage
+    url: https://status.browserless.io
+  - type: Pricing
+    url: https://www.browserless.io/pricing
+  - type: Enterprise
+    url: https://www.browserless.io/enterprise
 common:
 - type: Plans
   url: plans/browserless-plans-pricing.yml

@@ -1,0 +1,1648 @@
+openapi: 3.2.0
+info:
+  title: Browserless Integrations API
+  version: 2.57.0
+  description: 'This is the API reference for **Browserless Enterprise and Cloud** deployments. You''ll find endpoints for capturing screenshots and PDFs, scraping content, running custom browser functions, solving CAPTCHAs, bypassing bot detection with stealth browsing, managing authenticated browser profiles, and orchestrating crawls.
+
+
+    The API includes REST endpoints (JSON in, JSON or binary out), WebSocket connections for direct CDP/Playwright/Puppeteer access, and CDP extensions that expose Browserless-specific commands like `liveURL`, `solveCaptcha`, and `reconnect`. For the open-source container API, see the GitHub repository.
+
+
+    ## Just Getting Started?
+
+
+    Check out the Quick Start guide to launch your first session, or explore the BrowserQL IDE for a GraphQL-based automation workflow.
+
+
+    ## Base URL
+
+
+    All API requests go to your deployment''s base URL. For Browserless Cloud:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io
+
+    ```
+
+
+    Self-hosted Enterprise deployments use the host and port where the container is running (default `http://localhost:3000`).
+
+
+    ## Authentication
+
+
+    Include your API token as a query parameter on every request:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io/chromium/content?token=YOUR_API_TOKEN
+
+    ```
+
+
+    Tokens are managed from the Account dashboard. Self-hosted deployments set the token via the `TOKEN` environment variable. See connection details for all authentication options.
+
+
+    ## Changelog
+
+
+    For release notes and version history, see the Enterprise Changelog.
+
+
+    ## Software keys
+
+
+    Self-hosted Enterprise deployments use time-limited software keys for offline licensing. No external connections or callbacks are required. Keys are cryptographically secure and can''t be reverse engineered. When a key expires, the container exits with a semantic error code.
+
+
+    To use a software key, set the `KEY` environment variable when running the container:
+
+
+    ```bash
+
+    docker run -e KEY=your-generated-key browserless/enterprise
+
+    ```'
+servers:
+- url: https://production-sfo.browserless.io
+security:
+- tokenAuth: []
+tags:
+- name: Integrations
+  description: Connect external services to browser sessions. Currently supports 1Password for injecting stored credentials into a session without exposing secrets in your code.
+  x-displayName: Integrations
+paths:
+  /integrations/onepassword:
+    post:
+      description: 'Registers a 1Password integration for the requesting token. The supplied
+
+        service-account token is encrypted at rest and is never returned by this or
+
+        any other endpoint. Returns the created integration without any token field.
+
+
+        **Note:** This endpoint is also available at: `/management/integrations/onepassword` for backwards compatibility.'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                label:
+                  description: A user-visible label for the integration. Unique per token.
+                  type: string
+                kind:
+                  description: Integration kind. Defaults to "service_account".
+                  enum:
+                  - connect
+                  - service_account
+                  type: string
+                serviceAccountToken:
+                  description: 'The 1Password service-account token (or Connect access token when
+
+                    kind is "connect"). Encrypted at rest; never returned by any API.'
+                  type: string
+                allowedDomains:
+                  description: Origins this integration may fill credentials into. Empty means no fills pass.
+                  type: array
+                  items:
+                    type: string
+                connectUrl:
+                  description: Connect server URL. Required when kind is "connect", rejected otherwise.
+                  type: string
+              type: object
+              required:
+              - label
+              - serviceAccountToken
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: 'Public-facing integration response returned by HTTP routes.
+
+                  Omits internal fields — never includes token_hash or any token material.'
+                type: object
+                properties:
+                  vaults:
+                    description: Live vault titles, only with includeVaults=true; null when unavailable.
+                    type: array
+                    items:
+                      type: string
+                  id:
+                    description: Unique integration identifier.
+                    type: string
+                  label:
+                    description: User-supplied label. Unique per token.
+                    type: string
+                  kind:
+                    $ref: '#/components/schemas/OpIntegrationKind'
+                    description: 'Integration kind: `service_account` (default) or `connect`.'
+                  allowedDomains:
+                    description: Origins this integration is allowed to fill into.
+                    type: array
+                    items:
+                      type: string
+                  connectUrl:
+                    description: Connect server URL when kind is `connect`, otherwise null.
+                    type: string
+                  expiresAt:
+                    description: ISO timestamp after which the integration is treated as expired, or null.
+                    type: string
+                  lastResolvedAt:
+                    description: ISO timestamp of the last successful secret resolve, or null if never used.
+                    type: string
+                  createdAt:
+                    description: ISO timestamp of when the integration was created.
+                    type: string
+                  updatedAt:
+                    description: ISO timestamp of the last metadata change.
+                    type: string
+                additionalProperties: false
+                required:
+                - allowedDomains
+                - connectUrl
+                - createdAt
+                - expiresAt
+                - id
+                - kind
+                - label
+                - lastResolvedAt
+                - updatedAt
+                definitions:
+                  OpIntegrationKind:
+                    enum:
+                    - connect
+                    - service_account
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+          description: 'Public-facing integration response returned by HTTP routes.
+
+            Omits internal fields — never includes token_hash or any token material.'
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /integrations/onepassword
+      tags:
+      - Integrations
+      operationId: onepassword-register
+    get:
+      description: 'Lists the 1Password integrations owned by the requesting token. Paginated
+
+        via "limit" (default 100, capped at 1000) and "offset" (default 0). Records
+
+        never include any token material.
+
+        Pass includeVaults=true to return live vault titles for the first ten rows per response.
+
+        Later rows and unavailable lookups return null. Paginate with limit=10 and offset to retrieve later titles.
+
+
+        **Note:** This endpoint is also available at: `/management/integrations/onepassword` for backwards compatibility.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: includeVaults
+        schema:
+          description: Also return live vault titles. Defaults to false.
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - $ref: '#/components/schemas/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: limit
+        schema:
+          description: Maximum number of integrations to return (1–1000). Defaults to 100.
+          type: number
+      - in: query
+        name: offset
+        schema:
+          description: Number of integrations to skip for pagination. Defaults to 0.
+          type: number
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpIntegrationResponse'
+                definitions:
+                  OpIntegrationResponse:
+                    description: 'Public-facing integration response returned by HTTP routes.
+
+                      Omits internal fields — never includes token_hash or any token material.'
+                    type: object
+                    properties:
+                      vaults:
+                        description: Live vault titles, only with includeVaults=true; null when unavailable.
+                        type: array
+                        items:
+                          type: string
+                      id:
+                        description: Unique integration identifier.
+                        type: string
+                      label:
+                        description: User-supplied label. Unique per token.
+                        type: string
+                      kind:
+                        $ref: '#/components/schemas/OpIntegrationKind'
+                        description: 'Integration kind: `service_account` (default) or `connect`.'
+                      allowedDomains:
+                        description: Origins this integration is allowed to fill into.
+                        type: array
+                        items:
+                          type: string
+                      connectUrl:
+                        description: Connect server URL when kind is `connect`, otherwise null.
+                        type: string
+                      expiresAt:
+                        description: ISO timestamp after which the integration is treated as expired, or null.
+                        type: string
+                      lastResolvedAt:
+                        description: ISO timestamp of the last successful secret resolve, or null if never used.
+                        type: string
+                      createdAt:
+                        description: ISO timestamp of when the integration was created.
+                        type: string
+                      updatedAt:
+                        description: ISO timestamp of the last metadata change.
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - allowedDomains
+                    - connectUrl
+                    - createdAt
+                    - expiresAt
+                    - id
+                    - kind
+                    - label
+                    - lastResolvedAt
+                    - updatedAt
+                  OpIntegrationKind:
+                    enum:
+                    - connect
+                    - service_account
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /integrations/onepassword
+      tags:
+      - Integrations
+      operationId: onepassword-list
+  /integrations/onepassword/*:
+    delete:
+      description: 'Deletes a 1Password integration owned by the requesting token. The id or
+
+        label is the URL-encoded path segment after "/integrations/onepassword/".
+
+        Returns 404 if no matching integration exists for this token. Deleting an
+
+        integration does not touch any authentication profile.
+
+
+        **Note:** This endpoint is also available at: `/management/integrations/onepassword/*` for backwards compatibility.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    description: Always true on success.
+                    type: boolean
+                  message:
+                    description: Human-readable confirmation message.
+                    type: string
+                  id:
+                    description: Id of the integration that was deleted.
+                    type: string
+                additionalProperties: false
+                required:
+                - id
+                - message
+                - success
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /integrations/onepassword/*
+      tags:
+      - Integrations
+      operationId: onepassword-delete
+    get:
+      description: 'Returns metadata for a specific 1Password integration owned by the token.
+
+        The id or label is the URL-encoded path segment after
+
+        "/integrations/onepassword/". Returns 404 if no integration with that id or
+
+        label exists for this token. The response never includes token material.
+
+        Pass includeVaults=true to also return each integration''s vault titles, looked up live from 1Password (null when unavailable).
+
+
+        **Note:** This endpoint is also available at: `/management/integrations/onepassword/*` for backwards compatibility.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: includeVaults
+        schema:
+          description: Also return live vault titles. Defaults to false.
+          type: boolean
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - $ref: '#/components/schemas/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vaults:
+                    description: Live vault titles, only with includeVaults=true; null when unavailable.
+                    type: array
+                    items:
+                      type: string
+                  id:
+                    description: Unique integration identifier.
+                    type: string
+                  label:
+                    description: User-supplied label. Unique per token.
+                    type: string
+                  kind:
+                    $ref: '#/components/schemas/OpIntegrationKind'
+                    description: 'Integration kind: `service_account` (default) or `connect`.'
+                  allowedDomains:
+                    description: Origins this integration is allowed to fill into.
+                    type: array
+                    items:
+                      type: string
+                  connectUrl:
+                    description: Connect server URL when kind is `connect`, otherwise null.
+                    type: string
+                  expiresAt:
+                    description: ISO timestamp after which the integration is treated as expired, or null.
+                    type: string
+                  lastResolvedAt:
+                    description: ISO timestamp of the last successful secret resolve, or null if never used.
+                    type: string
+                  createdAt:
+                    description: ISO timestamp of when the integration was created.
+                    type: string
+                  updatedAt:
+                    description: ISO timestamp of the last metadata change.
+                    type: string
+                additionalProperties: false
+                required:
+                - allowedDomains
+                - connectUrl
+                - createdAt
+                - expiresAt
+                - id
+                - kind
+                - label
+                - lastResolvedAt
+                - updatedAt
+                definitions:
+                  OpIntegrationKind:
+                    enum:
+                    - connect
+                    - service_account
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /integrations/onepassword/*
+      tags:
+      - Integrations
+      operationId: onepassword-get
+  /integrations/onepassword/*/audit:
+    get:
+      description: 'Lists recent credential activity for a single 1Password integration owned
+
+        by the token, newest first. One entry per Browserless.loadSecret or
+
+        saveSecret attempt: outcome, error code, the credential reference, and
+
+        non-secret target metadata. Secret values are never recorded or returned.
+
+        Paginated via "limit" (default 100, capped at 1000) and "offset" (default 0).
+
+        The URL-encoded path segment may be an integration id or label. Returns 404
+
+        if no matching integration exists for this token.
+
+
+        **Note:** This endpoint is also available at: `/management/integrations/onepassword/*/audit` for backwards compatibility.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - $ref: '#/components/schemas/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: limit
+        schema:
+          description: Maximum number of audit entries to return (1–1000). Defaults to 100.
+          type: number
+      - in: query
+        name: offset
+        schema:
+          description: Number of audit entries to skip for pagination. Defaults to 0.
+          type: number
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpAuditLogResponse'
+                definitions:
+                  OpAuditLogResponse:
+                    description: 'Public-facing audit-log entry returned by the audit HTTP route. Omits
+
+                      token_hash — never includes any token material — and carries the credential
+
+                      reference plus non-secret target metadata only.'
+                    type: object
+                    properties:
+                      id:
+                        description: Unique audit-entry identifier.
+                        type: string
+                      integrationId:
+                        description: Integration this credential operation used.
+                        type: string
+                      profileId:
+                        description: Authentication profile associated with the operation, or null.
+                        type: string
+                      secretRef:
+                        description: The alias or op:// reference requested. Never a resolved value.
+                        type: string
+                      targetOrigin:
+                        description: Document origin the fill was attempted on, or null.
+                        type: string
+                      targetSelector:
+                        description: CSS selector supplied by the caller, or null.
+                        type: string
+                      targetDescriptor:
+                        description: Non-secret descriptor of the focused element, or null.
+                        type: string
+                      outcome:
+                        $ref: '#/components/schemas/OpAuditOutcome'
+                        description: '`success` if filled, `saved` if created, otherwise `failure`.'
+                      errorCode:
+                        description: Error code when the outcome is `failure`, otherwise null.
+                        type: string
+                      createdAt:
+                        description: ISO timestamp of the operation.
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - createdAt
+                    - errorCode
+                    - id
+                    - integrationId
+                    - outcome
+                    - profileId
+                    - secretRef
+                    - targetDescriptor
+                    - targetOrigin
+                    - targetSelector
+                  OpAuditOutcome:
+                    description: Outcome recorded for a Browserless.loadSecret or saveSecret attempt.
+                    enum:
+                    - failure
+                    - saved
+                    - success
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /integrations/onepassword/*/audit
+      tags:
+      - Integrations
+      operationId: getIntegrationsOnepassword*Audit
+      x-operation-id-source: derived
+  /integrations/onepassword/profile:
+    post:
+      description: 'Kicks off an autologin task: a managed agent creates a browser profile by
+
+        logging into the integration''s domains, then saves it. integrationId accepts
+
+        an id or label. Returns a taskId to poll via GET
+
+        /integrations/onepassword/profile/:taskId.'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  description: Name to save the resulting profile under. Unique per token.
+                  type: string
+                integrationId:
+                  description: Registered 1Password integration id or label.
+                  type: string
+                recover:
+                  description: Refresh an existing owned profile instead of creating a new one.
+                  type: boolean
+                allowedDomains:
+                  description: Optional subset of the integration's allowed domains.
+                  type: array
+                  items:
+                    type: string
+                emailOtp:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      origin:
+                        type: string
+                      vault:
+                        type: string
+                      item:
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - item
+                    - origin
+                    - vault
+                proxy:
+                  description: 'Optional proxy for the browser session the agent logs in through. Omitted
+
+                    → the run goes direct, so it never bills proxy traffic implicitly.'
+                  type: object
+                  properties:
+                    type:
+                      enum:
+                      - datacenter
+                      - residential
+                      type: string
+                    sticky:
+                      type: boolean
+                    country:
+                      type: string
+                    city:
+                      type: string
+                    state:
+                      type: string
+                    preset:
+                      type: string
+                  additionalProperties: false
+                attemptId:
+                  description: Optional profile-setup funnel correlation UUID.
+                  type: string
+              type: object
+              required:
+              - integrationId
+              - name
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  taskId:
+                    type: string
+                additionalProperties: false
+                required:
+                - taskId
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /integrations/onepassword/profile
+      tags:
+      - Integrations
+      operationId: onepassword-autologin-start
+  /integrations/onepassword/profile/*:
+    get:
+      description: 'Poll an autologin task by id. Returns its state, the current live rationale,
+
+        and (on success) the saved profile id plus a per-domain breakdown. Scoped to
+
+        the requesting account (or token, for keys not yet mapped to an account) —
+
+        returns 404 for unknown ids or another account''s task.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Public polling shape returned by GET /integrations/onepassword/profile/:taskId.
+                type: object
+                properties:
+                  taskId:
+                    type: string
+                  state:
+                    $ref: '#/components/schemas/AutologinState'
+                  currentRationale:
+                    description: User-facing reason for the current state — drives the dashboard's live line.
+                    type: string
+                  profileId:
+                    type: string
+                  profileName:
+                    type: string
+                  domains:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AutologinDomainResult'
+                  errorCode:
+                    type: string
+                  errorMessage:
+                    type: string
+                  createdAt:
+                    type: string
+                  updatedAt:
+                    type: string
+                additionalProperties: false
+                required:
+                - createdAt
+                - currentRationale
+                - state
+                - taskId
+                - updatedAt
+                definitions:
+                  AutologinState:
+                    description: Lifecycle state of an autologin task.
+                    enum:
+                    - failed
+                    - pending
+                    - running
+                    - success
+                    type: string
+                  AutologinDomainResult:
+                    type: object
+                    properties:
+                      origin:
+                        type: string
+                      status:
+                        $ref: '#/components/schemas/AutologinDomainStatus'
+                      error:
+                        type: string
+                      errorCode:
+                        type: string
+                      reason:
+                        type: string
+                      mfaMethod:
+                        $ref: '#/components/schemas/MfaMethod'
+                      mfaSupported:
+                        type: boolean
+                    additionalProperties: false
+                    required:
+                    - origin
+                    - status
+                  AutologinDomainStatus:
+                    description: 'Per-origin progress/outcome as the agent works through the domain list.
+
+                      Live: `pending` (not reached), `active` (currently attempting), `tried`
+
+                      (moved past — outcome not yet known). Terminal: `success` | `failed`.'
+                    enum:
+                    - active
+                    - failed
+                    - pending
+                    - success
+                    - tried
+                    type: string
+                  MfaMethod:
+                    enum:
+                    - email
+                    - hardware_key
+                    - passkey
+                    - push
+                    - sms
+                    - totp
+                    - unknown
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+          description: Public polling shape returned by GET /integrations/onepassword/profile/:taskId.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /integrations/onepassword/profile/*
+      tags:
+      - Integrations
+      operationId: onepassword-autologin-status
+  /integrations/onepassword/autologin/form:
+    get:
+      description: 'Returns the selectable references for building an autologin profile: the
+
+        1Password integration''s login origins and, per origin, the field labels it
+
+        fills (never values). The integrationId query accepts an id or label. Drives
+
+        the create-profile form.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: Which registered 1Password integration id or label to return items for.
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - $ref: '#/components/schemas/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: profileName
+        schema:
+          description: 'Recovery only: restrict choices to this tenant-owned saved artifact.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  integrationId:
+                    type: string
+                  domains:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        origin:
+                          type: string
+                        credentialTypes:
+                          type: array
+                          items:
+                            type: string
+                      additionalProperties: false
+                      required:
+                      - credentialTypes
+                      - origin
+                  inboxCandidates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InboxCandidate'
+                additionalProperties: false
+                required:
+                - domains
+                - inboxCandidates
+                - integrationId
+                definitions:
+                  InboxCandidate:
+                    type: object
+                    properties:
+                      vault:
+                        type: string
+                      item:
+                        type: string
+                      label:
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - item
+                    - label
+                    - vault
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /integrations/onepassword/autologin/form
+      tags:
+      - Integrations
+      operationId: getIntegrationsOnepasswordAutologinForm
+      x-operation-id-source: derived
+  /integrations/script-generator:
+    post:
+      description: 'Generates a Browserless automation script (BrowserQL / Playwright JS /
+
+        Playwright Python / Puppeteer / BAP TypeScript) from a natural-language task. A managed agent drives a
+
+        browser session; its ordered tool-call transcript is rendered into the
+
+        requested script(s). Streams Server-Sent Events: status, script, complete,
+
+        error.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /integrations/script-generator
+      tags:
+      - Integrations
+      operationId: postIntegrationsScriptGenerator
+      x-operation-id-source: derived
+components:
+  schemas:
+    InboxCandidate:
+      type: object
+      properties:
+        vault:
+          type: string
+        item:
+          type: string
+        label:
+          type: string
+      additionalProperties: false
+      required:
+      - item
+      - label
+      - vault
+    AutologinState:
+      description: Lifecycle state of an autologin task.
+      enum:
+      - failed
+      - pending
+      - running
+      - success
+      type: string
+    OpIntegrationResponse:
+      description: 'Public-facing integration response returned by HTTP routes.
+
+        Omits internal fields — never includes token_hash or any token material.'
+      type: object
+      properties:
+        vaults:
+          description: Live vault titles, only with includeVaults=true; null when unavailable.
+          type: array
+          items:
+            type: string
+        id:
+          description: Unique integration identifier.
+          type: string
+        label:
+          description: User-supplied label. Unique per token.
+          type: string
+        kind:
+          $ref: '#/components/schemas/OpIntegrationKind'
+          description: 'Integration kind: `service_account` (default) or `connect`.'
+        allowedDomains:
+          description: Origins this integration is allowed to fill into.
+          type: array
+          items:
+            type: string
+        connectUrl:
+          description: Connect server URL when kind is `connect`, otherwise null.
+          type: string
+        expiresAt:
+          description: ISO timestamp after which the integration is treated as expired, or null.
+          type: string
+        lastResolvedAt:
+          description: ISO timestamp of the last successful secret resolve, or null if never used.
+          type: string
+        createdAt:
+          description: ISO timestamp of when the integration was created.
+          type: string
+        updatedAt:
+          description: ISO timestamp of the last metadata change.
+          type: string
+      additionalProperties: false
+      required:
+      - allowedDomains
+      - connectUrl
+      - createdAt
+      - expiresAt
+      - id
+      - kind
+      - label
+      - lastResolvedAt
+      - updatedAt
+    OpAuditOutcome:
+      description: Outcome recorded for a Browserless.loadSecret or saveSecret attempt.
+      enum:
+      - failure
+      - saved
+      - success
+      type: string
+    CDPLaunchOptions:
+      type: object
+      additionalProperties: {}
+      properties:
+        args:
+          type: array
+          items:
+            type: string
+        defaultViewport:
+          type: object
+          properties:
+            deviceScaleFactor:
+              type: number
+            hasTouch:
+              type: boolean
+            height:
+              type: number
+            isLandscape:
+              type: boolean
+            isMobile:
+              type: boolean
+            width:
+              type: number
+          additionalProperties: false
+          required:
+          - height
+          - width
+        devtools:
+          type: boolean
+        dumpio:
+          type: boolean
+        headless:
+          enum:
+          - false
+          - shell
+          - true
+        ignoreDefaultArgs:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+        ignoreHTTPSErrors:
+          type: boolean
+        acceptInsecureCerts:
+          type: boolean
+        slowMo:
+          type: number
+        stealth:
+          type: boolean
+        timeout:
+          type: number
+        userDataDir:
+          type: string
+        waitForInitialPage:
+          type: boolean
+    OpIntegrationKind:
+      enum:
+      - connect
+      - service_account
+      type: string
+    AutologinDomainResult:
+      type: object
+      properties:
+        origin:
+          type: string
+        status:
+          $ref: '#/components/schemas/AutologinDomainStatus'
+        error:
+          type: string
+        errorCode:
+          type: string
+        reason:
+          type: string
+        mfaMethod:
+          $ref: '#/components/schemas/MfaMethod'
+        mfaSupported:
+          type: boolean
+      additionalProperties: false
+      required:
+      - origin
+      - status
+    AutologinDomainStatus:
+      description: 'Per-origin progress/outcome as the agent works through the domain list.
+
+        Live: `pending` (not reached), `active` (currently attempting), `tried`
+
+        (moved past — outcome not yet known). Terminal: `success` | `failed`.'
+      enum:
+      - active
+      - failed
+      - pending
+      - success
+      - tried
+      type: string
+    MfaMethod:
+      enum:
+      - email
+      - hardware_key
+      - passkey
+      - push
+      - sms
+      - totp
+      - unknown
+      type: string
+    BrowserServerOptions:
+      type: object
+      additionalProperties: {}
+      properties:
+        args:
+          type: array
+          items:
+            type: string
+        chromiumSandbox:
+          type: boolean
+        devtools:
+          type: boolean
+        downloadsPath:
+          type: string
+        env:
+          description: 'Environment for the browser process. Honored by both puppeteer.launch and
+
+            playwright.launchServer. Set server-side to give the session its own TMPDIR
+
+            (see generateScratchDir); a caller-supplied value is merged under it, since
+
+            a session must not be able to point its scratch back at the shared temp dir.
+
+
+            That merge happens on the object handed to `launch` only. It is kept off
+
+            the session''s stored `launchOptions`, which /sessions serves verbatim.'
+          $ref: '#/components/schemas/Record_string_string_undefined'
+        headless:
+          type: boolean
+        ignoreDefaultArgs:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+        proxy:
+          type: object
+          properties:
+            bypass:
+              type: string
+            password:
+              type: string
+            server:
+              type: string
+            username:
+              type: string
+          additionalProperties: false
+          required:
+          - server
+        timeout:
+          type: number
+        tracesDir:
+          type: string
+    Record_string_string_undefined:
+      type: object
+      additionalProperties: false
+    OpAuditLogResponse:
+      description: 'Public-facing audit-log entry returned by the audit HTTP route. Omits
+
+        token_hash — never includes any token material — and carries the credential
+
+        reference plus non-secret target metadata only.'
+      type: object
+      properties:
+        id:
+          description: Unique audit-entry identifier.
+          type: string
+        integrationId:
+          description: Integration this credential operation used.
+          type: string
+        profileId:
+          description: Authentication profile associated with the operation, or null.
+          type: string
+        secretRef:
+          description: The alias or op:// reference requested. Never a resolved value.
+          type: string
+        targetOrigin:
+          description: Document origin the fill was attempted on, or null.
+          type: string
+        targetSelector:
+          description: CSS selector supplied by the caller, or null.
+          type: string
+        targetDescriptor:
+          description: Non-secret descriptor of the focused element, or null.
+          type: string
+        outcome:
+          $ref: '#/components/schemas/OpAuditOutcome'
+          description: '`success` if filled, `saved` if created, otherwise `failure`.'
+        errorCode:
+          description: Error code when the outcome is `failure`, otherwise null.
+          type: string
+        createdAt:
+          description: ISO timestamp of the operation.
+          type: string
+      additionalProperties: false
+      required:
+      - createdAt
+      - errorCode
+      - id
+      - integrationId
+      - outcome
+      - profileId
+      - secretRef
+      - targetDescriptor
+      - targetOrigin
+      - targetSelector
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: query
+      name: token
+      description: Your Browserless API token. Find it on your [Account dashboard](https://www.browserless.io/account).
+x-tagGroups:
+- name: Core APIs
+  tags:
+  - Screenshots & PDFs
+  - Scraping & Content
+  - Functions & Downloads
+- name: Browser Control
+  tags:
+  - Sessions & Connections
+  - Browser Management
+  - Crawling
+- name: Anti-Bot & Stealth
+  tags:
+  - Unblock & Stealth
+  - Proxy
+- name: Auth & Profiles
+  tags:
+  - Profiles
+  - Integrations
+- name: WebSocket / CDP
+  tags:
+  - WebSocket APIs
+  - Agent
+  - BQL Execution
+  - CDP & DevTools Connections
+- name: Chrome
+  tags:
+  - Chrome (licensed build)
+- name: Platform
+  tags:
+  - Platform / Skills

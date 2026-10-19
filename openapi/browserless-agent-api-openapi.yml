@@ -1,0 +1,1411 @@
+openapi: 3.2.0
+info:
+  title: Browserless Agent API
+  version: 2.57.0
+  description: 'This is the API reference for **Browserless Enterprise and Cloud** deployments. You''ll find endpoints for capturing screenshots and PDFs, scraping content, running custom browser functions, solving CAPTCHAs, bypassing bot detection with stealth browsing, managing authenticated browser profiles, and orchestrating crawls.
+
+
+    The API includes REST endpoints (JSON in, JSON or binary out), WebSocket connections for direct CDP/Playwright/Puppeteer access, and CDP extensions that expose Browserless-specific commands like `liveURL`, `solveCaptcha`, and `reconnect`. For the open-source container API, see the GitHub repository.
+
+
+    ## Just Getting Started?
+
+
+    Check out the Quick Start guide to launch your first session, or explore the BrowserQL IDE for a GraphQL-based automation workflow.
+
+
+    ## Base URL
+
+
+    All API requests go to your deployment''s base URL. For Browserless Cloud:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io
+
+    ```
+
+
+    Self-hosted Enterprise deployments use the host and port where the container is running (default `http://localhost:3000`).
+
+
+    ## Authentication
+
+
+    Include your API token as a query parameter on every request:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io/chromium/content?token=YOUR_API_TOKEN
+
+    ```
+
+
+    Tokens are managed from the Account dashboard. Self-hosted deployments set the token via the `TOKEN` environment variable. See connection details for all authentication options.
+
+
+    ## Changelog
+
+
+    For release notes and version history, see the Enterprise Changelog.
+
+
+    ## Software keys
+
+
+    Self-hosted Enterprise deployments use time-limited software keys for offline licensing. No external connections or callbacks are required. Keys are cryptographically secure and can''t be reverse engineered. When a key expires, the container exits with a semantic error code.
+
+
+    To use a software key, set the `KEY` environment variable when running the container:
+
+
+    ```bash
+
+    docker run -e KEY=your-generated-key browserless/enterprise
+
+    ```'
+servers:
+- url: https://production-sfo.browserless.io
+security:
+- tokenAuth: []
+tags:
+- name: Agent
+  description: Run autonomous browser agents. `POST /agent/run` starts an asynchronous run and returns an id to poll via `GET /agent/run/:id`; `POST /agent/run/:id/continue` sends it a follow-up task (not enabled in v1). `/chromium/agent` connects over WebSocket for a persistent, JSON-RPC-driven agentic browser session instead.
+  x-displayName: Agent
+paths:
+  /agent/run:
+    get:
+      description: List the caller's agent runs, newest first, with a short preview of each, using cursor pagination.
+      parameters:
+      - in: query
+        name: cursor
+        schema:
+          description: Opaque pagination cursor from a previous response.
+          type: string
+      - in: query
+        name: limit
+        schema:
+          description: Page size, 1-100.
+          type: number
+      - in: query
+        name: status
+        schema:
+          description: Filter by run status.
+          type: string
+      - in: query
+        name: token
+        schema:
+          description: The API token for authenticating the request.
+          type: string
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /agent/run
+      tags:
+      - Agent
+      operationId: agent-run-get-2
+    post:
+      description: 'Start an asynchronous AI agent run: a managed agent drives a real browser against a natural-language task and returns a structured JSON result. Returns a run ID to poll via GET /agent/run/{id}.'
+      parameters:
+      - in: query
+        name: token
+        schema:
+          description: The API token for authenticating the request.
+          type: string
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                query:
+                  description: Natural-language task for the agent. Minimum 10 characters.
+                  type: string
+                timeout:
+                  description: Per-turn timeout in ms, clamped to [10000, 900000] (15-min hard cap).
+                  type: number
+                onHumanNeeded:
+                  description: 'Pause for human login/MFA in the same session. Default: fail. Does not extend timeout.'
+                  enum:
+                  - fail
+                  - pause
+                  type: string
+                webhook:
+                  description: Optional webhook for terminal states and human handoffs.
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                    events:
+                      type: array
+                      items:
+                        enum:
+                        - failed
+                        - needs_human
+                        - succeeded
+                        type: string
+                  additionalProperties: false
+                  required:
+                  - url
+                responseSchema:
+                  description: Best-effort JSON schema for the agent's final answer.
+                  type: object
+                  properties: {}
+                  additionalProperties: true
+                maxSteps:
+                  description: Soft cap on browser tool calls. Default 60, hard cap 90.
+                  type: number
+                allowedDomains:
+                  description: Navigation allowlist.
+                  type: array
+                  items:
+                    type: string
+                startUrl:
+                  description: First navigation target.
+                  type: string
+                proxy:
+                  description: 'Route browsing through a residential or datacenter proxy. Best-effort like
+
+                    the other hints below: injected into the agent''s prompt, not enforced.'
+                  enum:
+                  - datacenter
+                  - residential
+                  type: string
+                proxyCountry:
+                  description: Two-letter country code for the proxy exit (e.g. `US`).
+                  type: string
+                stealth:
+                  description: Ask the agent to use stealth / anti-bot-detection mode.
+                  type: boolean
+                solveCaptchas:
+                  description: Ask the agent to solve CAPTCHAs it encounters.
+                  type: boolean
+                profile:
+                  description: Name of a saved authentication profile to reuse.
+                  type: string
+                replay:
+                  description: 'Record the run as a session replay, viewable in the account dashboard.
+
+                    If the run can''t provision a recordable browser session (for example, at
+
+                    your concurrent-browser limit), it completes unrecorded and the result and
+
+                    webhook include `replayError: "session_unavailable"`.'
+                  type: boolean
+                formats:
+                  description: 'Page captures to return with the result, taken from the agent''s current
+
+                    tab when the run ends. Omit for none.'
+                  type: array
+                  items:
+                    enum:
+                    - html
+                    - links
+                    - markdown
+                    - screenshot
+                    type: string
+              type: object
+              required:
+              - query
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+                additionalProperties: false
+                required:
+                - id
+                - status
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /agent/run
+      tags:
+      - Agent
+      operationId: agent-run-post-3
+  /agent/run/*:
+    delete:
+      description: Cancel an active agent run (including needs_human), aborting the in-flight turn, or delete a terminal one.
+      parameters:
+      - in: query
+        name: token
+        schema:
+          description: The API token for authenticating the request.
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /agent/run/*
+      tags:
+      - Agent
+      operationId: agent-run
+    get:
+      description: 'Poll an agent run: its status, the latest turn result and streamed step rationales, and the full turn transcript.'
+      parameters:
+      - in: query
+        name: token
+        schema:
+          description: The API token for authenticating the request.
+          type: string
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Run ID.
+                    type: string
+                  status:
+                    $ref: '#/components/schemas/AgentRunStatus'
+                    description: Run status.
+                  humanRequest:
+                    $ref: '#/components/schemas/AgentHumanRequestView'
+                    description: Present while the run waits for a human, and with its outcome afterwards.
+                  data:
+                    description: The latest turn's result, shaped by `responseSchema` when one was given.
+                  error:
+                    description: The latest turn's error message, or `null`.
+                    type: string
+                  steps:
+                    description: Step rationales for the latest turn.
+                    type: array
+                    items:
+                      type: string
+                  html:
+                    description: Requested page HTML, or `null`.
+                    type: string
+                  markdown:
+                    description: Requested page Markdown, or `null`.
+                    type: string
+                  links:
+                    description: Requested links extracted from the page, or `null`.
+                    type: array
+                    items:
+                      type: string
+                  screenshot:
+                    description: Requested viewport PNG encoded as base64, or `null`.
+                    type: string
+                  formatErrors:
+                    description: Present only for missing requested captures; maps format names to reason codes.
+                    type: object
+                    properties:
+                      html:
+                        $ref: '#/components/schemas/AgentFormatError'
+                      markdown:
+                        $ref: '#/components/schemas/AgentFormatError'
+                      links:
+                        $ref: '#/components/schemas/AgentFormatError'
+                      screenshot:
+                        $ref: '#/components/schemas/AgentFormatError'
+                    additionalProperties: false
+                  replayError:
+                    description: 'Present only when `replay: true` was requested and the run couldn''t provision a recordable session.'
+                    type: string
+                    const: session_unavailable
+                  turns:
+                    description: The turn transcript.
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentTurnView'
+                  created_at:
+                    description: ISO 8601 timestamp when the run was created.
+                    type: string
+                  completed_at:
+                    description: ISO 8601 timestamp when the run finished, or `null` while active.
+                    type: string
+                  expires_at:
+                    description: ISO 8601 timestamp when the run's results expire, or `null`.
+                    type: string
+                additionalProperties: false
+                required:
+                - completed_at
+                - created_at
+                - data
+                - error
+                - expires_at
+                - html
+                - id
+                - links
+                - markdown
+                - screenshot
+                - status
+                - steps
+                - turns
+                definitions:
+                  AgentRunStatus:
+                    enum:
+                    - capped
+                    - failed
+                    - needs_human
+                    - pending
+                    - running
+                    - stopped
+                    - succeeded
+                    - timed_out
+                    type: string
+                  AgentHumanRequestView:
+                    type: object
+                    properties:
+                      reason:
+                        description: Why the agent needs a human.
+                        enum:
+                        - login_wall
+                        - step_up_mfa
+                        type: string
+                      instructions:
+                        description: What the human should do.
+                        type: string
+                      liveURL:
+                        description: Live URL where the human completes the step.
+                        type: string
+                      expiresAt:
+                        description: ISO 8601 timestamp when the handoff expires.
+                        type: string
+                      outcome:
+                        description: How the handoff ended.
+                        enum:
+                        - closed
+                        - expired
+                        - resumed
+                        - stopped
+                        - userFailed
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - reason
+                  AgentFormatError:
+                    enum:
+                    - blocked_saved_credentials
+                    - capture_failed
+                    - not_captured
+                    - session_unavailable
+                    - too_large
+                    type: string
+                  AgentTurnView:
+                    type: object
+                    properties:
+                      turnId:
+                        description: Turn ID.
+                        type: string
+                      query:
+                        description: The task submitted for this turn.
+                        type: string
+                      status:
+                        $ref: '#/components/schemas/AgentRunStatus'
+                        description: Turn status.
+                      data:
+                        description: The turn's result, same shape as the top-level `data`.
+                      steps:
+                        description: Step rationales for this turn.
+                        type: array
+                        items:
+                          type: string
+                      units:
+                        description: 'Units derived from the model tokens this turn consumed. Informational only: runs are billed for browser time.'
+                        type: number
+                      replayError:
+                        description: 'Present only when `replay: true` was requested and the run couldn''t provision a recordable session for this turn.'
+                        type: string
+                        const: session_unavailable
+                    additionalProperties: false
+                    required:
+                    - data
+                    - query
+                    - status
+                    - steps
+                    - turnId
+                    - units
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /agent/run/*
+      tags:
+      - Agent
+      operationId: agent-run-get-1
+  /agent/run/*/continue:
+    post:
+      description: Continue a multi-turn agent run with a follow-up task. Not enabled in v1.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                query:
+                  description: Follow-up task for the next turn.
+                  type: string
+              type: object
+              required:
+              - query
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /agent/run/*/continue
+      tags:
+      - Agent
+      operationId: postAgentRun*Continue
+      x-operation-id-source: derived
+  /chromium/agent:
+    get:
+      description: 'WebSocket endpoint for agentic browser interaction. Connect to establish a
+
+        persistent browser session, then send JSON-RPC messages to control the browser.
+
+
+        Uses a simple JSON protocol instead of GraphQL:
+
+        Send: { "id": 1, "method": "goto", "params": { "url": "https://example.com" } }
+
+        Receive: { "id": 1, "result": { "status": 200, "url": "https://example.com" } }
+
+
+        All BQL mutations are available as methods (goto, click, type, screenshot, etc.).
+
+        Additionally supports a "snapshot" method that returns interactive page elements
+
+        with CSS selectors, plus tab-management methods (getTabs, switchTab, createTab,
+
+        closeTab) for multi-tab workflows.'
+      parameters:
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: blockConsentModals
+        schema:
+          type: boolean
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: deviceScaleFactor
+        schema:
+          description: 'Device pixel ratio for the desktop screen above (allowed: 1 or 1.25).
+
+            Omit to default to the seeded/profile scale. Ignored for emulationOs=android.'
+          type: number
+      - in: query
+        name: deviceSlot
+        schema:
+          description: 'Pin this session to one of your identity''s N stable device slots (0-based,
+
+            default N=8). Each slot is one virtual machine: its GPU, screen, cores, memory
+
+            and OS version stay fixed across sessions, so traffic spreads over N machines
+
+            instead of clustering on one. Requires a desktop emulationOs.'
+          type: number
+      - in: query
+        name: emulatedDevice
+        schema:
+          description: 'Device model for mobile personas (emulationOs=android), e.g. "pixel-8",
+
+            "galaxy-s23". Omit to auto-pick a device seeded per session (stable per
+
+            identity, spread across the fleet); an unknown slug does the same.'
+          type: string
+      - in: query
+        name: emulationOs
+        schema:
+          $ref: '#/components/schemas/Platform'
+          description: 'Spoof OS for full per-platform stealth: windows | macos | linux | android.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: humanlike
+        schema:
+          type: boolean
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: record
+        schema:
+          type: boolean
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: screen
+        schema:
+          description: 'Desktop screen resolution as WIDTHxHEIGHT (e.g. ''1920x1080''). Sets the
+
+            reported screen.*, window size and (with deviceScaleFactor) DPR for a
+
+            desktop persona. Omit to auto-pick a screen seeded per session (stable per
+
+            identity, spread across the fleet). Ignored for emulationOs=android.'
+          type: string
+      - in: query
+        name: sessionId
+        schema:
+          description: Attach to a pre-created profile/creation session (autologin).
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chromium/agent
+      tags:
+      - Agent
+      operationId: getChromiumAgent
+      x-operation-id-source: derived
+components:
+  schemas:
+    AgentHumanRequestView:
+      type: object
+      properties:
+        reason:
+          description: Why the agent needs a human.
+          enum:
+          - login_wall
+          - step_up_mfa
+          type: string
+        instructions:
+          description: What the human should do.
+          type: string
+        liveURL:
+          description: Live URL where the human completes the step.
+          type: string
+        expiresAt:
+          description: ISO 8601 timestamp when the handoff expires.
+          type: string
+        outcome:
+          description: How the handoff ended.
+          enum:
+          - closed
+          - expired
+          - resumed
+          - stopped
+          - userFailed
+          type: string
+      additionalProperties: false
+      required:
+      - reason
+    AgentRunStatus:
+      enum:
+      - capped
+      - failed
+      - needs_human
+      - pending
+      - running
+      - stopped
+      - succeeded
+      - timed_out
+      type: string
+    StringRecord:
+      type: object
+      additionalProperties: false
+    ProxyType:
+      description: 'The proxy networks the platform can route through. `residential` uses the
+
+        built-in residential vendors; `datacenter` uses the Geonode datacenter
+
+        network (cheaper, billed at a lower per-MB rate).'
+      enum:
+      - datacenter
+      - residential
+      type: string
+    AgentFormatError:
+      enum:
+      - blocked_saved_credentials
+      - capture_failed
+      - not_captured
+      - session_unavailable
+      - too_large
+      type: string
+    CDPLaunchOptions:
+      type: object
+      additionalProperties: {}
+      properties:
+        args:
+          type: array
+          items:
+            type: string
+        defaultViewport:
+          type: object
+          properties:
+            deviceScaleFactor:
+              type: number
+            hasTouch:
+              type: boolean
+            height:
+              type: number
+            isLandscape:
+              type: boolean
+            isMobile:
+              type: boolean
+            width:
+              type: number
+          additionalProperties: false
+          required:
+          - height
+          - width
+        devtools:
+          type: boolean
+        dumpio:
+          type: boolean
+        headless:
+          enum:
+          - false
+          - shell
+          - true
+        ignoreDefaultArgs:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+        ignoreHTTPSErrors:
+          type: boolean
+        acceptInsecureCerts:
+          type: boolean
+        slowMo:
+          type: number
+        stealth:
+          type: boolean
+        timeout:
+          type: number
+        userDataDir:
+          type: string
+        waitForInitialPage:
+          type: boolean
+    AgentTurnView:
+      type: object
+      properties:
+        turnId:
+          description: Turn ID.
+          type: string
+        query:
+          description: The task submitted for this turn.
+          type: string
+        status:
+          $ref: '#/components/schemas/AgentRunStatus'
+          description: Turn status.
+        data:
+          description: The turn's result, same shape as the top-level `data`.
+        steps:
+          description: Step rationales for this turn.
+          type: array
+          items:
+            type: string
+        units:
+          description: 'Units derived from the model tokens this turn consumed. Informational only: runs are billed for browser time.'
+          type: number
+        replayError:
+          description: 'Present only when `replay: true` was requested and the run couldn''t provision a recordable session for this turn.'
+          type: string
+          const: session_unavailable
+      additionalProperties: false
+      required:
+      - data
+      - query
+      - status
+      - steps
+      - turnId
+      - units
+    Platform:
+      enum:
+      - android
+      - linux
+      - macos
+      - windows
+      type: string
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: query
+      name: token
+      description: Your Browserless API token. Find it on your [Account dashboard](https://www.browserless.io/account).
+x-tagGroups:
+- name: Core APIs
+  tags:
+  - Screenshots & PDFs
+  - Scraping & Content
+  - Functions & Downloads
+- name: Browser Control
+  tags:
+  - Sessions & Connections
+  - Browser Management
+  - Crawling
+- name: Anti-Bot & Stealth
+  tags:
+  - Unblock & Stealth
+  - Proxy
+- name: Auth & Profiles
+  tags:
+  - Profiles
+  - Integrations
+- name: WebSocket / CDP
+  tags:
+  - WebSocket APIs
+  - Agent
+  - BQL Execution
+  - CDP & DevTools Connections
+- name: Chrome
+  tags:
+  - Chrome (licensed build)
+- name: Platform
+  tags:
+  - Platform / Skills

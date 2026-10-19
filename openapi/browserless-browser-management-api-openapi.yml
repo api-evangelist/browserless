@@ -1,0 +1,622 @@
+openapi: 3.2.0
+info:
+  title: Browserless Browser Management API
+  version: 2.57.0
+  description: 'This is the API reference for **Browserless Enterprise and Cloud** deployments. You''ll find endpoints for capturing screenshots and PDFs, scraping content, running custom browser functions, solving CAPTCHAs, bypassing bot detection with stealth browsing, managing authenticated browser profiles, and orchestrating crawls.
+
+
+    The API includes REST endpoints (JSON in, JSON or binary out), WebSocket connections for direct CDP/Playwright/Puppeteer access, and CDP extensions that expose Browserless-specific commands like `liveURL`, `solveCaptcha`, and `reconnect`. For the open-source container API, see the GitHub repository.
+
+
+    ## Just Getting Started?
+
+
+    Check out the Quick Start guide to launch your first session, or explore the BrowserQL IDE for a GraphQL-based automation workflow.
+
+
+    ## Base URL
+
+
+    All API requests go to your deployment''s base URL. For Browserless Cloud:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io
+
+    ```
+
+
+    Self-hosted Enterprise deployments use the host and port where the container is running (default `http://localhost:3000`).
+
+
+    ## Authentication
+
+
+    Include your API token as a query parameter on every request:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io/chromium/content?token=YOUR_API_TOKEN
+
+    ```
+
+
+    Tokens are managed from the Account dashboard. Self-hosted deployments set the token via the `TOKEN` environment variable. See connection details for all authentication options.
+
+
+    ## Changelog
+
+
+    For release notes and version history, see the Enterprise Changelog.
+
+
+    ## Software keys
+
+
+    Self-hosted Enterprise deployments use time-limited software keys for offline licensing. No external connections or callbacks are required. Keys are cryptographically secure and can''t be reverse engineered. When a key expires, the container exits with a semantic error code.
+
+
+    To use a software key, set the `KEY` environment variable when running the container:
+
+
+    ```bash
+
+    docker run -e KEY=your-generated-key browserless/enterprise
+
+    ```'
+servers:
+- url: https://production-sfo.browserless.io
+security:
+- tokenAuth: []
+tags:
+- name: Browser Management
+  description: Inspect running sessions, terminate browsers, and retrieve server metadata. `/active` lists current sessions, `/kill/:id` terminates one, and `/meta` returns server configuration.
+  x-displayName: Browser Management
+paths:
+  /active:
+    get:
+      description: 'Returns a simple "204" HTTP code, with no response, indicating that the service itself is up and running.
+
+        Useful for liveliness probes or other external checks.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /active
+      tags:
+      - Browser Management
+      operationId: getActive
+      x-operation-id-source: derived
+  /kill/+([0-9a-zA-Z-_]):
+    get:
+      description: Kill running sessions based on BrowserId or TrackingId.
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: browserId
+        schema:
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - $ref: '#/components/schemas/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /kill/*
+      tags:
+      - Browser Management
+      operationId: kill-0-9-a-z-a-z
+  /meta:
+    get:
+      description: Returns a JSON payload of the current system versions, including the core API version.
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    description: The semantic version of the Browserless API
+                    type: string
+                  chromium:
+                    description: The version of Chromium installed, or null if not installed
+                    type:
+                    - 'null'
+                    - string
+                  webkit:
+                    description: The version of Webkit installed, or null if not installed
+                    type:
+                    - 'null'
+                    - string
+                  firefox:
+                    description: The version of Firefox installed, or null if not installed
+                    type:
+                    - 'null'
+                    - string
+                  playwright:
+                    description: The supported version(s) of puppeteer
+                    type: array
+                    items:
+                      type: string
+                  puppeteer:
+                    description: The supported version(s) of playwright
+                    type: array
+                    items:
+                      type: string
+                additionalProperties: false
+                required:
+                - chromium
+                - firefox
+                - playwright
+                - puppeteer
+                - version
+                - webkit
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /meta
+      tags:
+      - Browser Management
+      operationId: getMeta
+      x-operation-id-source: derived
+  /browser/*:
+    delete:
+      description: 'Terminates a browser instance by browserId. When browser ownership enforcement
+
+        is enabled, the browser must belong to the authenticated user.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /browser/*
+      tags:
+      - Browser Management
+      operationId: deleteBrowser*
+      x-operation-id-source: derived
+  /browser/*/live:
+    post:
+      description: 'Creates a live URL (view-only by default; pass interactable: true for a link
+
+        a person can act through) for a currently-running browser, identified by
+
+        browserId. Hosted authenticated Cloud plans, including Free, can use this
+
+        route. Explicitly disabled and unlicensed deployments remain ineligible.'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                detached:
+                  description: Independent viewer transport; request browser keep-alive separately. Defaults to false.
+                  type: boolean
+                interactable:
+                  description: Allow the viewer to click and type. Defaults to false.
+                  type: boolean
+                timeout:
+                  description: Link lifetime in milliseconds, capped at 15 minutes and remaining session time.
+                  type: number
+                quality:
+                  description: Integer image quality from 1 to 100. Defaults to 70.
+                  type: number
+                type:
+                  description: Image format. Defaults to jpeg; png only accepts explicit quality 100.
+                  enum:
+                  - jpeg
+                  - png
+                  type: string
+                resizable:
+                  description: Allow the viewer to resize the browser. Defaults to false.
+                  type: boolean
+                showBrowserInterface:
+                  description: Show the browser interface. Defaults to true.
+                  type: boolean
+                instructions:
+                  description: Instructions shown to the human viewer.
+                  type: string
+              type: object
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  liveURL:
+                    description: URL the viewer opens to watch or interact with the browser.
+                    type: string
+                  liveURLId:
+                    description: Identifier used to check or close this live URL.
+                    type: string
+                  timeout:
+                    description: Applied link lifetime in milliseconds.
+                    type: number
+                  browserExpiresAt:
+                    description: Enforced session deadline in epoch milliseconds, or null if unbounded.
+                    type:
+                    - number
+                    - 'null'
+                additionalProperties: false
+                required:
+                - browserExpiresAt
+                - liveURL
+                - liveURLId
+                - timeout
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /browser/*/live
+      tags:
+      - Browser Management
+      operationId: browser-live-post-2
+components:
+  schemas:
+    Record_string_string_undefined:
+      type: object
+      additionalProperties: false
+    CDPLaunchOptions:
+      type: object
+      additionalProperties: {}
+      properties:
+        args:
+          type: array
+          items:
+            type: string
+        defaultViewport:
+          type: object
+          properties:
+            deviceScaleFactor:
+              type: number
+            hasTouch:
+              type: boolean
+            height:
+              type: number
+            isLandscape:
+              type: boolean
+            isMobile:
+              type: boolean
+            width:
+              type: number
+          additionalProperties: false
+          required:
+          - height
+          - width
+        devtools:
+          type: boolean
+        dumpio:
+          type: boolean
+        headless:
+          enum:
+          - false
+          - shell
+          - true
+        ignoreDefaultArgs:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+        ignoreHTTPSErrors:
+          type: boolean
+        acceptInsecureCerts:
+          type: boolean
+        slowMo:
+          type: number
+        stealth:
+          type: boolean
+        timeout:
+          type: number
+        userDataDir:
+          type: string
+        waitForInitialPage:
+          type: boolean
+    BrowserServerOptions:
+      type: object
+      additionalProperties: {}
+      properties:
+        args:
+          type: array
+          items:
+            type: string
+        chromiumSandbox:
+          type: boolean
+        devtools:
+          type: boolean
+        downloadsPath:
+          type: string
+        env:
+          description: 'Environment for the browser process. Honored by both puppeteer.launch and
+
+            playwright.launchServer. Set server-side to give the session its own TMPDIR
+
+            (see generateScratchDir); a caller-supplied value is merged under it, since
+
+            a session must not be able to point its scratch back at the shared temp dir.
+
+
+            That merge happens on the object handed to `launch` only. It is kept off
+
+            the session''s stored `launchOptions`, which /sessions serves verbatim.'
+          $ref: '#/components/schemas/Record_string_string_undefined'
+        headless:
+          type: boolean
+        ignoreDefaultArgs:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+        proxy:
+          type: object
+          properties:
+            bypass:
+              type: string
+            password:
+              type: string
+            server:
+              type: string
+            username:
+              type: string
+          additionalProperties: false
+          required:
+          - server
+        timeout:
+          type: number
+        tracesDir:
+          type: string
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: query
+      name: token
+      description: Your Browserless API token. Find it on your [Account dashboard](https://www.browserless.io/account).
+x-tagGroups:
+- name: Core APIs
+  tags:
+  - Screenshots & PDFs
+  - Scraping & Content
+  - Functions & Downloads
+- name: Browser Control
+  tags:
+  - Sessions & Connections
+  - Browser Management
+  - Crawling
+- name: Anti-Bot & Stealth
+  tags:
+  - Unblock & Stealth
+  - Proxy
+- name: Auth & Profiles
+  tags:
+  - Profiles
+  - Integrations
+- name: WebSocket / CDP
+  tags:
+  - WebSocket APIs
+  - Agent
+  - BQL Execution
+  - CDP & DevTools Connections
+- name: Chrome
+  tags:
+  - Chrome (licensed build)
+- name: Platform
+  tags:
+  - Platform / Skills

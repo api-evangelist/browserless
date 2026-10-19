@@ -1,0 +1,736 @@
+openapi: 3.2.0
+info:
+  title: Browserless Crawling API
+  version: 2.57.0
+  description: 'This is the API reference for **Browserless Enterprise and Cloud** deployments. You''ll find endpoints for capturing screenshots and PDFs, scraping content, running custom browser functions, solving CAPTCHAs, bypassing bot detection with stealth browsing, managing authenticated browser profiles, and orchestrating crawls.
+
+
+    The API includes REST endpoints (JSON in, JSON or binary out), WebSocket connections for direct CDP/Playwright/Puppeteer access, and CDP extensions that expose Browserless-specific commands like `liveURL`, `solveCaptcha`, and `reconnect`. For the open-source container API, see the GitHub repository.
+
+
+    ## Just Getting Started?
+
+
+    Check out the Quick Start guide to launch your first session, or explore the BrowserQL IDE for a GraphQL-based automation workflow.
+
+
+    ## Base URL
+
+
+    All API requests go to your deployment''s base URL. For Browserless Cloud:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io
+
+    ```
+
+
+    Self-hosted Enterprise deployments use the host and port where the container is running (default `http://localhost:3000`).
+
+
+    ## Authentication
+
+
+    Include your API token as a query parameter on every request:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io/chromium/content?token=YOUR_API_TOKEN
+
+    ```
+
+
+    Tokens are managed from the Account dashboard. Self-hosted deployments set the token via the `TOKEN` environment variable. See connection details for all authentication options.
+
+
+    ## Changelog
+
+
+    For release notes and version history, see the Enterprise Changelog.
+
+
+    ## Software keys
+
+
+    Self-hosted Enterprise deployments use time-limited software keys for offline licensing. No external connections or callbacks are required. Keys are cryptographically secure and can''t be reverse engineered. When a key expires, the container exits with a semantic error code.
+
+
+    To use a software key, set the `KEY` environment variable when running the container:
+
+
+    ```bash
+
+    docker run -e KEY=your-generated-key browserless/enterprise
+
+    ```'
+servers:
+- url: https://production-sfo.browserless.io
+security:
+- tokenAuth: []
+tags:
+- name: Crawling
+  description: Launch, monitor, and cancel multi-page crawl jobs. `POST /crawl` starts a crawl, `GET /crawl/:id` polls for progress, and `DELETE /crawl/:id` cancels it.
+  x-displayName: Crawling
+paths:
+  /crawl:
+    get:
+      description: List all crawl jobs owned by the authenticated account (or, for keys not yet mapped to an account, the token). Returns an array of crawl summaries with status, progress counters, and timestamps. Supports cursor-based pagination via the `nextCursor` field.
+      parameters:
+      - in: query
+        name: cursor
+        schema:
+          description: Cursor for fetching the next page of results.
+          type: string
+      - in: query
+        name: limit
+        schema:
+          description: Maximum number of crawls to return per page (1–100, default 20).
+          type: number
+      - in: query
+        name: status
+        schema:
+          description: 'Filter crawls by status: in-progress, completed, failed, or cancelled.'
+          type: string
+      - in: query
+        name: token
+        schema:
+          description: The API token for authenticating the request.
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  crawls:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CrawlListItem'
+                  nextCursor:
+                    type: string
+                additionalProperties: false
+                required:
+                - crawls
+                - nextCursor
+                definitions:
+                  CrawlListItem:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      url:
+                        type: string
+                      status:
+                        $ref: '#/components/schemas/CrawlStatus'
+                      total:
+                        type: number
+                      completed:
+                        type: number
+                      createdAt:
+                        type: string
+                      completedAt:
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - completed
+                    - completedAt
+                    - createdAt
+                    - id
+                    - status
+                    - total
+                    - url
+                  CrawlStatus:
+                    enum:
+                    - cancelled
+                    - completed
+                    - failed
+                    - in-progress
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /crawl
+      tags:
+      - Crawling
+      operationId: crawl-list
+    post:
+      description: Start an asynchronous crawl job that spiders a website and scrapes every discovered page. Returns a crawl ID and status URL for polling results via GET /crawl/{id}. Supports depth control, path filtering, sitemap strategies, and webhook notifications.
+      parameters:
+      - in: query
+        name: profile
+        schema:
+          description: 'Optional name of an authentication profile to hydrate into the browser
+
+            before each page is scraped. The profile''s cookies, localStorage, and
+
+            IndexedDB entries are loaded into the session before navigation. Forces
+
+            the browser strategy for every page.'
+          type: string
+      - in: query
+        name: token
+        schema:
+          description: The API token for authenticating the request.
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                url:
+                  description: The URL to crawl. Must be a valid http or https URL.
+                  type: string
+                limit:
+                  description: Maximum number of pages to crawl. Clamped to your plan's limit.
+                  default: 100
+                  minimum: 1
+                  type: number
+                maxDepth:
+                  description: Maximum link-follow depth from the root URL.
+                  default: 5
+                  minimum: 0
+                  type: number
+                maxRetries:
+                  description: Number of retry attempts per failed page.
+                  default: 1
+                  minimum: 0
+                  type: number
+                allowExternalLinks:
+                  description: Whether to follow links to external domains.
+                  default: false
+                  type: boolean
+                allowSubdomains:
+                  description: Whether to follow links to subdomains of the root URL.
+                  default: false
+                  type: boolean
+                sitemap:
+                  description: Sitemap handling strategy.
+                  default: auto
+                  enum:
+                  - auto
+                  - force
+                  - skip
+                  type: string
+                includePaths:
+                  description: Regex patterns for URL paths to include.
+                  default: []
+                  type: array
+                  items:
+                    type: string
+                excludePaths:
+                  description: Regex patterns for URL paths to exclude.
+                  default: []
+                  type: array
+                  items:
+                    type: string
+                delay:
+                  description: Delay between requests in milliseconds.
+                  default: 200
+                  minimum: 0
+                  type: number
+                scrapeOptions:
+                  description: Options controlling how each page is scraped.
+                  type: object
+                  properties:
+                    formats:
+                      description: Output formats for scraped content.
+                      default:
+                      - markdown
+                      type: array
+                      items:
+                        enum:
+                        - html
+                        - markdown
+                        - rawText
+                        type: string
+                    onlyMainContent:
+                      description: Whether to extract only the main content of the page.
+                      default: true
+                      type: boolean
+                    includeTags:
+                      description: HTML tag selectors to include.
+                      default: []
+                      type: array
+                      items:
+                        type: string
+                    excludeTags:
+                      description: HTML tag selectors to exclude.
+                      default: []
+                      type: array
+                      items:
+                        type: string
+                    waitFor:
+                      description: Time in ms to wait after page load before scraping.
+                      default: 0
+                      minimum: 0
+                      type: number
+                    headers:
+                      description: Custom HTTP headers to send with each request.
+                      type: object
+                      additionalProperties:
+                        type: string
+                    timeout:
+                      description: Navigation timeout in milliseconds.
+                      default: 150000
+                      minimum: 1000
+                      maximum: 180000
+                      type: number
+                    proxy:
+                      description: 'Proxy network to route page fetches through: `"residential"` (default)
+
+                        or `"datacenter"`.'
+                      enum:
+                      - datacenter
+                      - residential
+                      type: string
+                  additionalProperties: false
+                webhook:
+                  description: Webhook configuration for crawl event notifications.
+                  type: object
+                  properties:
+                    url:
+                      description: The HTTPS URL to send webhook events to.
+                      type: string
+                    events:
+                      description: Which events to send.
+                      default:
+                      - completed
+                      type: array
+                      items:
+                        enum:
+                        - completed
+                        - failed
+                        - page
+                        type: string
+                  additionalProperties: false
+                  required:
+                  - url
+              type: object
+              required:
+              - url
+              example:
+                url: https://docs.browserless.io/
+            example:
+              url: string
+              limit: 100
+              maxDepth: 5
+              maxRetries: 1
+              allowExternalLinks: false
+              allowSubdomains: false
+              sitemap: auto
+              includePaths:
+              - string
+              excludePaths:
+              - string
+              delay: 200
+              scrapeOptions:
+                formats:
+                - html
+                onlyMainContent: true
+                includeTags:
+                - string
+                excludeTags:
+                - string
+                waitFor: 0
+                headers: {}
+                timeout: 150000
+                proxy: datacenter
+              webhook:
+                url: string
+                events:
+                - completed
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  id:
+                    type: string
+                  url:
+                    type: string
+                additionalProperties: false
+                required:
+                - id
+                - success
+                - url
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /crawl
+      tags:
+      - Crawling
+      operationId: crawl-start
+  /crawl/*:
+    delete:
+      description: Cancel a running crawl job by its ID. Any pages already completed remain available for retrieval. Returns a 409 if the crawl is already in a terminal state.
+      parameters:
+      - in: query
+        name: token
+        schema:
+          description: The API token for authenticating the request.
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /crawl/*
+      tags:
+      - Crawling
+      operationId: crawl-cancel
+    get:
+      description: Get the status of a crawl job and its paginated page results. Returns progress counters, per-page metadata with content URLs, and a `next` URL for offset-based pagination via the `skip` parameter.
+      parameters:
+      - in: query
+        name: skip
+        schema:
+          description: The number of pages to skip for pagination.
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The API token for authenticating the request.
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/CrawlStatus'
+                  total:
+                    type: number
+                  completed:
+                    type: number
+                  failed:
+                    type: number
+                  expiresAt:
+                    type: string
+                  next:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CrawlPageResponse'
+                additionalProperties: false
+                required:
+                - completed
+                - data
+                - expiresAt
+                - failed
+                - next
+                - status
+                - total
+                definitions:
+                  CrawlStatus:
+                    enum:
+                    - cancelled
+                    - completed
+                    - failed
+                    - in-progress
+                    type: string
+                  CrawlPageResponse:
+                    type: object
+                    properties:
+                      status:
+                        $ref: '#/components/schemas/PageStatus'
+                      contentUrl:
+                        type: string
+                      metadata:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                          description:
+                            type: string
+                          language:
+                            type: string
+                          scrapedAt:
+                            type: string
+                          sourceURL:
+                            type: string
+                          statusCode:
+                            type: number
+                          error:
+                            type: string
+                        additionalProperties: false
+                        required:
+                        - description
+                        - error
+                        - language
+                        - scrapedAt
+                        - sourceURL
+                        - statusCode
+                        - title
+                    additionalProperties: false
+                    required:
+                    - contentUrl
+                    - metadata
+                    - status
+                  PageStatus:
+                    enum:
+                    - cancelled
+                    - completed
+                    - failed
+                    - in-progress
+                    - queued
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /crawl/*
+      tags:
+      - Crawling
+      operationId: crawl-status
+components:
+  schemas:
+    CrawlListItem:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+        status:
+          $ref: '#/components/schemas/CrawlStatus'
+        total:
+          type: number
+        completed:
+          type: number
+        createdAt:
+          type: string
+        completedAt:
+          type: string
+      additionalProperties: false
+      required:
+      - completed
+      - completedAt
+      - createdAt
+      - id
+      - status
+      - total
+      - url
+    CrawlPageResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/PageStatus'
+        contentUrl:
+          type: string
+        metadata:
+          type: object
+          properties:
+            title:
+              type: string
+            description:
+              type: string
+            language:
+              type: string
+            scrapedAt:
+              type: string
+            sourceURL:
+              type: string
+            statusCode:
+              type: number
+            error:
+              type: string
+          additionalProperties: false
+          required:
+          - description
+          - error
+          - language
+          - scrapedAt
+          - sourceURL
+          - statusCode
+          - title
+      additionalProperties: false
+      required:
+      - contentUrl
+      - metadata
+      - status
+    CrawlStatus:
+      enum:
+      - cancelled
+      - completed
+      - failed
+      - in-progress
+      type: string
+    PageStatus:
+      enum:
+      - cancelled
+      - completed
+      - failed
+      - in-progress
+      - queued
+      type: string
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: query
+      name: token
+      description: Your Browserless API token. Find it on your [Account dashboard](https://www.browserless.io/account).
+x-tagGroups:
+- name: Core APIs
+  tags:
+  - Screenshots & PDFs
+  - Scraping & Content
+  - Functions & Downloads
+- name: Browser Control
+  tags:
+  - Sessions & Connections
+  - Browser Management
+  - Crawling
+- name: Anti-Bot & Stealth
+  tags:
+  - Unblock & Stealth
+  - Proxy
+- name: Auth & Profiles
+  tags:
+  - Profiles
+  - Integrations
+- name: WebSocket / CDP
+  tags:
+  - WebSocket APIs
+  - Agent
+  - BQL Execution
+  - CDP & DevTools Connections
+- name: Chrome
+  tags:
+  - Chrome (licensed build)
+- name: Platform
+  tags:
+  - Platform / Skills

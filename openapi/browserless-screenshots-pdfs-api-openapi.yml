@@ -1,0 +1,2931 @@
+openapi: 3.2.0
+info:
+  title: Browserless Screenshots & PDFs API
+  version: 2.57.0
+  description: 'This is the API reference for **Browserless Enterprise and Cloud** deployments. You''ll find endpoints for capturing screenshots and PDFs, scraping content, running custom browser functions, solving CAPTCHAs, bypassing bot detection with stealth browsing, managing authenticated browser profiles, and orchestrating crawls.
+
+
+    The API includes REST endpoints (JSON in, JSON or binary out), WebSocket connections for direct CDP/Playwright/Puppeteer access, and CDP extensions that expose Browserless-specific commands like `liveURL`, `solveCaptcha`, and `reconnect`. For the open-source container API, see the GitHub repository.
+
+
+    ## Just Getting Started?
+
+
+    Check out the Quick Start guide to launch your first session, or explore the BrowserQL IDE for a GraphQL-based automation workflow.
+
+
+    ## Base URL
+
+
+    All API requests go to your deployment''s base URL. For Browserless Cloud:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io
+
+    ```
+
+
+    Self-hosted Enterprise deployments use the host and port where the container is running (default `http://localhost:3000`).
+
+
+    ## Authentication
+
+
+    Include your API token as a query parameter on every request:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io/chromium/content?token=YOUR_API_TOKEN
+
+    ```
+
+
+    Tokens are managed from the Account dashboard. Self-hosted deployments set the token via the `TOKEN` environment variable. See connection details for all authentication options.
+
+
+    ## Changelog
+
+
+    For release notes and version history, see the Enterprise Changelog.
+
+
+    ## Software keys
+
+
+    Self-hosted Enterprise deployments use time-limited software keys for offline licensing. No external connections or callbacks are required. Keys are cryptographically secure and can''t be reverse engineered. When a key expires, the container exits with a semantic error code.
+
+
+    To use a software key, set the `KEY` environment variable when running the container:
+
+
+    ```bash
+
+    docker run -e KEY=your-generated-key browserless/enterprise
+
+    ```'
+servers:
+- url: https://production-sfo.browserless.io
+security:
+- tokenAuth: []
+tags:
+- name: Screenshots & PDFs
+  description: Capture full-page or element screenshots and generate PDFs from web pages. The root `/screenshot` and `/pdf` routes work for most cases. Use browser-specific variants like `/edge/screenshot` when you need a particular engine.
+  x-displayName: Screenshots & PDFs
+paths:
+  /screenshot:
+    post:
+      description: 'Returns a screenshot binary from a `url` or `html` payload.
+
+        "url" or "html" payload in your request. Many options exist including
+
+        cookies, user-agents, setting timers and network mocks.
+
+
+        **Note:** This is the preferred endpoint. The `/chromium/screenshot` route is equivalent.'
+      parameters:
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options for the browser, either as a JSON object or a JSON string.
+
+            Includes options like `headless`, `args`, `defaultViewport`, etc.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                blockConsentModals:
+                  description: Whether to automatically block cookie consent modals and popups.
+                  type: boolean
+                options:
+                  $ref: '#/components/schemas/ScreenshotOptions'
+                  description: 'Screenshot options based on Puppeteer''s ScreenshotOptions interface.
+
+                    Includes properties like `type`, `quality`, `fullPage`, `clip`, etc.'
+                addScriptTag:
+                  description: 'An array of script tags to add to the page before performing actions.
+
+                    Each object can contain either a `url`, or a `content` property.'
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FrameAddScriptTagOptions'
+                addStyleTag:
+                  description: 'An array of style tags to add to the page before performing actions.
+
+                    Each object can contain either a `url`, or a `content` property.'
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FrameAddStyleTagOptions'
+                authenticate:
+                  $ref: '#/components/schemas/Credentials'
+                  description: Credentials for HTTP authentication. Contains `username` and `password` properties.
+                bestAttempt:
+                  description: 'When bestAttempt is set to true, browserless will attempt to proceed
+
+                    when "awaited" events fail or timeout. This includes things like
+
+                    goto, waitForSelector, and more.'
+                  type: boolean
+                cookies:
+                  description: 'An array of cookies to set on the page before navigation.
+
+                    Each cookie object should contain at least `name` and `value` properties.'
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CookieParam'
+                emulateMediaType:
+                  description: Changes the CSS media type of the page. Accepts values like "screen" or "print".
+                  type: string
+                gotoOptions:
+                  $ref: '#/components/schemas/GoToOptions'
+                  description: Options to configure the page navigation, such as `timeout` and `waitUntil`.
+                html:
+                  description: HTML content to set as the page content instead of navigating to a URL.
+                  type: string
+                rejectRequestPattern:
+                  description: 'An array of patterns to match against request URLs for automatic rejection.
+
+                    Requests matching these patterns will be aborted.'
+                  type: array
+                  items:
+                    type: string
+                rejectResourceTypes:
+                  description: 'An array of resource types to reject during page load.
+
+                    Common types include "image", "stylesheet", "font", "script", etc.'
+                  type: array
+                  items:
+                    enum:
+                    - cspviolationreport
+                    - document
+                    - eventsource
+                    - fedcm
+                    - fetch
+                    - font
+                    - image
+                    - manifest
+                    - media
+                    - other
+                    - ping
+                    - prefetch
+                    - preflight
+                    - script
+                    - signedexchange
+                    - stylesheet
+                    - texttrack
+                    - websocket
+                    - xhr
+                    type: string
+                requestInterceptors:
+                  description: 'An array of request interceptors that can modify or mock network requests.
+
+                    Each interceptor has a `pattern` to match URLs and a `response` to return.'
+                  type: array
+                  items:
+                    description: 'An array of patterns (using `req.url().match(r.pattern)` to match) and their
+
+                      corresponding responses to use in order to fulfill those requests.'
+                    type: object
+                    properties:
+                      pattern:
+                        description: 'An array of patterns (using `req.url().match(r.pattern)` to match) and their
+
+                          corresponding responses to use in order to fulfill those requests.'
+                        type: string
+                      response:
+                        additionalProperties: false
+                        type: object
+                        properties:
+                          status:
+                            type: number
+                          headers:
+                            $ref: '#/components/schemas/AnyRecord'
+                            description: 'Optional response headers.
+
+
+                              The record values will be converted to string following:
+
+                              Arrays'' values will be mapped to String
+
+                              (Used when you need multiple headers with the same name).
+
+                              Non-arrays will be converted to String.'
+                          contentType:
+                            type: string
+                          body:
+                            description: 'A string representation of the body to return. Can be a base64-encoded
+
+                              string but please omit any leading content-type data (eg "data:image/png;base64,").'
+                            type: string
+                    additionalProperties: false
+                    required:
+                    - pattern
+                    - response
+                setExtraHTTPHeaders:
+                  description: An object containing additional HTTP headers to send with every request.
+                  type: object
+                  additionalProperties:
+                    type: string
+                setJavaScriptEnabled:
+                  description: Whether or not to allow JavaScript to run on the page.
+                  type: boolean
+                url:
+                  description: The URL to navigate to before performing actions.
+                  type: string
+                userAgent:
+                  description: The user agent string to use for the page.
+                  type: object
+                  properties:
+                    userAgent:
+                      type: string
+                    userAgentMetadata:
+                      $ref: '#/components/schemas/Protocol.Emulation.UserAgentMetadata'
+                    platform:
+                      type: string
+                  additionalProperties: false
+                viewport:
+                  $ref: '#/components/schemas/Viewport'
+                  description: 'The viewport dimensions and settings for the page.
+
+                    Includes properties like `width`, `height`, `deviceScaleFactor`, etc.'
+                waitForEvent:
+                  description: Options for waiting for a specific event to be fired on the page.
+                  type: object
+                  properties:
+                    event:
+                      type: string
+                    timeout:
+                      type: number
+                  additionalProperties: false
+                  required:
+                  - event
+                waitForFunction:
+                  description: Options for waiting for a JavaScript function to execute.
+                  type: object
+                  properties:
+                    fn:
+                      description: The function, or statement, to be evaluated in browser context
+                      type: string
+                    polling:
+                      description: 'An interval at which the pageFunction is executed, defaults to raf.
+
+                        If polling is a number, then it is treated as an interval in milliseconds
+
+                        at which the function would be executed. If polling is a string,
+
+                        then it can be one of the following values: "raf" or "mutation"'
+                      type:
+                      - string
+                      - number
+                    timeout:
+                      description: 'Maximum time to wait for in milliseconds. Defaults to 30000 (30 seconds).
+
+                        Pass 0 to disable timeout.'
+                      type: number
+                  additionalProperties: false
+                  required:
+                  - fn
+                waitForSelector:
+                  description: Options for waiting for a specific CSS selector to appear on the page.
+                  type: object
+                  properties:
+                    hidden:
+                      type: boolean
+                    selector:
+                      type: string
+                    timeout:
+                      type: number
+                    visible:
+                      type: boolean
+                  additionalProperties: false
+                  required:
+                  - selector
+                waitForTimeout:
+                  description: The amount of time in milliseconds to wait before proceeding.
+                  type: number
+                scrollPage:
+                  description: 'Whether to scroll through the entire page before capturing content.
+
+                    Useful for triggering lazy-loaded content.'
+                  type: boolean
+                selector:
+                  description: A CSS selector to target a specific element instead of the full page.
+                  type: string
+              type: object
+              example:
+                url: https://docs.browserless.io/
+            example:
+              blockConsentModals: true
+              options:
+                optimizeForSpeed: true
+                type: jpeg
+                quality: 0
+                fromSurface: true
+                fullPage: true
+                omitBackground: true
+                clip:
+                  scale: 0
+                  width: 0
+                  height: 0
+                  x: 0
+                  y: 0
+                encoding: base64
+                captureBeyondViewport: true
+              addScriptTag:
+              - url: string
+                content: string
+                type: string
+                id: string
+              addStyleTag:
+              - url: string
+                content: string
+              authenticate:
+                username: string
+                password: string
+              bestAttempt: true
+              cookies:
+              - name: string
+                value: string
+                url: string
+                domain: string
+                path: string
+                secure: true
+                httpOnly: true
+                sameSite: Default
+                expires: 0
+                priority: High
+                sourceScheme: NonSecure
+                partitionKey:
+                  sourceOrigin: string
+                  hasCrossSiteAncestor: true
+              emulateMediaType: string
+              gotoOptions:
+                referer: string
+                referrerPolicy: string
+                timeout: 0
+                waitUntil:
+                - domcontentloaded
+                signal:
+                  aborted: true
+                  onabort: {}
+                  reason: {}
+              html: string
+              rejectRequestPattern:
+              - string
+              rejectResourceTypes:
+              - cspviolationreport
+              requestInterceptors:
+              - pattern: string
+                response:
+                  headers: {}
+                  status: 0
+                  contentType: string
+                  body: string
+              setExtraHTTPHeaders: {}
+              setJavaScriptEnabled: true
+              url: string
+              userAgent:
+                userAgent: string
+                userAgentMetadata:
+                  brands:
+                  - brand: string
+                    version: string
+                  fullVersionList:
+                  - brand: string
+                    version: string
+                  fullVersion: string
+                  platform: string
+                  platformVersion: string
+                  architecture: string
+                  model: string
+                  mobile: true
+                  bitness: string
+                  wow64: true
+                  formFactors:
+                  - string
+                platform: string
+              viewport:
+                width: 0
+                height: 0
+                deviceScaleFactor: 0
+                isMobile: true
+                isLandscape: true
+                hasTouch: true
+              waitForEvent:
+                event: string
+                timeout: 0
+              waitForFunction:
+                fn: string
+                polling: string
+                timeout: 0
+              waitForSelector:
+                hidden: true
+                selector: string
+                timeout: 0
+                visible: true
+              waitForTimeout: 0
+              scrollPage: true
+              selector: string
+      responses:
+        '200':
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            text/plain:
+              schema:
+                type: string
+                format: byte
+          description: 'Response can either be a text/plain base64 encoded body
+
+            or a binary stream with png/jpeg as a content-type'
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /screenshot
+      tags:
+      - Screenshots & PDFs
+      operationId: postScreenshot
+      x-operation-id-source: derived
+  /pdf:
+    post:
+      description: 'Returns a PDF binary from a `url` or `html` payload.
+
+        "url" or "html" payload in your request. Many options exist for
+
+        injecting cookies, request interceptors, user-agents and waiting for
+
+        selectors, timers and more.
+
+
+        **Note:** This is the preferred endpoint. The `/chromium/pdf` route is equivalent.'
+      parameters:
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options for the browser, either as a JSON object or a JSON string.
+
+            Includes options like `headless`, `args`, `defaultViewport`, etc.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                blockConsentModals:
+                  description: Whether to automatically block cookie consent modals and popups.
+                  type: boolean
+                options:
+                  description: 'PDF generation options based on Puppeteer''s PDFOptions interface.
+
+                    Includes properties like `format`, `margin`, `printBackground`, `landscape`, etc.'
+                  additionalProperties: false
+                  type: object
+                  properties:
+                    scale:
+                      description: Scales the rendering of the web page. Amount must be between `0.1` and `2`.
+                      type: number
+                    displayHeaderFooter:
+                      description: Whether to show the header and footer.
+                      type: boolean
+                    headerTemplate:
+                      description: 'HTML template for the print header. Should be valid HTML with the following
+
+                        classes used to inject values into them:
+
+
+                        - `date` formatted print date
+
+
+                        - `title` document title
+
+
+                        - `url` document location
+
+
+                        - `pageNumber` current page number
+
+
+                        - `totalPages` total pages in the document'
+                      type: string
+                    footerTemplate:
+                      description: 'HTML template for the print footer. Has the same constraints and support
+
+                        for special classes as {@link PDFOptions.headerTemplate}.'
+                      type: string
+                    printBackground:
+                      description: Set to `true` to print background graphics.
+                      type: boolean
+                    landscape:
+                      description: Whether to print in landscape orientation.
+                      type: boolean
+                    pageRanges:
+                      description: Paper ranges to print, e.g. `1-5, 8, 11-13`.
+                      type: string
+                    format:
+                      $ref: '#/components/schemas/PaperFormat'
+                    width:
+                      description: Sets the width of paper. You can pass in a number or a string with a unit.
+                      type:
+                      - string
+                      - number
+                    height:
+                      description: Sets the height of paper. You can pass in a number or a string with a unit.
+                      type:
+                      - string
+                      - number
+                    preferCSSPageSize:
+                      description: 'Give any CSS `@page` size declared in the page priority over what is
+
+                        declared in the `width` or `height` or `format` option.'
+                      type: boolean
+                    margin:
+                      $ref: '#/components/schemas/PDFMargin'
+                      description: Set the PDF margins.
+                    omitBackground:
+                      description: Hides default white background and allows generating pdfs with transparency.
+                      type: boolean
+                    tagged:
+                      description: Generate tagged (accessible) PDF.
+                      type: boolean
+                    outline:
+                      description: Generate document outline.
+                      type: boolean
+                    timeout:
+                      description: 'Timeout in milliseconds. Pass `0` to disable timeout.
+
+
+                        The default value can be changed by using {@link Page.setDefaultTimeout}'
+                      type: number
+                    waitForFonts:
+                      description: 'If true, waits for `document.fonts.ready` to resolve. This might require
+
+                        activating the page using {@link Page.bringToFront} if the page is in the
+
+                        background.'
+                      type: boolean
+                    fullPage:
+                      type: boolean
+                addScriptTag:
+                  description: 'An array of script tags to add to the page before performing actions.
+
+                    Each object can contain either a `url`, or a `content` property.'
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FrameAddScriptTagOptions'
+                addStyleTag:
+                  description: 'An array of style tags to add to the page before performing actions.
+
+                    Each object can contain either a `url`, or a `content` property.'
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FrameAddStyleTagOptions'
+                authenticate:
+                  $ref: '#/components/schemas/Credentials'
+                  description: Credentials for HTTP authentication. Contains `username` and `password` properties.
+                bestAttempt:
+                  description: 'When bestAttempt is set to true, browserless will attempt to proceed
+
+                    when "awaited" events fail or timeout. This includes things like
+
+                    goto, waitForSelector, and more.'
+                  type: boolean
+                cookies:
+                  description: 'An array of cookies to set on the page before navigation.
+
+                    Each cookie object should contain at least `name` and `value` properties.'
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CookieParam'
+                emulateMediaType:
+                  description: Changes the CSS media type of the page. Accepts values like "screen" or "print".
+                  type: string
+                gotoOptions:
+                  $ref: '#/components/schemas/GoToOptions'
+                  description: Options to configure the page navigation, such as `timeout` and `waitUntil`.
+                html:
+                  description: HTML content to set as the page content instead of navigating to a URL.
+                  type: string
+                rejectRequestPattern:
+                  description: 'An array of patterns to match against request URLs for automatic rejection.
+
+                    Requests matching these patterns will be aborted.'
+                  type: array
+                  items:
+                    type: string
+                rejectResourceTypes:
+                  description: 'An array of resource types to reject during page load.
+
+                    Common types include "image", "stylesheet", "font", "script", etc.'
+                  type: array
+                  items:
+                    enum:
+                    - cspviolationreport
+                    - document
+                    - eventsource
+                    - fedcm
+                    - fetch
+                    - font
+                    - image
+                    - manifest
+                    - media
+                    - other
+                    - ping
+                    - prefetch
+                    - preflight
+                    - script
+                    - signedexchange
+                    - stylesheet
+                    - texttrack
+                    - websocket
+                    - xhr
+                    type: string
+                requestInterceptors:
+                  description: 'An array of request interceptors that can modify or mock network requests.
+
+                    Each interceptor has a `pattern` to match URLs and a `response` to return.'
+                  type: array
+                  items:
+                    description: 'An array of patterns (using `req.url().match(r.pattern)` to match) and their
+
+                      corresponding responses to use in order to fulfill those requests.'
+                    type: object
+                    properties:
+                      pattern:
+                        description: 'An array of patterns (using `req.url().match(r.pattern)` to match) and their
+
+                          corresponding responses to use in order to fulfill those requests.'
+                        type: string
+                      response:
+                        additionalProperties: false
+                        type: object
+                        properties:
+                          status:
+                            type: number
+                          headers:
+                            $ref: '#/components/schemas/AnyRecord'
+                            description: 'Optional response headers.
+
+
+                              The record values will be converted to string following:
+
+                              Arrays'' values will be mapped to String
+
+                              (Used when you need multiple headers with the same name).
+
+                              Non-arrays will be converted to String.'
+                          contentType:
+                            type: string
+                          body:
+                            description: 'A string representation of the body to return. Can be a base64-encoded
+
+                              string but please omit any leading content-type data (eg "data:image/png;base64,").'
+                            type: string
+                    additionalProperties: false
+                    required:
+                    - pattern
+                    - response
+                setExtraHTTPHeaders:
+                  description: An object containing additional HTTP headers to send with every request.
+                  type: object
+                  additionalProperties:
+                    type: string
+                setJavaScriptEnabled:
+                  description: Whether or not to allow JavaScript to run on the page.
+                  type: boolean
+                url:
+                  description: The URL to navigate to before performing actions.
+                  type: string
+                userAgent:
+                  description: The user agent string to use for the page.
+                  type: object
+                  properties:
+                    userAgent:
+                      type: string
+                    userAgentMetadata:
+                      $ref: '#/components/schemas/Protocol.Emulation.UserAgentMetadata'
+                    platform:
+                      type: string
+                  additionalProperties: false
+                viewport:
+                  $ref: '#/components/schemas/Viewport'
+                  description: 'The viewport dimensions and settings for the page.
+
+                    Includes properties like `width`, `height`, `deviceScaleFactor`, etc.'
+                waitForEvent:
+                  description: Options for waiting for a specific event to be fired on the page.
+                  type: object
+                  properties:
+                    event:
+                      type: string
+                    timeout:
+                      type: number
+                  additionalProperties: false
+                  required:
+                  - event
+                waitForFunction:
+                  description: Options for waiting for a JavaScript function to execute.
+                  type: object
+                  properties:
+                    fn:
+                      description: The function, or statement, to be evaluated in browser context
+                      type: string
+                    polling:
+                      description: 'An interval at which the pageFunction is executed, defaults to raf.
+
+                        If polling is a number, then it is treated as an interval in milliseconds
+
+                        at which the function would be executed. If polling is a string,
+
+                        then it can be one of the following values: "raf" or "mutation"'
+                      type:
+                      - string
+                      - number
+                    timeout:
+                      description: 'Maximum time to wait for in milliseconds. Defaults to 30000 (30 seconds).
+
+                        Pass 0 to disable timeout.'
+                      type: number
+                  additionalProperties: false
+                  required:
+                  - fn
+                waitForSelector:
+                  description: Options for waiting for a specific CSS selector to appear on the page.
+                  type: object
+                  properties:
+                    hidden:
+                      type: boolean
+                    selector:
+                      type: string
+                    timeout:
+                      type: number
+                    visible:
+                      type: boolean
+                  additionalProperties: false
+                  required:
+                  - selector
+                waitForTimeout:
+                  description: The amount of time in milliseconds to wait before proceeding.
+                  type: number
+              type: object
+              example:
+                url: https://docs.browserless.io/
+            example:
+              blockConsentModals: true
+              options:
+                scale: 0
+                displayHeaderFooter: true
+                headerTemplate: string
+                footerTemplate: string
+                printBackground: true
+                landscape: true
+                pageRanges: string
+                format: A0
+                width: string
+                height: string
+                preferCSSPageSize: true
+                margin:
+                  top: string
+                  bottom: string
+                  left: string
+                  right: string
+                omitBackground: true
+                tagged: true
+                outline: true
+                timeout: 0
+                waitForFonts: true
+                fullPage: true
+              addScriptTag:
+              - url: string
+                content: string
+                type: string
+                id: string
+              addStyleTag:
+              - url: string
+                content: string
+              authenticate:
+                username: string
+                password: string
+              bestAttempt: true
+              cookies:
+              - name: string
+                value: string
+                url: string
+                domain: string
+                path: string
+                secure: true
+                httpOnly: true
+                sameSite: Default
+                expires: 0
+                priority: High
+                sourceScheme: NonSecure
+                partitionKey:
+                  sourceOrigin: string
+                  hasCrossSiteAncestor: true
+              emulateMediaType: string
+              gotoOptions:
+                referer: string
+                referrerPolicy: string
+                timeout: 0
+                waitUntil:
+                - domcontentloaded
+                signal:
+                  aborted: true
+                  onabort: {}
+                  reason: {}
+              html: string
+              rejectRequestPattern:
+              - string
+              rejectResourceTypes:
+              - cspviolationreport
+              requestInterceptors:
+              - pattern: string
+                response:
+                  headers: {}
+                  status: 0
+                  contentType: string
+                  body: string
+              setExtraHTTPHeaders: {}
+              setJavaScriptEnabled: true
+              url: string
+              userAgent:
+                userAgent: string
+                userAgentMetadata:
+                  brands:
+                  - brand: string
+                    version: string
+                  fullVersionList:
+                  - brand: string
+                    version: string
+                  fullVersion: string
+                  platform: string
+                  platformVersion: string
+                  architecture: string
+                  model: string
+                  mobile: true
+                  bitness: string
+                  wow64: true
+                  formFactors:
+                  - string
+                platform: string
+              viewport:
+                width: 0
+                height: 0
+                deviceScaleFactor: 0
+                isMobile: true
+                isLandscape: true
+                hasTouch: true
+              waitForEvent:
+                event: string
+                timeout: 0
+              waitForFunction:
+                fn: string
+                polling: string
+                timeout: 0
+              waitForSelector:
+                hidden: true
+                selector: string
+                timeout: 0
+                visible: true
+              waitForTimeout: 0
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                description: Responds with an application/pdf content-type and a binary PDF
+                type: string
+                $schema: http://json-schema.org/draft-07/schema#
+          description: Responds with an application/pdf content-type and a binary PDF
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /pdf
+      tags:
+      - Screenshots & PDFs
+      operationId: postPdf
+      x-operation-id-source: derived
+  /edge/screenshot:
+    post:
+      description: 'Returns a screenshot binary from a `url` or `html` payload using Edge.
+
+        "url" or "html" payload in your request. Many options exist including
+
+        cookies, user-agents, setting timers and network mocks.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                addScriptTag:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FrameAddScriptTagOptions'
+                addStyleTag:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FrameAddStyleTagOptions'
+                authenticate:
+                  anyOf:
+                  - $ref: '#/components/schemas/Credentials'
+                  - type: 'null'
+                  description: Credentials for HTTP authentication. Contains `username` and `password` properties.
+                bestAttempt:
+                  description: 'When bestAttempt is set to true, browserless attempt to proceed
+
+                    when "awaited" events fail or timeout. This includes things like
+
+                    goto, waitForSelector, and more.'
+                  type: boolean
+                cookies:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CookieParam'
+                emulateMediaType:
+                  type: string
+                gotoOptions:
+                  $ref: '#/components/schemas/GoToOptions'
+                  description: Options to configure the page navigation, such as `timeout` and `waitUntil`.
+                html:
+                  type: string
+                options:
+                  $ref: '#/components/schemas/ScreenshotOptions'
+                  description: 'Screenshot options based on Puppeteer''s ScreenshotOptions interface.
+
+                    Includes properties like `type`, `quality`, `fullPage`, `clip`, etc.'
+                rejectRequestPattern:
+                  type: array
+                  items:
+                    type: string
+                rejectResourceTypes:
+                  type: array
+                  items:
+                    enum:
+                    - cspviolationreport
+                    - document
+                    - eventsource
+                    - fedcm
+                    - fetch
+                    - font
+                    - image
+                    - manifest
+                    - media
+                    - other
+                    - ping
+                    - prefetch
+                    - preflight
+                    - script
+                    - signedexchange
+                    - stylesheet
+                    - texttrack
+                    - websocket
+                    - xhr
+                    type: string
+                requestInterceptors:
+                  type: array
+                  items:
+                    description: 'An array of patterns (using `req.url().match(r.pattern)` to match) and their
+
+                      corresponding responses to use in order to fulfill those requests.'
+                    type: object
+                    properties:
+                      pattern:
+                        description: 'An array of patterns (using `req.url().match(r.pattern)` to match) and their
+
+                          corresponding responses to use in order to fulfill those requests.'
+                        type: string
+                      response:
+                        additionalProperties: false
+                        type: object
+                        properties:
+                          headers:
+                            description: 'Optional response headers.
+
+
+                              The record values will be converted to string following:
+
+                              Arrays'' values will be mapped to String
+
+                              (Used when you need multiple headers with the same name).
+
+                              Non-arrays will be converted to String.'
+                            $ref: '#/components/schemas/AnyRecord'
+                          status:
+                            type: number
+                          contentType:
+                            type: string
+                          body:
+                            description: 'A string representation of the body to return. Can be a base64-encoded
+
+                              string but please omit any leading content-type data (eg "data:image/png;base64,").'
+                            type: string
+                    additionalProperties: false
+                    required:
+                    - pattern
+                    - response
+                scrollPage:
+                  type: boolean
+                selector:
+                  type: string
+                setExtraHTTPHeaders:
+                  type: object
+                  additionalProperties:
+                    type: string
+                setJavaScriptEnabled:
+                  type: boolean
+                url:
+                  type: string
+                userAgent:
+                  type: object
+                  properties:
+                    userAgent:
+                      type: string
+                    userAgentMetadata:
+                      description: 'Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
+
+                        Missing optional values will be filled in by the target with what it would normally use.'
+                      $ref: '#/components/schemas/Protocol.Emulation.UserAgentMetadata'
+                    platform:
+                      type: string
+                  additionalProperties: false
+                viewport:
+                  anyOf:
+                  - $ref: '#/components/schemas/Viewport'
+                  - type: 'null'
+                  description: 'The viewport dimensions and settings for the page.
+
+                    Includes properties like `width`, `height`, `deviceScaleFactor`, etc.'
+                waitForEvent:
+                  type: object
+                  properties:
+                    event:
+                      type: string
+                    timeout:
+                      type: number
+                  additionalProperties: false
+                  required:
+                  - event
+                waitForFunction:
+                  type: object
+                  properties:
+                    fn:
+                      description: The function, or statement, to be evaluated in browser context
+                      type: string
+                    polling:
+                      description: 'An interval at which the pageFunction is executed, defaults to raf.
+
+                        If polling is a number, then it is treated as an interval in milliseconds
+
+                        at which the function would be executed. If polling is a string,
+
+                        then it can be one of the following values: "raf" or "mutation"'
+                      type:
+                      - string
+                      - number
+                    timeout:
+                      description: 'Maximum time to wait for in milliseconds. Defaults to 30000 (30 seconds).
+
+                        Pass 0 to disable timeout.'
+                      type: number
+                  additionalProperties: false
+                  required:
+                  - fn
+                waitForSelector:
+                  type: object
+                  properties:
+                    hidden:
+                      type: boolean
+                    selector:
+                      type: string
+                    timeout:
+                      type: number
+                    visible:
+                      type: boolean
+                  additionalProperties: false
+                  required:
+                  - selector
+                waitForTimeout:
+                  type: number
+              type: object
+              example:
+                url: https://docs.browserless.io/
+            example:
+              addScriptTag:
+              - url: string
+                content: string
+                type: string
+                id: string
+              addStyleTag:
+              - url: string
+                content: string
+              authenticate:
+                username: string
+                password: string
+              bestAttempt: true
+              cookies:
+              - name: string
+                value: string
+                url: string
+                domain: string
+                path: string
+                secure: true
+                httpOnly: true
+                sameSite: Default
+                expires: 0
+                priority: High
+                sourceScheme: NonSecure
+                partitionKey:
+                  sourceOrigin: string
+                  hasCrossSiteAncestor: true
+              emulateMediaType: string
+              gotoOptions:
+                referer: string
+                referrerPolicy: string
+                timeout: 0
+                waitUntil:
+                - domcontentloaded
+                signal:
+                  aborted: true
+                  onabort: {}
+                  reason: {}
+              html: string
+              options:
+                optimizeForSpeed: true
+                type: jpeg
+                quality: 0
+                fromSurface: true
+                fullPage: true
+                omitBackground: true
+                clip:
+                  scale: 0
+                  width: 0
+                  height: 0
+                  x: 0
+                  y: 0
+                encoding: base64
+                captureBeyondViewport: true
+              rejectRequestPattern:
+              - string
+              rejectResourceTypes:
+              - cspviolationreport
+              requestInterceptors:
+              - pattern: string
+                response:
+                  headers: {}
+                  status: 0
+                  contentType: string
+                  body: string
+              scrollPage: true
+              selector: string
+              setExtraHTTPHeaders: {}
+              setJavaScriptEnabled: true
+              url: string
+              userAgent:
+                userAgent: string
+                userAgentMetadata:
+                  brands:
+                  - brand: string
+                    version: string
+                  fullVersionList:
+                  - brand: string
+                    version: string
+                  fullVersion: string
+                  platform: string
+                  platformVersion: string
+                  architecture: string
+                  model: string
+                  mobile: true
+                  bitness: string
+                  wow64: true
+                  formFactors:
+                  - string
+                platform: string
+              viewport:
+                width: 0
+                height: 0
+                deviceScaleFactor: 0
+                isMobile: true
+                isLandscape: true
+                hasTouch: true
+              waitForEvent:
+                event: string
+                timeout: 0
+              waitForFunction:
+                fn: string
+                polling: string
+                timeout: 0
+              waitForSelector:
+                hidden: true
+                selector: string
+                timeout: 0
+                visible: true
+              waitForTimeout: 0
+      responses:
+        '200':
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            text/plain:
+              schema:
+                type: string
+                format: byte
+          description: 'Response can either be a text/plain base64 encoded body
+
+            or a binary stream with png/jpeg as a content-type'
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /edge/screenshot
+      tags:
+      - Screenshots & PDFs
+      operationId: postEdgeScreenshot
+      x-operation-id-source: derived
+  /edge/pdf:
+    post:
+      description: 'Returns a PDF binary from a `url` or `html` payload using Edge.
+
+        "url" or "html" payload in your request. Many options exist for
+
+        injecting cookies, request interceptors, user-agents and waiting for
+
+        selectors, timers and more.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                addScriptTag:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FrameAddScriptTagOptions'
+                addStyleTag:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/FrameAddStyleTagOptions'
+                authenticate:
+                  anyOf:
+                  - $ref: '#/components/schemas/Credentials'
+                  - type: 'null'
+                  description: Credentials for HTTP authentication. Contains `username` and `password` properties.
+                bestAttempt:
+                  description: 'When bestAttempt is set to true, browserless attempt to proceed
+
+                    when "awaited" events fail or timeout. This includes things like
+
+                    goto, waitForSelector, and more.'
+                  type: boolean
+                cookies:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CookieParam'
+                emulateMediaType:
+                  type: string
+                gotoOptions:
+                  $ref: '#/components/schemas/GoToOptions'
+                  description: Options to configure the page navigation, such as `timeout` and `waitUntil`.
+                html:
+                  type: string
+                options:
+                  additionalProperties: false
+                  type: object
+                  properties:
+                    scale:
+                      description: Scales the rendering of the web page. Amount must be between `0.1` and `2`.
+                      type: number
+                    displayHeaderFooter:
+                      description: Whether to show the header and footer.
+                      type: boolean
+                    headerTemplate:
+                      description: 'HTML template for the print header. Should be valid HTML with the following
+
+                        classes used to inject values into them:
+
+
+                        - `date` formatted print date
+
+
+                        - `title` document title
+
+
+                        - `url` document location
+
+
+                        - `pageNumber` current page number
+
+
+                        - `totalPages` total pages in the document'
+                      type: string
+                    footerTemplate:
+                      description: 'HTML template for the print footer. Has the same constraints and support
+
+                        for special classes as {@link PDFOptions.headerTemplate}.'
+                      type: string
+                    printBackground:
+                      description: Set to `true` to print background graphics.
+                      type: boolean
+                    landscape:
+                      description: Whether to print in landscape orientation.
+                      type: boolean
+                    pageRanges:
+                      description: Paper ranges to print, e.g. `1-5, 8, 11-13`.
+                      type: string
+                    format:
+                      description: All the valid paper format types when printing a PDF.
+                      enum:
+                      - A0
+                      - A1
+                      - A2
+                      - A3
+                      - A4
+                      - A5
+                      - A6
+                      - LEDGER
+                      - LEGAL
+                      - LETTER
+                      - Ledger
+                      - Legal
+                      - Letter
+                      - TABLOID
+                      - Tabloid
+                      - a0
+                      - a1
+                      - a2
+                      - a3
+                      - a4
+                      - a5
+                      - a6
+                      - ledger
+                      - legal
+                      - letter
+                      - tabloid
+                      type: string
+                    width:
+                      description: Sets the width of paper. You can pass in a number or a string with a unit.
+                      type:
+                      - string
+                      - number
+                    height:
+                      description: Sets the height of paper. You can pass in a number or a string with a unit.
+                      type:
+                      - string
+                      - number
+                    preferCSSPageSize:
+                      description: 'Give any CSS `@page` size declared in the page priority over what is
+
+                        declared in the `width` or `height` or `format` option.'
+                      type: boolean
+                    margin:
+                      description: Set the PDF margins.
+                      $ref: '#/components/schemas/PDFMargin'
+                    omitBackground:
+                      description: Hides default white background and allows generating pdfs with transparency.
+                      type: boolean
+                    tagged:
+                      description: Generate tagged (accessible) PDF.
+                      type: boolean
+                    outline:
+                      description: Generate document outline.
+                      type: boolean
+                    timeout:
+                      description: 'Timeout in milliseconds. Pass `0` to disable timeout.
+
+
+                        The default value can be changed by using {@link Page.setDefaultTimeout}'
+                      type: number
+                    waitForFonts:
+                      description: 'If true, waits for `document.fonts.ready` to resolve. This might require
+
+                        activating the page using {@link Page.bringToFront} if the page is in the
+
+                        background.'
+                      type: boolean
+                    fullPage:
+                      type: boolean
+                  description: 'PDF generation options based on Puppeteer''s PDFOptions interface.
+
+                    Includes properties like `format`, `landscape`, `margin`, `scale`, etc.'
+                rejectRequestPattern:
+                  type: array
+                  items:
+                    type: string
+                rejectResourceTypes:
+                  type: array
+                  items:
+                    enum:
+                    - cspviolationreport
+                    - document
+                    - eventsource
+                    - fedcm
+                    - fetch
+                    - font
+                    - image
+                    - manifest
+                    - media
+                    - other
+                    - ping
+                    - prefetch
+                    - preflight
+                    - script
+                    - signedexchange
+                    - stylesheet
+                    - texttrack
+                    - websocket
+                    - xhr
+                    type: string
+                requestInterceptors:
+                  type: array
+                  items:
+                    description: 'An array of patterns (using `req.url().match(r.pattern)` to match) and their
+
+                      corresponding responses to use in order to fulfill those requests.'
+                    type: object
+                    properties:
+                      pattern:
+                        description: 'An array of patterns (using `req.url().match(r.pattern)` to match) and their
+
+                          corresponding responses to use in order to fulfill those requests.'
+                        type: string
+                      response:
+                        additionalProperties: false
+                        type: object
+                        properties:
+                          headers:
+                            description: 'Optional response headers.
+
+
+                              The record values will be converted to string following:
+
+                              Arrays'' values will be mapped to String
+
+                              (Used when you need multiple headers with the same name).
+
+                              Non-arrays will be converted to String.'
+                            $ref: '#/components/schemas/AnyRecord'
+                          status:
+                            type: number
+                          contentType:
+                            type: string
+                          body:
+                            description: 'A string representation of the body to return. Can be a base64-encoded
+
+                              string but please omit any leading content-type data (eg "data:image/png;base64,").'
+                            type: string
+                    additionalProperties: false
+                    required:
+                    - pattern
+                    - response
+                setExtraHTTPHeaders:
+                  type: object
+                  additionalProperties:
+                    type: string
+                setJavaScriptEnabled:
+                  type: boolean
+                url:
+                  type: string
+                userAgent:
+                  type: object
+                  properties:
+                    userAgent:
+                      type: string
+                    userAgentMetadata:
+                      description: 'Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
+
+                        Missing optional values will be filled in by the target with what it would normally use.'
+                      $ref: '#/components/schemas/Protocol.Emulation.UserAgentMetadata'
+                    platform:
+                      type: string
+                  additionalProperties: false
+                viewport:
+                  anyOf:
+                  - $ref: '#/components/schemas/Viewport'
+                  - type: 'null'
+                  description: 'The viewport dimensions and settings for the page.
+
+                    Includes properties like `width`, `height`, `deviceScaleFactor`, etc.'
+                waitForEvent:
+                  type: object
+                  properties:
+                    event:
+                      type: string
+                    timeout:
+                      type: number
+                  additionalProperties: false
+                  required:
+                  - event
+                waitForFunction:
+                  type: object
+                  properties:
+                    fn:
+                      description: The function, or statement, to be evaluated in browser context
+                      type: string
+                    polling:
+                      description: 'An interval at which the pageFunction is executed, defaults to raf.
+
+                        If polling is a number, then it is treated as an interval in milliseconds
+
+                        at which the function would be executed. If polling is a string,
+
+                        then it can be one of the following values: "raf" or "mutation"'
+                      type:
+                      - string
+                      - number
+                    timeout:
+                      description: 'Maximum time to wait for in milliseconds. Defaults to 30000 (30 seconds).
+
+                        Pass 0 to disable timeout.'
+                      type: number
+                  additionalProperties: false
+                  required:
+                  - fn
+                waitForSelector:
+                  type: object
+                  properties:
+                    hidden:
+                      type: boolean
+                    selector:
+                      type: string
+                    timeout:
+                      type: number
+                    visible:
+                      type: boolean
+                  additionalProperties: false
+                  required:
+                  - selector
+                waitForTimeout:
+                  type: number
+              type: object
+              example:
+                url: https://docs.browserless.io/
+            example:
+              addScriptTag:
+              - url: string
+                content: string
+                type: string
+                id: string
+              addStyleTag:
+              - url: string
+                content: string
+              authenticate:
+                username: string
+                password: string
+              bestAttempt: true
+              cookies:
+              - name: string
+                value: string
+                url: string
+                domain: string
+                path: string
+                secure: true
+                httpOnly: true
+                sameSite: Default
+                expires: 0
+                priority: High
+                sourceScheme: NonSecure
+                partitionKey:
+                  sourceOrigin: string
+                  hasCrossSiteAncestor: true
+              emulateMediaType: string
+              gotoOptions:
+                referer: string
+                referrerPolicy: string
+                timeout: 0
+                waitUntil:
+                - domcontentloaded
+                signal:
+                  aborted: true
+                  onabort: {}
+                  reason: {}
+              html: string
+              options:
+                scale: 0
+                displayHeaderFooter: true
+                headerTemplate: string
+                footerTemplate: string
+                printBackground: true
+                landscape: true
+                pageRanges: string
+                format: A0
+                width: string
+                height: string
+                preferCSSPageSize: true
+                margin:
+                  top: string
+                  bottom: string
+                  left: string
+                  right: string
+                omitBackground: true
+                tagged: true
+                outline: true
+                timeout: 0
+                waitForFonts: true
+                fullPage: true
+              rejectRequestPattern:
+              - string
+              rejectResourceTypes:
+              - cspviolationreport
+              requestInterceptors:
+              - pattern: string
+                response:
+                  headers: {}
+                  status: 0
+                  contentType: string
+                  body: string
+              setExtraHTTPHeaders: {}
+              setJavaScriptEnabled: true
+              url: string
+              userAgent:
+                userAgent: string
+                userAgentMetadata:
+                  brands:
+                  - brand: string
+                    version: string
+                  fullVersionList:
+                  - brand: string
+                    version: string
+                  fullVersion: string
+                  platform: string
+                  platformVersion: string
+                  architecture: string
+                  model: string
+                  mobile: true
+                  bitness: string
+                  wow64: true
+                  formFactors:
+                  - string
+                platform: string
+              viewport:
+                width: 0
+                height: 0
+                deviceScaleFactor: 0
+                isMobile: true
+                isLandscape: true
+                hasTouch: true
+              waitForEvent:
+                event: string
+                timeout: 0
+              waitForFunction:
+                fn: string
+                polling: string
+                timeout: 0
+              waitForSelector:
+                hidden: true
+                selector: string
+                timeout: 0
+                visible: true
+              waitForTimeout: 0
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                description: Responds with an application/pdf content-type and a binary PDF
+                type: string
+                $schema: http://json-schema.org/draft-07/schema#
+          description: Responds with an application/pdf content-type and a binary PDF
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /edge/pdf
+      tags:
+      - Screenshots & PDFs
+      operationId: postEdgePdf
+      x-operation-id-source: derived
+components:
+  schemas:
+    PuppeteerLifeCycleEvent:
+      enum:
+      - domcontentloaded
+      - load
+      - networkidle0
+      - networkidle2
+      type: string
+    GoToOptions:
+      type: object
+      properties:
+        referer:
+          description: 'If provided, it will take preference over the referer header value set by
+
+            {@link Page.setExtraHTTPHeaderspage.setExtraHTTPHeaders()}.'
+          type: string
+        referrerPolicy:
+          description: 'If provided, it will take preference over the referer-policy header value
+
+            set by {@link Page.setExtraHTTPHeaderspage.setExtraHTTPHeaders()}.'
+          type: string
+        timeout:
+          description: 'Maximum wait time in milliseconds. Pass 0 to disable the timeout.
+
+
+            The default value can be changed by using the
+
+            {@link Page.setDefaultTimeout} or {@link Page.setDefaultNavigationTimeout}
+
+            methods.'
+          type: number
+        waitUntil:
+          description: 'When to consider waiting succeeds. Given an array of event strings, waiting
+
+            is considered to be successful after all events have been fired.'
+          anyOf:
+          - type: array
+            items:
+              $ref: '#/components/schemas/PuppeteerLifeCycleEvent'
+          - enum:
+            - domcontentloaded
+            - load
+            - networkidle0
+            - networkidle2
+            type: string
+        signal:
+          description: A signal object that allows you to cancel the call.
+          $ref: '#/components/schemas/AbortSignal'
+      additionalProperties: false
+    Protocol.Emulation.UserAgentBrandVersion:
+      description: Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
+      type: object
+      properties:
+        brand:
+          type: string
+        version:
+          type: string
+      additionalProperties: false
+      required:
+      - brand
+      - version
+    CookiePartitionKey:
+      description: Represents a cookie partition key in Chrome.
+      type: object
+      properties:
+        sourceOrigin:
+          description: 'The site of the top-level URL the browser was visiting at the start of the request
+
+            to the endpoint that set the cookie.
+
+
+            In Chrome, maps to the CDP''s `topLevelSite` partition key.'
+          type: string
+        hasCrossSiteAncestor:
+          description: 'Indicates if the cookie has any ancestors that are cross-site to
+
+            the topLevelSite.
+
+
+            Supported only in Chrome.'
+          type: boolean
+      additionalProperties: false
+      required:
+      - sourceOrigin
+    Viewport:
+      type: object
+      properties:
+        width:
+          description: The page width in CSS pixels.
+          type: number
+        height:
+          description: The page height in CSS pixels.
+          type: number
+        deviceScaleFactor:
+          description: 'Specify device scale factor.
+
+            See {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio devicePixelRatio} for more info.'
+          type: number
+        isMobile:
+          description: Whether the `meta viewport` tag is taken into account.
+          type: boolean
+        isLandscape:
+          description: Specifies if the viewport is in landscape mode.
+          type: boolean
+        hasTouch:
+          description: Specify if the viewport supports touch events.
+          type: boolean
+      additionalProperties: false
+      required:
+      - height
+      - width
+    FrameAddScriptTagOptions:
+      type: object
+      properties:
+        url:
+          description: URL of the script to be added.
+          type: string
+        content:
+          description: JavaScript to be injected into the frame.
+          type: string
+        type:
+          description: Sets the `type` of the script. Use `module` in order to load an ES2015 module.
+          type: string
+        id:
+          description: Sets the `id` of the script.
+          type: string
+      additionalProperties: false
+    ScreenshotClip:
+      type: object
+      properties:
+        scale:
+          type: number
+        width:
+          description: the width of the element in pixels.
+          type: number
+        height:
+          description: the height of the element in pixels.
+          type: number
+        x:
+          type: number
+        y:
+          type: number
+      additionalProperties: false
+      required:
+      - height
+      - width
+      - x
+      - y
+    AbortSignal:
+      type: object
+      properties:
+        aborted:
+          type: boolean
+        onabort:
+          anyOf:
+          - type: object
+            additionalProperties: false
+          - type: 'null'
+        reason: {}
+      additionalProperties: false
+      required:
+      - aborted
+      - onabort
+      - reason
+    ProxyType:
+      description: 'The proxy networks the platform can route through. `residential` uses the
+
+        built-in residential vendors; `datacenter` uses the Geonode datacenter
+
+        network (cheaper, billed at a lower per-MB rate).'
+      enum:
+      - datacenter
+      - residential
+      type: string
+    CookieParam:
+      description: 'Cookie parameter object used to set cookies in the page-level cookies
+
+        API.'
+      type: object
+      properties:
+        name:
+          description: Cookie name.
+          type: string
+        value:
+          description: Cookie value.
+          type: string
+        url:
+          description: 'The request-URI to associate with the setting of the cookie. This value can affect
+
+            the default domain, path, and source scheme values of the created cookie.'
+          type: string
+        domain:
+          description: Cookie domain.
+          type: string
+        path:
+          description: Cookie path.
+          type: string
+        secure:
+          description: True if cookie is secure.
+          type: boolean
+        httpOnly:
+          description: True if cookie is http-only.
+          type: boolean
+        sameSite:
+          description: Cookie SameSite type.
+          enum:
+          - Default
+          - Lax
+          - None
+          - Strict
+          type: string
+        expires:
+          description: Cookie expiration date, session cookie if not set
+          type: number
+        priority:
+          description: Cookie Priority. Supported only in Chrome.
+          enum:
+          - High
+          - Low
+          - Medium
+          type: string
+        sourceScheme:
+          description: Cookie source scheme type. Supported only in Chrome.
+          enum:
+          - NonSecure
+          - Secure
+          - Unset
+          type: string
+        partitionKey:
+          description: 'Cookie partition key. In Chrome, it matches the top-level site the
+
+            partitioned cookie is available in. In Firefox, it matches the
+
+            source origin in the
+
+            {@link https://w3c.github.io/webdriver-bidi/#type-storage-PartitionKey PartitionKey}.'
+          anyOf:
+          - $ref: '#/components/schemas/CookiePartitionKey'
+          - type: string
+      additionalProperties: false
+      required:
+      - name
+      - value
+    Protocol.Emulation.UserAgentMetadata:
+      description: 'Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
+
+        Missing optional values will be filled in by the target with what it would normally use.'
+      type: object
+      properties:
+        brands:
+          description: Brands appearing in Sec-CH-UA.
+          type: array
+          items:
+            $ref: '#/components/schemas/Protocol.Emulation.UserAgentBrandVersion'
+        fullVersionList:
+          description: Brands appearing in Sec-CH-UA-Full-Version-List.
+          type: array
+          items:
+            $ref: '#/components/schemas/Protocol.Emulation.UserAgentBrandVersion'
+        fullVersion:
+          type: string
+        platform:
+          type: string
+        platformVersion:
+          type: string
+        architecture:
+          type: string
+        model:
+          type: string
+        mobile:
+          type: boolean
+        bitness:
+          type: string
+        wow64:
+          type: boolean
+        formFactors:
+          description: 'Used to specify User Agent form-factor values.
+
+            See https://wicg.github.io/ua-client-hints/#sec-ch-ua-form-factors'
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+      required:
+      - architecture
+      - mobile
+      - model
+      - platform
+      - platformVersion
+    PDFMargin:
+      type: object
+      properties:
+        top:
+          type:
+          - string
+          - number
+        bottom:
+          type:
+          - string
+          - number
+        left:
+          type:
+          - string
+          - number
+        right:
+          type:
+          - string
+          - number
+      additionalProperties: false
+    StringRecord:
+      type: object
+      additionalProperties: false
+    PaperFormat:
+      description: All the valid paper format types when printing a PDF.
+      enum:
+      - A0
+      - A1
+      - A2
+      - A3
+      - A4
+      - A5
+      - A6
+      - LEDGER
+      - LEGAL
+      - LETTER
+      - Ledger
+      - Legal
+      - Letter
+      - TABLOID
+      - Tabloid
+      - a0
+      - a1
+      - a2
+      - a3
+      - a4
+      - a5
+      - a6
+      - ledger
+      - legal
+      - letter
+      - tabloid
+      type: string
+    CDPLaunchOptions:
+      type: object
+      additionalProperties: {}
+      properties:
+        args:
+          type: array
+          items:
+            type: string
+        defaultViewport:
+          type: object
+          properties:
+            deviceScaleFactor:
+              type: number
+            hasTouch:
+              type: boolean
+            height:
+              type: number
+            isLandscape:
+              type: boolean
+            isMobile:
+              type: boolean
+            width:
+              type: number
+          additionalProperties: false
+          required:
+          - height
+          - width
+        devtools:
+          type: boolean
+        dumpio:
+          type: boolean
+        headless:
+          enum:
+          - false
+          - shell
+          - true
+        ignoreDefaultArgs:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+        ignoreHTTPSErrors:
+          type: boolean
+        acceptInsecureCerts:
+          type: boolean
+        slowMo:
+          type: number
+        stealth:
+          type: boolean
+        timeout:
+          type: number
+        userDataDir:
+          type: string
+        waitForInitialPage:
+          type: boolean
+    FrameAddStyleTagOptions:
+      type: object
+      properties:
+        url:
+          description: the URL of the CSS file to be added.
+          type: string
+        content:
+          description: Raw CSS content to be injected into the frame.
+          type: string
+      additionalProperties: false
+    AnyRecord:
+      type: object
+      additionalProperties: false
+    ScreenshotOptions:
+      type: object
+      properties:
+        optimizeForSpeed:
+          type: boolean
+        type:
+          enum:
+          - jpeg
+          - png
+          - webp
+          type: string
+        quality:
+          description: Quality of the image, between 0-100. Not applicable to `png` images.
+          type: number
+        fromSurface:
+          description: Capture the screenshot from the surface, rather than the view.
+          type: boolean
+        fullPage:
+          description: When `true`, takes a screenshot of the full page.
+          type: boolean
+        omitBackground:
+          description: Hides default white background and allows capturing screenshots with transparency.
+          type: boolean
+        clip:
+          description: Specifies the region of the page/element to clip.
+          $ref: '#/components/schemas/ScreenshotClip'
+        encoding:
+          description: Encoding of the image.
+          enum:
+          - base64
+          - binary
+          type: string
+        captureBeyondViewport:
+          description: Capture the screenshot beyond the viewport.
+          type: boolean
+      additionalProperties: false
+    Credentials:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      additionalProperties: false
+      required:
+      - password
+      - username
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: query
+      name: token
+      description: Your Browserless API token. Find it on your [Account dashboard](https://www.browserless.io/account).
+x-tagGroups:
+- name: Core APIs
+  tags:
+  - Screenshots & PDFs
+  - Scraping & Content
+  - Functions & Downloads
+- name: Browser Control
+  tags:
+  - Sessions & Connections
+  - Browser Management
+  - Crawling
+- name: Anti-Bot & Stealth
+  tags:
+  - Unblock & Stealth
+  - Proxy
+- name: Auth & Profiles
+  tags:
+  - Profiles
+  - Integrations
+- name: WebSocket / CDP
+  tags:
+  - WebSocket APIs
+  - Agent
+  - BQL Execution
+  - CDP & DevTools Connections
+- name: Chrome
+  tags:
+  - Chrome (licensed build)
+- name: Platform
+  tags:
+  - Platform / Skills

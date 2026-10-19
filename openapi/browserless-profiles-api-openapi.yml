@@ -1,0 +1,2146 @@
+openapi: 3.2.0
+info:
+  title: Browserless Profiles API
+  version: 2.57.0
+  description: 'This is the API reference for **Browserless Enterprise and Cloud** deployments. You''ll find endpoints for capturing screenshots and PDFs, scraping content, running custom browser functions, solving CAPTCHAs, bypassing bot detection with stealth browsing, managing authenticated browser profiles, and orchestrating crawls.
+
+
+    The API includes REST endpoints (JSON in, JSON or binary out), WebSocket connections for direct CDP/Playwright/Puppeteer access, and CDP extensions that expose Browserless-specific commands like `liveURL`, `solveCaptcha`, and `reconnect`. For the open-source container API, see the GitHub repository.
+
+
+    ## Just Getting Started?
+
+
+    Check out the Quick Start guide to launch your first session, or explore the BrowserQL IDE for a GraphQL-based automation workflow.
+
+
+    ## Base URL
+
+
+    All API requests go to your deployment''s base URL. For Browserless Cloud:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io
+
+    ```
+
+
+    Self-hosted Enterprise deployments use the host and port where the container is running (default `http://localhost:3000`).
+
+
+    ## Authentication
+
+
+    Include your API token as a query parameter on every request:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io/chromium/content?token=YOUR_API_TOKEN
+
+    ```
+
+
+    Tokens are managed from the Account dashboard. Self-hosted deployments set the token via the `TOKEN` environment variable. See connection details for all authentication options.
+
+
+    ## Changelog
+
+
+    For release notes and version history, see the Enterprise Changelog.
+
+
+    ## Software keys
+
+
+    Self-hosted Enterprise deployments use time-limited software keys for offline licensing. No external connections or callbacks are required. Keys are cryptographically secure and can''t be reverse engineered. When a key expires, the container exits with a semantic error code.
+
+
+    To use a software key, set the `KEY` environment variable when running the container:
+
+
+    ```bash
+
+    docker run -e KEY=your-generated-key browserless/enterprise
+
+    ```'
+servers:
+- url: https://production-sfo.browserless.io
+security:
+- tokenAuth: []
+tags:
+- name: Profiles
+  description: Create and manage persistent browser profiles that preserve cookies, localStorage, and IndexedDB across sessions. Capture a logged-in state once with `Browserless.saveProfile`, then rehydrate it on any future session with `?profile=`.
+  x-displayName: Profiles
+paths:
+  /profile:
+    post:
+      description: 'Launches a temporary browser session for creating an authenticated profile.
+
+        Connect via the returned WebSocket URL, authenticate in the browser,
+
+        then call Browserless.saveProfile via CDP to capture and persist the auth state.
+
+        The profile is NOT saved automatically — you must explicitly call
+
+        Browserless.saveProfile before disconnecting. The session expires after 10 minutes
+
+        or your plan''s session limit, whichever comes first. Free sessions are capped at
+
+        two minutes; higher-tier plans retain the 10-minute maximum.
+
+
+        **Note:** This endpoint is also available at: `/management/profile` for backwards compatibility.'
+      parameters:
+      - in: query
+        name: emulationOs
+        schema:
+          $ref: '#/components/schemas/Platform'
+          description: OS persona to preserve while authoring the profile.
+      - in: query
+        name: timeout
+        schema:
+          description: 'Maximum duration of the temporary profile-creation session, in
+
+            milliseconds. The effective duration is capped by the smaller of 10
+
+            minutes and your plan''s session limit.'
+          type: number
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  description: 'A user-visible name for the profile.
+
+                    Must be unique per token.'
+                  type: string
+                stealth:
+                  description: Whether or not to enable advanced stealth mode. Defaults to false.
+                  type: boolean
+                browser:
+                  description: The type of browser to use. Defaults to 'stealth'.
+                  enum:
+                  - chrome
+                  - chromium
+                  - stealth
+                  type: string
+                args:
+                  description: An array of command-line arguments to pass to the browser.
+                  type: array
+                  items:
+                    type: string
+                proxy:
+                  description: Proxy parameters for the profile creation session.
+                  type: object
+                  properties:
+                    type:
+                      description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+                      enum:
+                      - datacenter
+                      - residential
+                      type: string
+                    sticky:
+                      description: Whether or not to use the same IP address for all proxied requests. Defaults to true.
+                      type: boolean
+                    country:
+                      description: The country to proxy through. Defaults to 'us' or United States.
+                      type: string
+                    city:
+                      description: The city to proxy through.
+                      type: string
+                    state:
+                      description: The state to proxy through.
+                      type: string
+                    preset:
+                      description: Preset code for website-specific proxy configurations (e.g., 'px_gov01' for government sites).
+                      type: string
+                  additionalProperties: false
+                integrationId:
+                  description: 'Optional 1Password integration id (op_int_…) or label. The profile-authoring session
+
+                    can fill credentials via Browserless.loadSecret.'
+                  type: string
+                credentials:
+                  description: Optional alias → op:// reference map for the integration above.
+                  type: object
+                  additionalProperties:
+                    type: string
+                allowedDomains:
+                  description: Optional per-session narrowing of the integration's allowed domains.
+                  type: array
+                  items:
+                    type: string
+              type: object
+              required:
+              - name
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Temporary session ID used for the profile creation browser
+                    type: string
+                  name:
+                    description: The profile name that will be used when saving
+                    type: string
+                  connect:
+                    description: WebSocket URL to connect to the browser
+                    type: string
+                  stop:
+                    description: URL to stop/delete the temporary session
+                    type: string
+                additionalProperties: false
+                required:
+                - connect
+                - id
+                - name
+                - stop
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile
+      tags:
+      - Profiles
+      operationId: profile-create
+    delete:
+      description: 'Removes selected sites and their cookies, localStorage and IndexedDB from a saved profile.
+
+
+        **Note:** This endpoint is also available at: `/management/profile` for backwards compatibility.'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                domains:
+                  description: Exact sites to remove, without cascading to subdomains.
+                  type: array
+                  items:
+                    type: string
+              type: object
+              required:
+              - domains
+              - name
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Unique profile identifier.
+                    type: string
+                  name:
+                    description: User-supplied profile name. Unique per token.
+                    type: string
+                  cookieCount:
+                    description: Number of cookies captured in the profile.
+                    type: number
+                  originCount:
+                    description: Number of distinct origins with stored localStorage or IndexedDB.
+                    type: number
+                  captureSettings:
+                    $ref: '#/components/schemas/ProfileCaptureSettings'
+                    description: 'Capture inputs the CLI used, or null for profiles not created by the CLI. The UI
+
+                      derives no capture flag from these; it uses any non-empty object to stamp the CLI
+
+                      badge and show a read-only summary, and reads `browser`/`profile` specifically to
+
+                      decide whether its refresh command needs placeholders for them. The CLI reads the
+
+                      rest itself and decides the exclusion behaviour from `excludeDomains`.'
+                  domainAuth:
+                    description: 'Per-domain auth status + expiry for the saved logins in this profile, with
+
+                      status classified at read time (valid / expiring_soon / expired / unknown).
+
+                      Empty for profiles saved before this feature, until their next capture,
+
+                      upload, or refresh. Never contains a cookie value.'
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProfileDomainAuth'
+                  lastUsedAt:
+                    description: ISO timestamp of the last time this profile was applied to a session, or null if never used.
+                    type: string
+                  createdAt:
+                    description: ISO timestamp of when the profile was created.
+                    type: string
+                  updatedAt:
+                    description: ISO timestamp of the last metadata change (e.g., rename).
+                    type: string
+                additionalProperties: false
+                required:
+                - captureSettings
+                - cookieCount
+                - createdAt
+                - domainAuth
+                - id
+                - lastUsedAt
+                - name
+                - originCount
+                - updatedAt
+                definitions:
+                  ProfileCaptureSettings:
+                    description: 'Capture inputs the CLI ran with, so a later `profile refresh` can replay them
+
+                      without flags. Null for the CDP saveProfile path and any future non-CLI creator.
+
+                      Never holds the token, and omits server/region because a stale stored region
+
+                      is a guaranteed 404.'
+                    type: object
+                    properties:
+                      browser:
+                        description: Raw `--browser` value.
+                        type: string
+                      profile:
+                        description: Raw `--profile` value (source profile directory or display name).
+                        type: string
+                      excludeDomains:
+                        description: 'Effective merged exclusion list. `[]` is meaningful — "captured with no
+
+                          exclusions" — and distinct from absent, which means "unknown".'
+                        type: array
+                        items:
+                          type: string
+                      onlyDomains:
+                        description: Normalized `--only-domain` hostnames, deduped and capped — not merged with local config.
+                        type: array
+                        items:
+                          type: string
+                      keepDomains:
+                        description: Normalized `--keep-domain` hostnames, same normalization, no merge.
+                        type: array
+                        items:
+                          type: string
+                      autoFit:
+                        description: Whether `--auto-fit` was used.
+                        type: boolean
+                      passwordStore:
+                        description: Raw `--password-store` value. Linux only.
+                        type: string
+                      cliVersion:
+                        description: CLI version that produced these settings, for drift diagnosis.
+                        type: string
+                    additionalProperties: false
+                  ProfileDomainAuth:
+                    description: 'Response shape: the stored snapshot plus its read-time status.'
+                    type: object
+                    properties:
+                      domain:
+                        type: string
+                      status:
+                        $ref: '#/components/schemas/DomainAuthStatus'
+                      expiresAt:
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - domain
+                    - expiresAt
+                    - status
+                  DomainAuthStatus:
+                    description: Per-domain auth status, computed at read time from a stored absolute expiry.
+                    enum:
+                    - expired
+                    - expiring_soon
+                    - unknown
+                    - valid
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile
+      tags:
+      - Profiles
+      operationId: deleteProfile
+      x-operation-id-source: derived
+  /profiles:
+    get:
+      description: 'Lists authentication profiles owned by the requesting token.
+
+        Paginated via "limit" (default 100, capped at 1000) and "offset" (default 0).
+
+        Returns an empty array if the token has no profiles.
+
+
+        **Note:** This endpoint is also available at: `/management/profiles` for backwards compatibility.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - $ref: '#/components/schemas/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: limit
+        schema:
+          description: Maximum number of profiles to return (1–1000). Defaults to 100.
+          type: number
+      - in: query
+        name: offset
+        schema:
+          description: Number of profiles to skip for pagination. Defaults to 0.
+          type: number
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProfileResponse'
+                definitions:
+                  ProfileResponse:
+                    description: 'Public-facing profile response returned by HTTP routes.
+
+                      Omits internal fields like token_hash and storage_key.'
+                    type: object
+                    properties:
+                      id:
+                        description: Unique profile identifier.
+                        type: string
+                      name:
+                        description: User-supplied profile name. Unique per token.
+                        type: string
+                      cookieCount:
+                        description: Number of cookies captured in the profile.
+                        type: number
+                      originCount:
+                        description: Number of distinct origins with stored localStorage or IndexedDB.
+                        type: number
+                      captureSettings:
+                        $ref: '#/components/schemas/ProfileCaptureSettings'
+                        description: 'Capture inputs the CLI used, or null for profiles not created by the CLI. The UI
+
+                          derives no capture flag from these; it uses any non-empty object to stamp the CLI
+
+                          badge and show a read-only summary, and reads `browser`/`profile` specifically to
+
+                          decide whether its refresh command needs placeholders for them. The CLI reads the
+
+                          rest itself and decides the exclusion behaviour from `excludeDomains`.'
+                      domainAuth:
+                        description: 'Per-domain auth status + expiry for the saved logins in this profile, with
+
+                          status classified at read time (valid / expiring_soon / expired / unknown).
+
+                          Empty for profiles saved before this feature, until their next capture,
+
+                          upload, or refresh. Never contains a cookie value.'
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ProfileDomainAuth'
+                      lastUsedAt:
+                        description: ISO timestamp of the last time this profile was applied to a session, or null if never used.
+                        type: string
+                      createdAt:
+                        description: ISO timestamp of when the profile was created.
+                        type: string
+                      updatedAt:
+                        description: ISO timestamp of the last metadata change (e.g., rename).
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - captureSettings
+                    - cookieCount
+                    - createdAt
+                    - domainAuth
+                    - id
+                    - lastUsedAt
+                    - name
+                    - originCount
+                    - updatedAt
+                  ProfileCaptureSettings:
+                    description: 'Capture inputs the CLI ran with, so a later `profile refresh` can replay them
+
+                      without flags. Null for the CDP saveProfile path and any future non-CLI creator.
+
+                      Never holds the token, and omits server/region because a stale stored region
+
+                      is a guaranteed 404.'
+                    type: object
+                    properties:
+                      browser:
+                        description: Raw `--browser` value.
+                        type: string
+                      profile:
+                        description: Raw `--profile` value (source profile directory or display name).
+                        type: string
+                      excludeDomains:
+                        description: 'Effective merged exclusion list. `[]` is meaningful — "captured with no
+
+                          exclusions" — and distinct from absent, which means "unknown".'
+                        type: array
+                        items:
+                          type: string
+                      onlyDomains:
+                        description: Normalized `--only-domain` hostnames, deduped and capped — not merged with local config.
+                        type: array
+                        items:
+                          type: string
+                      keepDomains:
+                        description: Normalized `--keep-domain` hostnames, same normalization, no merge.
+                        type: array
+                        items:
+                          type: string
+                      autoFit:
+                        description: Whether `--auto-fit` was used.
+                        type: boolean
+                      passwordStore:
+                        description: Raw `--password-store` value. Linux only.
+                        type: string
+                      cliVersion:
+                        description: CLI version that produced these settings, for drift diagnosis.
+                        type: string
+                    additionalProperties: false
+                  ProfileDomainAuth:
+                    description: 'Response shape: the stored snapshot plus its read-time status.'
+                    type: object
+                    properties:
+                      domain:
+                        type: string
+                      status:
+                        $ref: '#/components/schemas/DomainAuthStatus'
+                      expiresAt:
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - domain
+                    - expiresAt
+                    - status
+                  DomainAuthStatus:
+                    description: Per-domain auth status, computed at read time from a stored absolute expiry.
+                    enum:
+                    - expired
+                    - expiring_soon
+                    - unknown
+                    - valid
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profiles
+      tags:
+      - Profiles
+      operationId: getProfiles
+      x-operation-id-source: derived
+  /profile/*:
+    delete:
+      description: 'Deletes an authentication profile and its captured state.
+
+        The profile name is the URL-encoded path segment after "/profile/".
+
+        Returns 404 if no profile with that name exists for this token.
+
+
+        **Note:** This endpoint is also available at: `/management/profile/*` for backwards compatibility.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    description: Always true on success.
+                    type: boolean
+                  message:
+                    description: Human-readable confirmation message.
+                    type: string
+                  name:
+                    description: Name of the profile that was deleted.
+                    type: string
+                additionalProperties: false
+                required:
+                - message
+                - name
+                - success
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile/*
+      tags:
+      - Profiles
+      operationId: profile-delete
+    get:
+      description: 'Returns metadata for a specific authentication profile.
+
+        The profile name is the URL-encoded path segment after "/profile/".
+
+        Returns 404 if no profile with that name exists for this token.
+
+
+        **Note:** This endpoint is also available at: `/management/profile/*` for backwards compatibility.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Unique profile identifier.
+                    type: string
+                  name:
+                    description: User-supplied profile name. Unique per token.
+                    type: string
+                  cookieCount:
+                    description: Number of cookies captured in the profile.
+                    type: number
+                  originCount:
+                    description: Number of distinct origins with stored localStorage or IndexedDB.
+                    type: number
+                  captureSettings:
+                    $ref: '#/components/schemas/ProfileCaptureSettings'
+                    description: 'Capture inputs the CLI used, or null for profiles not created by the CLI. The UI
+
+                      derives no capture flag from these; it uses any non-empty object to stamp the CLI
+
+                      badge and show a read-only summary, and reads `browser`/`profile` specifically to
+
+                      decide whether its refresh command needs placeholders for them. The CLI reads the
+
+                      rest itself and decides the exclusion behaviour from `excludeDomains`.'
+                  domainAuth:
+                    description: 'Per-domain auth status + expiry for the saved logins in this profile, with
+
+                      status classified at read time (valid / expiring_soon / expired / unknown).
+
+                      Empty for profiles saved before this feature, until their next capture,
+
+                      upload, or refresh. Never contains a cookie value.'
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProfileDomainAuth'
+                  lastUsedAt:
+                    description: ISO timestamp of the last time this profile was applied to a session, or null if never used.
+                    type: string
+                  createdAt:
+                    description: ISO timestamp of when the profile was created.
+                    type: string
+                  updatedAt:
+                    description: ISO timestamp of the last metadata change (e.g., rename).
+                    type: string
+                additionalProperties: false
+                required:
+                - captureSettings
+                - cookieCount
+                - createdAt
+                - domainAuth
+                - id
+                - lastUsedAt
+                - name
+                - originCount
+                - updatedAt
+                definitions:
+                  ProfileCaptureSettings:
+                    description: 'Capture inputs the CLI ran with, so a later `profile refresh` can replay them
+
+                      without flags. Null for the CDP saveProfile path and any future non-CLI creator.
+
+                      Never holds the token, and omits server/region because a stale stored region
+
+                      is a guaranteed 404.'
+                    type: object
+                    properties:
+                      browser:
+                        description: Raw `--browser` value.
+                        type: string
+                      profile:
+                        description: Raw `--profile` value (source profile directory or display name).
+                        type: string
+                      excludeDomains:
+                        description: 'Effective merged exclusion list. `[]` is meaningful — "captured with no
+
+                          exclusions" — and distinct from absent, which means "unknown".'
+                        type: array
+                        items:
+                          type: string
+                      onlyDomains:
+                        description: Normalized `--only-domain` hostnames, deduped and capped — not merged with local config.
+                        type: array
+                        items:
+                          type: string
+                      keepDomains:
+                        description: Normalized `--keep-domain` hostnames, same normalization, no merge.
+                        type: array
+                        items:
+                          type: string
+                      autoFit:
+                        description: Whether `--auto-fit` was used.
+                        type: boolean
+                      passwordStore:
+                        description: Raw `--password-store` value. Linux only.
+                        type: string
+                      cliVersion:
+                        description: CLI version that produced these settings, for drift diagnosis.
+                        type: string
+                    additionalProperties: false
+                  ProfileDomainAuth:
+                    description: 'Response shape: the stored snapshot plus its read-time status.'
+                    type: object
+                    properties:
+                      domain:
+                        type: string
+                      status:
+                        $ref: '#/components/schemas/DomainAuthStatus'
+                      expiresAt:
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - domain
+                    - expiresAt
+                    - status
+                  DomainAuthStatus:
+                    description: Per-domain auth status, computed at read time from a stored absolute expiry.
+                    enum:
+                    - expired
+                    - expiring_soon
+                    - unknown
+                    - valid
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile/*
+      tags:
+      - Profiles
+      operationId: profile-get
+    put:
+      description: 'Renames an authentication profile. The new name must be unique per token.
+
+        The current name is the URL-encoded path segment after "/profile/".
+
+        Returns 400 if the new name is already taken, 404 if the source profile is not found.
+
+
+        **Note:** This endpoint is also available at: `/management/profile/*` for backwards compatibility.'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  description: The new name for the profile.
+                  type: string
+              type: object
+              required:
+              - name
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Unique profile identifier.
+                    type: string
+                  name:
+                    description: User-supplied profile name. Unique per token.
+                    type: string
+                  cookieCount:
+                    description: Number of cookies captured in the profile.
+                    type: number
+                  originCount:
+                    description: Number of distinct origins with stored localStorage or IndexedDB.
+                    type: number
+                  captureSettings:
+                    $ref: '#/components/schemas/ProfileCaptureSettings'
+                    description: 'Capture inputs the CLI used, or null for profiles not created by the CLI. The UI
+
+                      derives no capture flag from these; it uses any non-empty object to stamp the CLI
+
+                      badge and show a read-only summary, and reads `browser`/`profile` specifically to
+
+                      decide whether its refresh command needs placeholders for them. The CLI reads the
+
+                      rest itself and decides the exclusion behaviour from `excludeDomains`.'
+                  domainAuth:
+                    description: 'Per-domain auth status + expiry for the saved logins in this profile, with
+
+                      status classified at read time (valid / expiring_soon / expired / unknown).
+
+                      Empty for profiles saved before this feature, until their next capture,
+
+                      upload, or refresh. Never contains a cookie value.'
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProfileDomainAuth'
+                  lastUsedAt:
+                    description: ISO timestamp of the last time this profile was applied to a session, or null if never used.
+                    type: string
+                  createdAt:
+                    description: ISO timestamp of when the profile was created.
+                    type: string
+                  updatedAt:
+                    description: ISO timestamp of the last metadata change (e.g., rename).
+                    type: string
+                additionalProperties: false
+                required:
+                - captureSettings
+                - cookieCount
+                - createdAt
+                - domainAuth
+                - id
+                - lastUsedAt
+                - name
+                - originCount
+                - updatedAt
+                definitions:
+                  ProfileCaptureSettings:
+                    description: 'Capture inputs the CLI ran with, so a later `profile refresh` can replay them
+
+                      without flags. Null for the CDP saveProfile path and any future non-CLI creator.
+
+                      Never holds the token, and omits server/region because a stale stored region
+
+                      is a guaranteed 404.'
+                    type: object
+                    properties:
+                      browser:
+                        description: Raw `--browser` value.
+                        type: string
+                      profile:
+                        description: Raw `--profile` value (source profile directory or display name).
+                        type: string
+                      excludeDomains:
+                        description: 'Effective merged exclusion list. `[]` is meaningful — "captured with no
+
+                          exclusions" — and distinct from absent, which means "unknown".'
+                        type: array
+                        items:
+                          type: string
+                      onlyDomains:
+                        description: Normalized `--only-domain` hostnames, deduped and capped — not merged with local config.
+                        type: array
+                        items:
+                          type: string
+                      keepDomains:
+                        description: Normalized `--keep-domain` hostnames, same normalization, no merge.
+                        type: array
+                        items:
+                          type: string
+                      autoFit:
+                        description: Whether `--auto-fit` was used.
+                        type: boolean
+                      passwordStore:
+                        description: Raw `--password-store` value. Linux only.
+                        type: string
+                      cliVersion:
+                        description: CLI version that produced these settings, for drift diagnosis.
+                        type: string
+                    additionalProperties: false
+                  ProfileDomainAuth:
+                    description: 'Response shape: the stored snapshot plus its read-time status.'
+                    type: object
+                    properties:
+                      domain:
+                        type: string
+                      status:
+                        $ref: '#/components/schemas/DomainAuthStatus'
+                      expiresAt:
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - domain
+                    - expiresAt
+                    - status
+                  DomainAuthStatus:
+                    description: Per-domain auth status, computed at read time from a stored absolute expiry.
+                    enum:
+                    - expired
+                    - expiring_soon
+                    - unknown
+                    - valid
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile/*
+      tags:
+      - Profiles
+      operationId: profile-rename
+  /profile/refresh:
+    post:
+      description: 'Replaces the state of an existing authentication profile in place.
+
+        The "name" must already exist for the requesting token. Counts of any
+
+        dropped or truncated entries are surfaced under "diagnostics".'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  description: 'Name of the existing profile to refresh. Must already exist for the
+
+                    requesting token.'
+                  type: string
+                state:
+                  description: Pre-captured authentication state. Same shape as `POST /profile/upload`.
+                captureSettings:
+                  $ref: '#/components/schemas/RefreshCaptureSettingsPayload'
+                  description: 'Capture inputs this refresh ran with. Omit the key to leave the stored settings
+
+                    untouched — which is what an older CLI does. An object that survives validation
+
+                    REPLACES the stored one wholesale — it is not a patch, so a partial payload drops
+
+                    the members it omits.
+
+
+                    An object that validates down to nothing — `{}`, or one carrying only
+
+                    `onlyDomains: []` / `keepDomains: []` — is treated as if the key were omitted:
+
+                    200, stored settings untouched. `excludeDomains: []` is the deliberate exception:
+
+                    it survives, so the payload DOES replace the stored object and drops every member
+
+                    it omits. It records "captured with no exclusions", which a later flagless refresh
+
+                    replays instead of re-reading the refreshing machine''s own config.'
+              type: object
+              required:
+              - name
+              - state
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  diagnostics:
+                    $ref: '#/components/schemas/RefreshResponseDiagnostics'
+                    description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+                      dropped or truncated before persisting. All zero on a clean refresh.'
+                  id:
+                    description: Unique profile identifier.
+                    type: string
+                  name:
+                    description: User-supplied profile name. Unique per token.
+                    type: string
+                  cookieCount:
+                    description: Number of cookies captured in the profile.
+                    type: number
+                  originCount:
+                    description: Number of distinct origins with stored localStorage or IndexedDB.
+                    type: number
+                  captureSettings:
+                    $ref: '#/components/schemas/ProfileCaptureSettings'
+                    description: 'Capture inputs the CLI used, or null for profiles not created by the CLI. The UI
+
+                      derives no capture flag from these; it uses any non-empty object to stamp the CLI
+
+                      badge and show a read-only summary, and reads `browser`/`profile` specifically to
+
+                      decide whether its refresh command needs placeholders for them. The CLI reads the
+
+                      rest itself and decides the exclusion behaviour from `excludeDomains`.'
+                  domainAuth:
+                    description: 'Per-domain auth status + expiry for the saved logins in this profile, with
+
+                      status classified at read time (valid / expiring_soon / expired / unknown).
+
+                      Empty for profiles saved before this feature, until their next capture,
+
+                      upload, or refresh. Never contains a cookie value.'
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProfileDomainAuth'
+                  lastUsedAt:
+                    description: ISO timestamp of the last time this profile was applied to a session, or null if never used.
+                    type: string
+                  createdAt:
+                    description: ISO timestamp of when the profile was created.
+                    type: string
+                  updatedAt:
+                    description: ISO timestamp of the last metadata change (e.g., rename).
+                    type: string
+                additionalProperties: false
+                required:
+                - captureSettings
+                - cookieCount
+                - createdAt
+                - diagnostics
+                - domainAuth
+                - id
+                - lastUsedAt
+                - name
+                - originCount
+                - updatedAt
+                definitions:
+                  RefreshResponseDiagnostics:
+                    description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+                      dropped or truncated before persisting. All zero on a clean refresh.'
+                    type: object
+                    properties:
+                      skippedMalformedCookies:
+                        description: Cookies dropped because required fields were missing or wrong type.
+                        type: number
+                      skippedPrivateCookies:
+                        description: Cookies dropped because their domain pointed at a private/internal host.
+                        type: number
+                      skippedMalformedOrigins:
+                        description: Origins dropped because they were malformed or non-http(s).
+                        type: number
+                      skippedPrivateOrigins:
+                        description: Origins dropped because they targeted a private/internal network.
+                        type: number
+                      truncatedOrigins:
+                        description: Origins dropped because the per-profile cap was exceeded.
+                        type: number
+                      skippedMalformedIdbDatabases:
+                        description: IndexedDB databases dropped because required fields were missing.
+                        type: number
+                      truncatedIdbDatabases:
+                        description: IndexedDB databases dropped because the per-origin cap was exceeded.
+                        type: number
+                      skippedMalformedIdbStores:
+                        description: IndexedDB object-stores dropped because required fields were missing.
+                        type: number
+                      truncatedIdbEntries:
+                        description: IndexedDB entries dropped because the per-store cap was exceeded.
+                        type: number
+                      skippedMalformedLocalStorageEntries:
+                        description: localStorage entries dropped because names or values were not strings.
+                        type: number
+                      skippedMalformedIdbIndexes:
+                        description: IndexedDB indexes dropped because required fields were malformed.
+                        type: number
+                    additionalProperties: false
+                    required:
+                    - skippedMalformedCookies
+                    - skippedMalformedIdbDatabases
+                    - skippedMalformedIdbIndexes
+                    - skippedMalformedIdbStores
+                    - skippedMalformedLocalStorageEntries
+                    - skippedMalformedOrigins
+                    - skippedPrivateCookies
+                    - skippedPrivateOrigins
+                    - truncatedIdbDatabases
+                    - truncatedIdbEntries
+                    - truncatedOrigins
+                  ProfileCaptureSettings:
+                    description: 'Capture inputs the CLI ran with, so a later `profile refresh` can replay them
+
+                      without flags. Null for the CDP saveProfile path and any future non-CLI creator.
+
+                      Never holds the token, and omits server/region because a stale stored region
+
+                      is a guaranteed 404.'
+                    type: object
+                    properties:
+                      browser:
+                        description: Raw `--browser` value.
+                        type: string
+                      profile:
+                        description: Raw `--profile` value (source profile directory or display name).
+                        type: string
+                      excludeDomains:
+                        description: 'Effective merged exclusion list. `[]` is meaningful — "captured with no
+
+                          exclusions" — and distinct from absent, which means "unknown".'
+                        type: array
+                        items:
+                          type: string
+                      onlyDomains:
+                        description: Normalized `--only-domain` hostnames, deduped and capped — not merged with local config.
+                        type: array
+                        items:
+                          type: string
+                      keepDomains:
+                        description: Normalized `--keep-domain` hostnames, same normalization, no merge.
+                        type: array
+                        items:
+                          type: string
+                      autoFit:
+                        description: Whether `--auto-fit` was used.
+                        type: boolean
+                      passwordStore:
+                        description: Raw `--password-store` value. Linux only.
+                        type: string
+                      cliVersion:
+                        description: CLI version that produced these settings, for drift diagnosis.
+                        type: string
+                    additionalProperties: false
+                  ProfileDomainAuth:
+                    description: 'Response shape: the stored snapshot plus its read-time status.'
+                    type: object
+                    properties:
+                      domain:
+                        type: string
+                      status:
+                        $ref: '#/components/schemas/DomainAuthStatus'
+                      expiresAt:
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - domain
+                    - expiresAt
+                    - status
+                  DomainAuthStatus:
+                    description: Per-domain auth status, computed at read time from a stored absolute expiry.
+                    enum:
+                    - expired
+                    - expiring_soon
+                    - unknown
+                    - valid
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile/refresh
+      tags:
+      - Profiles
+      operationId: postProfileRefresh
+      x-operation-id-source: derived
+  /profile/upload:
+    post:
+      description: 'Creates a new authentication profile from a pre-captured "state" payload
+
+        (cookies plus per-origin localStorage and IndexedDB). The "name" must be
+
+        unique per token. Counts of any dropped or truncated entries are
+
+        surfaced under "diagnostics".'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  description: A user-visible name for the profile. Must be unique per token.
+                  type: string
+                state:
+                  description: 'Pre-captured authentication state. An object with two arrays —
+
+                    `cookies` (browser cookies) and `origins` (per-origin localStorage and
+
+                    IndexedDB).'
+                captureSettings:
+                  $ref: '#/components/schemas/UploadCaptureSettingsPayload'
+                  description: 'Capture inputs the CLI ran with, stored so a later `browserless profile refresh`
+
+                    can replay them without flags. Optional — an older CLI omits it. This route is a
+
+                    strict create, so there is nothing to preserve: the profile is created with these
+
+                    settings, or with none.
+
+
+                    An object that validates down to nothing — `{}`, or one carrying only
+
+                    `onlyDomains: []` / `keepDomains: []` — is stored as `null`, the same as omitting
+
+                    the key. `excludeDomains: []` is the deliberate exception: it survives and records
+
+                    "captured with no exclusions", which a later flagless refresh replays instead of
+
+                    re-reading the refreshing machine''s own config.'
+              type: object
+              required:
+              - name
+              - state
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  diagnostics:
+                    $ref: '#/components/schemas/UploadResponseDiagnostics'
+                    description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+                      dropped or truncated before persisting. All zero on a clean upload.'
+                  id:
+                    description: Unique profile identifier.
+                    type: string
+                  name:
+                    description: User-supplied profile name. Unique per token.
+                    type: string
+                  cookieCount:
+                    description: Number of cookies captured in the profile.
+                    type: number
+                  originCount:
+                    description: Number of distinct origins with stored localStorage or IndexedDB.
+                    type: number
+                  captureSettings:
+                    $ref: '#/components/schemas/ProfileCaptureSettings'
+                    description: 'Capture inputs the CLI used, or null for profiles not created by the CLI. The UI
+
+                      derives no capture flag from these; it uses any non-empty object to stamp the CLI
+
+                      badge and show a read-only summary, and reads `browser`/`profile` specifically to
+
+                      decide whether its refresh command needs placeholders for them. The CLI reads the
+
+                      rest itself and decides the exclusion behaviour from `excludeDomains`.'
+                  domainAuth:
+                    description: 'Per-domain auth status + expiry for the saved logins in this profile, with
+
+                      status classified at read time (valid / expiring_soon / expired / unknown).
+
+                      Empty for profiles saved before this feature, until their next capture,
+
+                      upload, or refresh. Never contains a cookie value.'
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProfileDomainAuth'
+                  lastUsedAt:
+                    description: ISO timestamp of the last time this profile was applied to a session, or null if never used.
+                    type: string
+                  createdAt:
+                    description: ISO timestamp of when the profile was created.
+                    type: string
+                  updatedAt:
+                    description: ISO timestamp of the last metadata change (e.g., rename).
+                    type: string
+                additionalProperties: false
+                required:
+                - captureSettings
+                - cookieCount
+                - createdAt
+                - diagnostics
+                - domainAuth
+                - id
+                - lastUsedAt
+                - name
+                - originCount
+                - updatedAt
+                definitions:
+                  UploadResponseDiagnostics:
+                    description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+                      dropped or truncated before persisting. All zero on a clean upload.'
+                    type: object
+                    properties:
+                      skippedMalformedCookies:
+                        description: Cookies dropped because required fields were missing or wrong type.
+                        type: number
+                      skippedPrivateCookies:
+                        description: Cookies dropped because their domain pointed at a private/internal host.
+                        type: number
+                      skippedMalformedOrigins:
+                        description: Origins dropped because they were malformed or non-http(s).
+                        type: number
+                      skippedPrivateOrigins:
+                        description: Origins dropped because they targeted a private/internal network.
+                        type: number
+                      truncatedOrigins:
+                        description: Origins dropped because the per-profile cap was exceeded.
+                        type: number
+                      skippedMalformedIdbDatabases:
+                        description: IndexedDB databases dropped because required fields were missing.
+                        type: number
+                      truncatedIdbDatabases:
+                        description: IndexedDB databases dropped because the per-origin cap was exceeded.
+                        type: number
+                      skippedMalformedIdbStores:
+                        description: IndexedDB object-stores dropped because required fields were missing.
+                        type: number
+                      truncatedIdbEntries:
+                        description: IndexedDB entries dropped because the per-store cap was exceeded.
+                        type: number
+                      skippedMalformedLocalStorageEntries:
+                        description: localStorage entries dropped because names or values were not strings.
+                        type: number
+                      skippedMalformedIdbIndexes:
+                        description: IndexedDB indexes dropped because required fields were malformed.
+                        type: number
+                    additionalProperties: false
+                    required:
+                    - skippedMalformedCookies
+                    - skippedMalformedIdbDatabases
+                    - skippedMalformedIdbIndexes
+                    - skippedMalformedIdbStores
+                    - skippedMalformedLocalStorageEntries
+                    - skippedMalformedOrigins
+                    - skippedPrivateCookies
+                    - skippedPrivateOrigins
+                    - truncatedIdbDatabases
+                    - truncatedIdbEntries
+                    - truncatedOrigins
+                  ProfileCaptureSettings:
+                    description: 'Capture inputs the CLI ran with, so a later `profile refresh` can replay them
+
+                      without flags. Null for the CDP saveProfile path and any future non-CLI creator.
+
+                      Never holds the token, and omits server/region because a stale stored region
+
+                      is a guaranteed 404.'
+                    type: object
+                    properties:
+                      browser:
+                        description: Raw `--browser` value.
+                        type: string
+                      profile:
+                        description: Raw `--profile` value (source profile directory or display name).
+                        type: string
+                      excludeDomains:
+                        description: 'Effective merged exclusion list. `[]` is meaningful — "captured with no
+
+                          exclusions" — and distinct from absent, which means "unknown".'
+                        type: array
+                        items:
+                          type: string
+                      onlyDomains:
+                        description: Normalized `--only-domain` hostnames, deduped and capped — not merged with local config.
+                        type: array
+                        items:
+                          type: string
+                      keepDomains:
+                        description: Normalized `--keep-domain` hostnames, same normalization, no merge.
+                        type: array
+                        items:
+                          type: string
+                      autoFit:
+                        description: Whether `--auto-fit` was used.
+                        type: boolean
+                      passwordStore:
+                        description: Raw `--password-store` value. Linux only.
+                        type: string
+                      cliVersion:
+                        description: CLI version that produced these settings, for drift diagnosis.
+                        type: string
+                    additionalProperties: false
+                  ProfileDomainAuth:
+                    description: 'Response shape: the stored snapshot plus its read-time status.'
+                    type: object
+                    properties:
+                      domain:
+                        type: string
+                      status:
+                        $ref: '#/components/schemas/DomainAuthStatus'
+                      expiresAt:
+                        type: string
+                    additionalProperties: false
+                    required:
+                    - domain
+                    - expiresAt
+                    - status
+                  DomainAuthStatus:
+                    description: Per-domain auth status, computed at read time from a stored absolute expiry.
+                    enum:
+                    - expired
+                    - expiring_soon
+                    - unknown
+                    - valid
+                    type: string
+                $schema: http://json-schema.org/draft-07/schema#
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /profile/upload
+      tags:
+      - Profiles
+      operationId: postProfileUpload
+      x-operation-id-source: derived
+components:
+  schemas:
+    Platform:
+      enum:
+      - android
+      - linux
+      - macos
+      - windows
+      type: string
+    RefreshCaptureSettingsPayload:
+      description: 'Declared locally, not imported, so the generator emits a flat definition —
+
+        must stay field-for-field equal to `ProfileCaptureSettings` in
+
+        `../../profiles/types.ts`. `profile.http.spec.ts` pins it two ways: an
+
+        `Exact<>` type assertion, and a key-set check against the generated
+
+        `*.body.json` — the artifact that actually decides whether a request 400s.
+
+        All-optional so a partial payload cannot 400, and non-nullable because the
+
+        generator drops the null. Nested definitions get
+
+        `additionalProperties: false`, so **adding a member here is an
+
+        enterprise-first deploy, every time.**'
+      type: object
+      properties:
+        browser:
+          description: Raw `--browser` value.
+          type: string
+        profile:
+          description: Raw `--profile` value.
+          type: string
+        excludeDomains:
+          description: Effective merged exclusion list, not just the `--exclude-domain` flags.
+          type: array
+          items:
+            type: string
+        onlyDomains:
+          description: Normalized `--only-domain` hostnames, deduped and capped — not merged with local config.
+          type: array
+          items:
+            type: string
+        keepDomains:
+          description: Normalized `--keep-domain` hostnames, same normalization, no merge.
+          type: array
+          items:
+            type: string
+        autoFit:
+          description: Whether `--auto-fit` was used.
+          type: boolean
+        passwordStore:
+          description: Raw `--password-store` value. Linux only.
+          type: string
+        cliVersion:
+          description: CLI version that produced these settings.
+          type: string
+      additionalProperties: false
+    RefreshResponseDiagnostics:
+      description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+        dropped or truncated before persisting. All zero on a clean refresh.'
+      type: object
+      properties:
+        skippedMalformedCookies:
+          description: Cookies dropped because required fields were missing or wrong type.
+          type: number
+        skippedPrivateCookies:
+          description: Cookies dropped because their domain pointed at a private/internal host.
+          type: number
+        skippedMalformedOrigins:
+          description: Origins dropped because they were malformed or non-http(s).
+          type: number
+        skippedPrivateOrigins:
+          description: Origins dropped because they targeted a private/internal network.
+          type: number
+        truncatedOrigins:
+          description: Origins dropped because the per-profile cap was exceeded.
+          type: number
+        skippedMalformedIdbDatabases:
+          description: IndexedDB databases dropped because required fields were missing.
+          type: number
+        truncatedIdbDatabases:
+          description: IndexedDB databases dropped because the per-origin cap was exceeded.
+          type: number
+        skippedMalformedIdbStores:
+          description: IndexedDB object-stores dropped because required fields were missing.
+          type: number
+        truncatedIdbEntries:
+          description: IndexedDB entries dropped because the per-store cap was exceeded.
+          type: number
+        skippedMalformedLocalStorageEntries:
+          description: localStorage entries dropped because names or values were not strings.
+          type: number
+        skippedMalformedIdbIndexes:
+          description: IndexedDB indexes dropped because required fields were malformed.
+          type: number
+      additionalProperties: false
+      required:
+      - skippedMalformedCookies
+      - skippedMalformedIdbDatabases
+      - skippedMalformedIdbIndexes
+      - skippedMalformedIdbStores
+      - skippedMalformedLocalStorageEntries
+      - skippedMalformedOrigins
+      - skippedPrivateCookies
+      - skippedPrivateOrigins
+      - truncatedIdbDatabases
+      - truncatedIdbEntries
+      - truncatedOrigins
+    ProfileDomainAuth:
+      description: 'Response shape: the stored snapshot plus its read-time status.'
+      type: object
+      properties:
+        domain:
+          type: string
+        status:
+          $ref: '#/components/schemas/DomainAuthStatus'
+        expiresAt:
+          type: string
+      additionalProperties: false
+      required:
+      - domain
+      - expiresAt
+      - status
+    CDPLaunchOptions:
+      type: object
+      additionalProperties: {}
+      properties:
+        args:
+          type: array
+          items:
+            type: string
+        defaultViewport:
+          type: object
+          properties:
+            deviceScaleFactor:
+              type: number
+            hasTouch:
+              type: boolean
+            height:
+              type: number
+            isLandscape:
+              type: boolean
+            isMobile:
+              type: boolean
+            width:
+              type: number
+          additionalProperties: false
+          required:
+          - height
+          - width
+        devtools:
+          type: boolean
+        dumpio:
+          type: boolean
+        headless:
+          enum:
+          - false
+          - shell
+          - true
+        ignoreDefaultArgs:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+        ignoreHTTPSErrors:
+          type: boolean
+        acceptInsecureCerts:
+          type: boolean
+        slowMo:
+          type: number
+        stealth:
+          type: boolean
+        timeout:
+          type: number
+        userDataDir:
+          type: string
+        waitForInitialPage:
+          type: boolean
+    ProfileResponse:
+      description: 'Public-facing profile response returned by HTTP routes.
+
+        Omits internal fields like token_hash and storage_key.'
+      type: object
+      properties:
+        id:
+          description: Unique profile identifier.
+          type: string
+        name:
+          description: User-supplied profile name. Unique per token.
+          type: string
+        cookieCount:
+          description: Number of cookies captured in the profile.
+          type: number
+        originCount:
+          description: Number of distinct origins with stored localStorage or IndexedDB.
+          type: number
+        captureSettings:
+          $ref: '#/components/schemas/ProfileCaptureSettings'
+          description: 'Capture inputs the CLI used, or null for profiles not created by the CLI. The UI
+
+            derives no capture flag from these; it uses any non-empty object to stamp the CLI
+
+            badge and show a read-only summary, and reads `browser`/`profile` specifically to
+
+            decide whether its refresh command needs placeholders for them. The CLI reads the
+
+            rest itself and decides the exclusion behaviour from `excludeDomains`.'
+        domainAuth:
+          description: 'Per-domain auth status + expiry for the saved logins in this profile, with
+
+            status classified at read time (valid / expiring_soon / expired / unknown).
+
+            Empty for profiles saved before this feature, until their next capture,
+
+            upload, or refresh. Never contains a cookie value.'
+          type: array
+          items:
+            $ref: '#/components/schemas/ProfileDomainAuth'
+        lastUsedAt:
+          description: ISO timestamp of the last time this profile was applied to a session, or null if never used.
+          type: string
+        createdAt:
+          description: ISO timestamp of when the profile was created.
+          type: string
+        updatedAt:
+          description: ISO timestamp of the last metadata change (e.g., rename).
+          type: string
+      additionalProperties: false
+      required:
+      - captureSettings
+      - cookieCount
+      - createdAt
+      - domainAuth
+      - id
+      - lastUsedAt
+      - name
+      - originCount
+      - updatedAt
+    BrowserServerOptions:
+      type: object
+      additionalProperties: {}
+      properties:
+        args:
+          type: array
+          items:
+            type: string
+        chromiumSandbox:
+          type: boolean
+        devtools:
+          type: boolean
+        downloadsPath:
+          type: string
+        env:
+          description: 'Environment for the browser process. Honored by both puppeteer.launch and
+
+            playwright.launchServer. Set server-side to give the session its own TMPDIR
+
+            (see generateScratchDir); a caller-supplied value is merged under it, since
+
+            a session must not be able to point its scratch back at the shared temp dir.
+
+
+            That merge happens on the object handed to `launch` only. It is kept off
+
+            the session''s stored `launchOptions`, which /sessions serves verbatim.'
+          $ref: '#/components/schemas/Record_string_string_undefined'
+        headless:
+          type: boolean
+        ignoreDefaultArgs:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+        proxy:
+          type: object
+          properties:
+            bypass:
+              type: string
+            password:
+              type: string
+            server:
+              type: string
+            username:
+              type: string
+          additionalProperties: false
+          required:
+          - server
+        timeout:
+          type: number
+        tracesDir:
+          type: string
+    DomainAuthStatus:
+      description: Per-domain auth status, computed at read time from a stored absolute expiry.
+      enum:
+      - expired
+      - expiring_soon
+      - unknown
+      - valid
+      type: string
+    UploadResponseDiagnostics:
+      description: 'Per-entry counts of cookies, origins, and IndexedDB items the server
+
+        dropped or truncated before persisting. All zero on a clean upload.'
+      type: object
+      properties:
+        skippedMalformedCookies:
+          description: Cookies dropped because required fields were missing or wrong type.
+          type: number
+        skippedPrivateCookies:
+          description: Cookies dropped because their domain pointed at a private/internal host.
+          type: number
+        skippedMalformedOrigins:
+          description: Origins dropped because they were malformed or non-http(s).
+          type: number
+        skippedPrivateOrigins:
+          description: Origins dropped because they targeted a private/internal network.
+          type: number
+        truncatedOrigins:
+          description: Origins dropped because the per-profile cap was exceeded.
+          type: number
+        skippedMalformedIdbDatabases:
+          description: IndexedDB databases dropped because required fields were missing.
+          type: number
+        truncatedIdbDatabases:
+          description: IndexedDB databases dropped because the per-origin cap was exceeded.
+          type: number
+        skippedMalformedIdbStores:
+          description: IndexedDB object-stores dropped because required fields were missing.
+          type: number
+        truncatedIdbEntries:
+          description: IndexedDB entries dropped because the per-store cap was exceeded.
+          type: number
+        skippedMalformedLocalStorageEntries:
+          description: localStorage entries dropped because names or values were not strings.
+          type: number
+        skippedMalformedIdbIndexes:
+          description: IndexedDB indexes dropped because required fields were malformed.
+          type: number
+      additionalProperties: false
+      required:
+      - skippedMalformedCookies
+      - skippedMalformedIdbDatabases
+      - skippedMalformedIdbIndexes
+      - skippedMalformedIdbStores
+      - skippedMalformedLocalStorageEntries
+      - skippedMalformedOrigins
+      - skippedPrivateCookies
+      - skippedPrivateOrigins
+      - truncatedIdbDatabases
+      - truncatedIdbEntries
+      - truncatedOrigins
+    Record_string_string_undefined:
+      type: object
+      additionalProperties: false
+    ProfileCaptureSettings:
+      description: 'Capture inputs the CLI ran with, so a later `profile refresh` can replay them
+
+        without flags. Null for the CDP saveProfile path and any future non-CLI creator.
+
+        Never holds the token, and omits server/region because a stale stored region
+
+        is a guaranteed 404.'
+      type: object
+      properties:
+        browser:
+          description: Raw `--browser` value.
+          type: string
+        profile:
+          description: Raw `--profile` value (source profile directory or display name).
+          type: string
+        excludeDomains:
+          description: 'Effective merged exclusion list. `[]` is meaningful — "captured with no
+
+            exclusions" — and distinct from absent, which means "unknown".'
+          type: array
+          items:
+            type: string
+        onlyDomains:
+          description: Normalized `--only-domain` hostnames, deduped and capped — not merged with local config.
+          type: array
+          items:
+            type: string
+        keepDomains:
+          description: Normalized `--keep-domain` hostnames, same normalization, no merge.
+          type: array
+          items:
+            type: string
+        autoFit:
+          description: Whether `--auto-fit` was used.
+          type: boolean
+        passwordStore:
+          description: Raw `--password-store` value. Linux only.
+          type: string
+        cliVersion:
+          description: CLI version that produced these settings, for drift diagnosis.
+          type: string
+      additionalProperties: false
+    UploadCaptureSettingsPayload:
+      description: 'Declared locally, not imported, so the generator emits a flat definition —
+
+        must stay field-for-field equal to `ProfileCaptureSettings` in
+
+        `../../profiles/types.ts`. `profile.http.spec.ts` pins it two ways: an
+
+        `Exact<>` type assertion, and a key-set check against the generated
+
+        `*.body.json` — the artifact that actually decides whether a request 400s.
+
+        All-optional so a partial payload cannot 400, and non-nullable because the
+
+        generator drops the null. Nested definitions get
+
+        `additionalProperties: false`, so **adding a member here is an
+
+        enterprise-first deploy, every time.**'
+      type: object
+      properties:
+        browser:
+          description: Raw `--browser` value.
+          type: string
+        profile:
+          description: Raw `--profile` value.
+          type: string
+        excludeDomains:
+          description: Effective merged exclusion list, not just the `--exclude-domain` flags.
+          type: array
+          items:
+            type: string
+        onlyDomains:
+          description: Normalized `--only-domain` hostnames, deduped and capped — not merged with local config.
+          type: array
+          items:
+            type: string
+        keepDomains:
+          description: Normalized `--keep-domain` hostnames, same normalization, no merge.
+          type: array
+          items:
+            type: string
+        autoFit:
+          description: Whether `--auto-fit` was used.
+          type: boolean
+        passwordStore:
+          description: Raw `--password-store` value. Linux only.
+          type: string
+        cliVersion:
+          description: CLI version that produced these settings.
+          type: string
+      additionalProperties: false
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: query
+      name: token
+      description: Your Browserless API token. Find it on your [Account dashboard](https://www.browserless.io/account).
+x-tagGroups:
+- name: Core APIs
+  tags:
+  - Screenshots & PDFs
+  - Scraping & Content
+  - Functions & Downloads
+- name: Browser Control
+  tags:
+  - Sessions & Connections
+  - Browser Management
+  - Crawling
+- name: Anti-Bot & Stealth
+  tags:
+  - Unblock & Stealth
+  - Proxy
+- name: Auth & Profiles
+  tags:
+  - Profiles
+  - Integrations
+- name: WebSocket / CDP
+  tags:
+  - WebSocket APIs
+  - Agent
+  - BQL Execution
+  - CDP & DevTools Connections
+- name: Chrome
+  tags:
+  - Chrome (licensed build)
+- name: Platform
+  tags:
+  - Platform / Skills

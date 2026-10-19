@@ -1,0 +1,1868 @@
+openapi: 3.2.0
+info:
+  title: Browserless WebSocket APIs API
+  version: 2.57.0
+  description: 'This is the API reference for **Browserless Enterprise and Cloud** deployments. You''ll find endpoints for capturing screenshots and PDFs, scraping content, running custom browser functions, solving CAPTCHAs, bypassing bot detection with stealth browsing, managing authenticated browser profiles, and orchestrating crawls.
+
+
+    The API includes REST endpoints (JSON in, JSON or binary out), WebSocket connections for direct CDP/Playwright/Puppeteer access, and CDP extensions that expose Browserless-specific commands like `liveURL`, `solveCaptcha`, and `reconnect`. For the open-source container API, see the GitHub repository.
+
+
+    ## Just Getting Started?
+
+
+    Check out the Quick Start guide to launch your first session, or explore the BrowserQL IDE for a GraphQL-based automation workflow.
+
+
+    ## Base URL
+
+
+    All API requests go to your deployment''s base URL. For Browserless Cloud:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io
+
+    ```
+
+
+    Self-hosted Enterprise deployments use the host and port where the container is running (default `http://localhost:3000`).
+
+
+    ## Authentication
+
+
+    Include your API token as a query parameter on every request:
+
+
+    ```plaintext
+
+    https://production-sfo.browserless.io/chromium/content?token=YOUR_API_TOKEN
+
+    ```
+
+
+    Tokens are managed from the Account dashboard. Self-hosted deployments set the token via the `TOKEN` environment variable. See connection details for all authentication options.
+
+
+    ## Changelog
+
+
+    For release notes and version history, see the Enterprise Changelog.
+
+
+    ## Software keys
+
+
+    Self-hosted Enterprise deployments use time-limited software keys for offline licensing. No external connections or callbacks are required. Keys are cryptographically secure and can''t be reverse engineered. When a key expires, the container exits with a semantic error code.
+
+
+    To use a software key, set the `KEY` environment variable when running the container:
+
+
+    ```bash
+
+    docker run -e KEY=your-generated-key browserless/enterprise
+
+    ```'
+servers:
+- url: https://production-sfo.browserless.io
+security:
+- tokenAuth: []
+tags:
+- name: WebSocket APIs
+  description: Connect Puppeteer, Playwright, or raw DevTools Protocol clients over WebSocket. Launch a browser with `wss://` and get back a CDP session for full programmatic control.
+  x-displayName: WebSocket APIs
+paths:
+  /:
+    get:
+      description: 'Launch and connect to Chromium with a library like puppeteer or others that work over chrome-devtools-protocol.
+
+
+        **Note:** Also available at `/chromium` as a convenience alias.'
+      parameters:
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: integrations
+        schema:
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: record
+        schema:
+          type: boolean
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: solveCaptchas
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /
+      tags:
+      - WebSocket APIs
+      operationId: chromium-root
+  /chromium:
+    get:
+      description: 'Launch and connect to Chromium with a library like puppeteer or others that work over chrome-devtools-protocol.
+
+
+        **Note:** This endpoint is also available at: `/` for backwards compatibility.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chromium
+      tags:
+      - WebSocket APIs
+      operationId: getChromium
+      x-operation-id-source: derived
+  /chromium/playwright:
+    get:
+      description: 'Connect to Chromium with any playwright style library.
+
+
+        **Note:** Also available at `/playwright` as a convenience alias.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chromium/playwright
+      tags:
+      - WebSocket APIs
+      operationId: getChromiumPlaywright
+      x-operation-id-source: derived
+  /edge:
+    get:
+      description: Launch and connect to Chromium with a library like puppeteer or others that work over chrome-devtools-protocol.
+      parameters:
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: integrations
+        schema:
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/CDPLaunchOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: record
+        schema:
+          type: boolean
+      - in: query
+        name: replay
+        schema:
+          type: boolean
+      - in: query
+        name: solveCaptchas
+        schema:
+          type: boolean
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /edge
+      tags:
+      - WebSocket APIs
+      operationId: getEdge
+      x-operation-id-source: derived
+  /edge/playwright:
+    get:
+      description: Connect to Chromium with any playwright style library.
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /edge/playwright
+      tags:
+      - WebSocket APIs
+      operationId: getEdgePlaywright
+      x-operation-id-source: derived
+  /firefox/playwright:
+    get:
+      description: 'Connect to Firefox with any playwright-compliant library.
+
+
+        **Note:** Also available at `/playwright/firefox` as a convenience alias.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          additionalProperties: false
+          type: object
+          properties:
+            args:
+              type: array
+              items:
+                type: string
+            chromiumSandbox:
+              type: boolean
+            devtools:
+              type: boolean
+            downloadsPath:
+              type: string
+            env:
+              description: 'Environment for the browser process. Honored by both puppeteer.launch and
+
+                playwright.launchServer. Set server-side to give the session its own TMPDIR
+
+                (see generateScratchDir); a caller-supplied value is merged under it, since
+
+                a session must not be able to point its scratch back at the shared temp dir.
+
+
+                That merge happens on the object handed to `launch` only. It is kept off
+
+                the session''s stored `launchOptions`, which /sessions serves verbatim.'
+              $ref: '#/components/schemas/Record_string_string_undefined'
+            headless:
+              type: boolean
+            ignoreDefaultArgs:
+              anyOf:
+              - type: array
+                items:
+                  type: string
+              - type: boolean
+            proxy:
+              type: object
+              properties:
+                bypass:
+                  type: string
+                password:
+                  type: string
+                server:
+                  type: string
+                username:
+                  type: string
+              additionalProperties: false
+              required:
+              - server
+            timeout:
+              type: number
+            tracesDir:
+              type: string
+            firefoxUserPrefs:
+              type: object
+              additionalProperties:
+                type:
+                - string
+                - number
+                - boolean
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /firefox/playwright
+      tags:
+      - WebSocket APIs
+      operationId: getFirefoxPlaywright
+      x-operation-id-source: derived
+  /webkit/playwright:
+    get:
+      description: 'Connect to Webkit with any playwright-compliant library.
+
+
+        **Note:** Also available at `/playwright/webkit` as a convenience alias.'
+      parameters:
+      - in: query
+        name: blockAds
+        schema:
+          description: 'Whether or not to load ad-blocking extensions for the session.
+
+            This currently uses uBlock-Lite and may cause certain sites
+
+            to not load properly.'
+          type: boolean
+      - in: query
+        name: blockAdsInclude
+        schema:
+          description: Ruleset IDs to load when `blockAds` is enabled, as CSV or JSON-array text.
+          type: string
+      - in: query
+        name: launch
+        schema:
+          description: 'Launch options, which can be either an object
+
+            of puppeteer.launch options or playwright.launchServer
+
+            options, depending on the API. Must be either JSON
+
+            object, or a base64-encoded JSON object.'
+          anyOf:
+          - $ref: '#/components/schemas/BrowserServerOptions'
+          - type: string
+      - in: query
+        name: profile
+        schema:
+          description: 'Name of an authenticated profile to hydrate into the browser at launch.
+
+            The profile''s cookies, localStorage and IndexedDB are injected via CDP
+
+            before your code runs. No-op in builds without a profile subsystem.'
+          type: string
+      - in: query
+        name: timeout
+        schema:
+          description: 'Override the system-level timeout for this request.
+
+            Accepts a value in milliseconds.'
+          type: number
+      - in: query
+        name: token
+        schema:
+          description: The authorization token
+          type: string
+      - in: query
+        name: trackingId
+        schema:
+          description: Custom session identifier
+          type: string
+      - in: query
+        name: allowedDomains
+        schema:
+          description: 'Optional per-connection narrowing of the integration''s allowed-domain list.
+
+            Extracted from the JSON `allowedDomains` query parameter. Can only narrow the
+
+            integration''s domains, never widen them.'
+          type: array
+          items:
+            type: string
+      - in: query
+        name: credentials
+        schema:
+          $ref: '#/components/schemas/StringRecord'
+          description: 'Optional alias → `op://…` reference map for the integration above. Extracted
+
+            from the JSON `credentials` query parameter. References are not secret;
+
+            resolved values are never stored here. Optional — a connection can also pass
+
+            raw `op://…` references straight to Browserless.loadSecret.'
+      - in: query
+        name: externalProxyServer
+        schema:
+          description: 'External proxy server URL for user-provided proxies.
+
+            Format: http(s)://[username:password@]host:port
+
+            When set, routes requests through this proxy instead of built-in residential proxies.'
+          type: string
+      - in: query
+        name: integrationId
+        schema:
+          description: 'Optional 1Password integration id (op_int_…) or label for credential filling on a non-persistent
+
+            connection. Extracted from the `integrationId` query parameter; the persistent
+
+            session path carries the same data on session metadata instead.'
+          type: string
+      - in: query
+        name: proxy
+        schema:
+          $ref: '#/components/schemas/ProxyType'
+          description: 'The type of proxy to use: ''residential'' or ''datacenter''.'
+      - in: query
+        name: proxyCity
+        schema:
+          description: 'The city to use for the proxy.
+
+
+            Available cities: https://production-sfo.browserless.io/proxy/cities?token=YOUR_TOKEN
+
+            Documentation: https://docs.browserless.io/baas/features/proxies#built-in-residential-proxy'
+          type: string
+      - in: query
+        name: proxyCountry
+        schema:
+          description: 'A two-letter country code for the proxy configuration.
+
+
+            Supported codes: US, GB, FR, DE, etc.
+
+            Full list: https://docs.browserless.io/bql-schema/types/enums/country-type'
+          type: string
+      - in: query
+        name: proxyLocaleMatch
+        schema:
+          description: 'Sets the browser''s language to match the proxy''s geographic location.
+
+            Recommended when using proxyCountry to ensure websites render content,
+
+            currency, and formatting in the local language. Default is English (en-US).'
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      - in: query
+        name: proxyPreset
+        schema:
+          description: 'A preset code for website-specific proxy routing.
+
+            Maps to specific proxy vendors internally for optimal access to certain websites.
+
+            Only applies to the residential network; the datacenter pool ignores it.
+
+            Format: "px_<identifier>" (e.g., "px_gov01", "px_amazon01")'
+          type: string
+      - in: query
+        name: proxyState
+        schema:
+          description: The state or province to use for the proxy, whitespace must be replaced with underscores
+          type: string
+      - in: query
+        name: proxySticky
+        schema:
+          description: Whether or not to use the same IP for all requests. Off by default.
+          enum:
+          - '0'
+          - '1'
+          - 'false'
+          - 'true'
+          type: string
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /webkit/playwright
+      tags:
+      - WebSocket APIs
+      operationId: getWebkitPlaywright
+      x-operation-id-source: derived
+  /live/*:
+    get:
+      description: 'Websocket back-end that powers the live session experience.
+
+
+        **Note:** Also available at `/chromium/live/*` as a convenience alias.'
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /live/*
+      tags:
+      - WebSocket APIs
+      operationId: getLive*
+      x-operation-id-source: derived
+  /chrome/live/*:
+    get:
+      description: Websocket back-end that powers the live session experience.
+      parameters: []
+      requestBody:
+        content: {}
+      responses:
+        '101':
+          description: Indicates successful WebSocket upgrade.
+        '400':
+          code: 400
+          description: The request contains errors or didn't properly encode content.
+          message: HTTP/1.1 400 Bad Request
+        '401':
+          code: 401
+          description: The request is missing, or contains bad, authorization credentials.
+          message: HTTP/1.1 401 Unauthorized
+        '403':
+          code: 403
+          description: The request targets a destination that is not allowed.
+          message: HTTP/1.1 403 Forbidden
+        '404':
+          code: 404
+          description: Resource couldn't be found.
+          message: HTTP/1.1 404 Not Found
+        '408':
+          code: 408
+          description: The request took has taken too long to process.
+          message: HTTP/1.1 408 Request Timeout
+        '429':
+          code: 429
+          description: Too many requests are currently being processed.
+          message: HTTP/1.1 429 Too Many Requests
+        '500':
+          code: 500
+          description: An internal error occurred when handling the request.
+          message: HTTP/1.1 500 Internal Server Error
+        '503':
+          code: 503
+          description: Service is unavailable.
+          message: HTTP/1.1 503 Service Unavailable
+      summary: /chrome/live/*
+      tags:
+      - WebSocket APIs
+      operationId: getChromeLive*
+      x-operation-id-source: derived
+components:
+  schemas:
+    StringRecord:
+      type: object
+      additionalProperties: false
+    ProxyType:
+      description: 'The proxy networks the platform can route through. `residential` uses the
+
+        built-in residential vendors; `datacenter` uses the Geonode datacenter
+
+        network (cheaper, billed at a lower per-MB rate).'
+      enum:
+      - datacenter
+      - residential
+      type: string
+    CDPLaunchOptions:
+      type: object
+      additionalProperties: {}
+      properties:
+        args:
+          type: array
+          items:
+            type: string
+        defaultViewport:
+          type: object
+          properties:
+            deviceScaleFactor:
+              type: number
+            hasTouch:
+              type: boolean
+            height:
+              type: number
+            isLandscape:
+              type: boolean
+            isMobile:
+              type: boolean
+            width:
+              type: number
+          additionalProperties: false
+          required:
+          - height
+          - width
+        devtools:
+          type: boolean
+        dumpio:
+          type: boolean
+        headless:
+          enum:
+          - false
+          - shell
+          - true
+        ignoreDefaultArgs:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+        ignoreHTTPSErrors:
+          type: boolean
+        acceptInsecureCerts:
+          type: boolean
+        slowMo:
+          type: number
+        stealth:
+          type: boolean
+        timeout:
+          type: number
+        userDataDir:
+          type: string
+        waitForInitialPage:
+          type: boolean
+    BrowserServerOptions:
+      type: object
+      additionalProperties: {}
+      properties:
+        args:
+          type: array
+          items:
+            type: string
+        chromiumSandbox:
+          type: boolean
+        devtools:
+          type: boolean
+        downloadsPath:
+          type: string
+        env:
+          description: 'Environment for the browser process. Honored by both puppeteer.launch and
+
+            playwright.launchServer. Set server-side to give the session its own TMPDIR
+
+            (see generateScratchDir); a caller-supplied value is merged under it, since
+
+            a session must not be able to point its scratch back at the shared temp dir.
+
+
+            That merge happens on the object handed to `launch` only. It is kept off
+
+            the session''s stored `launchOptions`, which /sessions serves verbatim.'
+          $ref: '#/components/schemas/Record_string_string_undefined'
+        headless:
+          type: boolean
+        ignoreDefaultArgs:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: boolean
+        proxy:
+          type: object
+          properties:
+            bypass:
+              type: string
+            password:
+              type: string
+            server:
+              type: string
+            username:
+              type: string
+          additionalProperties: false
+          required:
+          - server
+        timeout:
+          type: number
+        tracesDir:
+          type: string
+    Record_string_string_undefined:
+      type: object
+      additionalProperties: false
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: query
+      name: token
+      description: Your Browserless API token. Find it on your [Account dashboard](https://www.browserless.io/account).
+x-tagGroups:
+- name: Core APIs
+  tags:
+  - Screenshots & PDFs
+  - Scraping & Content
+  - Functions & Downloads
+- name: Browser Control
+  tags:
+  - Sessions & Connections
+  - Browser Management
+  - Crawling
+- name: Anti-Bot & Stealth
+  tags:
+  - Unblock & Stealth
+  - Proxy
+- name: Auth & Profiles
+  tags:
+  - Profiles
+  - Integrations
+- name: WebSocket / CDP
+  tags:
+  - WebSocket APIs
+  - Agent
+  - BQL Execution
+  - CDP & DevTools Connections
+- name: Chrome
+  tags:
+  - Chrome (licensed build)
+- name: Platform
+  tags:
+  - Platform / Skills
